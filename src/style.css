@@ -417,3 +417,11 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .tip-plus:disabled { opacity: 0.4; }
 .deel-knop { margin-left: auto; padding: 8px 0; display: inline-flex; align-items: center; gap: 6px; }
 .deel-knop svg { width: 20px; height: 20px; fill: currentColor; }
+
+/* Profielfoto */
+.profiel-foto-kiezen { cursor: pointer; flex: none; }
+.profiel-groot.met-foto { display: block; object-fit: cover; background: var(--cover-leeg); }
+.profiel-icoon.met-foto { overflow: hidden; padding: 0; }
+.profiel-icoon.met-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.foto-knoppen { display: flex; gap: 16px; }
+.foto-knoppen .link-knop { padding: 6px 0; font-size: 0.9rem; cursor: pointer; }
