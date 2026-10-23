@@ -71,7 +71,7 @@ Gekozen: accentkleur donkergroen (#1F4D3F), de lijst als rijtje (kleine cover li
 
 ## Buiten Fase 1
 
-Synopsis, informatie over de schrijver, verfilmingen, boekentips (Fase 2). Delen met anderen en wekelijkse tips (Fase 3). Geen accounts, geen synchronisatie tussen apparaten, geen betaalde diensten.
+Startscherm met covers per status, synopsis en boekentips (Fase 2, stap 10–12; zie CLAUDE.md). Daarna eventueel informatie over de schrijver en verfilmingen. Delen met anderen en wekelijkse tips (Fase 3). Geen accounts, geen synchronisatie tussen apparaten, geen betaalde diensten.
 
 ## Besluiten
 
@@ -91,3 +91,5 @@ Synopsis, informatie over de schrijver, verfilmingen, boekentips (Fase 2). Delen
 | 2026-10-23 | Weigert een bron tijdelijk (daglimiet Google), dan wordt het boek later opnieuw geprobeerd; knop in Instellingen om ontbrekende covers opnieuw te zoeken |
 | 2026-10-23 | Geen automatische koppeling met Kobo (geen openbare API, niet gratis te bouwen); wel label 'Wacht op Kobo Plus' bij het boek en een knop 'Zoek bij Kobo' |
 | 2026-10-23 | Status 'Bezig' heet in beeld 'Aan het lezen' |
+| 2026-10-23 | Eerst fase 1 afmaken (stap 7–9), dan startscherm, synopsis en tips |
+| 2026-10-23 | Boekentips maakt Claude in een sessie (gratis), niet automatisch via een betaalde AI-dienst |

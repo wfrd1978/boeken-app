@@ -9,7 +9,7 @@ Wilfred bouwt een persoonlijke mobiele webapp om zijn boeken bij te houden. Hij 
 ## Fases
 
 1. **Kern** — toevoegen via ISBN-scan, foto van de kaft of getypte titel; cover en gegevens automatisch ophalen; sterren, leesdatum, recensie; zoeken; dubbel-waarschuwing; Excel-export; backup/terugzetten; import van de bestaande Excel-lijst.
-2. **Verrijking** — synopsis, informatie over de schrijver, verfilmingen, boekentips op basis van het leesprofiel.
+2. **Verrijking** — startscherm, synopsis, boekentips op basis van het leesprofiel; later informatie over de schrijver en verfilmingen.
 3. **Delen** — delen met anderen en een wekelijkse tip uit nieuwe titels.
 
 Werk alleen aan de fase die actief is. Nu actief: **Fase 1**.
@@ -54,3 +54,11 @@ Geen betaalde diensten of API-sleutels zonder expliciete toestemming van Wilfred
 | 7 | ISBN-scan met de camera |
 | 8 | Excel-export |
 | 9 | Toevoegen via foto van de kaft |
+
+## Stappenplan Fase 2 (na stap 9, volgorde van Wilfred)
+
+| Stap | Resultaat om te testen |
+|------|------------------------|
+| 10 | Warm startscherm zoals een nieuwsapp: groot het boek dat je nu leest, daaronder rijen covers van Gelezen en Wil ik lezen |
+| 11 | Korte synopsis bij elk boek, op de achtergrond opgehaald (Google Books, Open Library) |
+| 12 | Boekentips op het startscherm. Claude maakt de tiplijst in een sessie op basis van Wilfreds lezersprofiel en favoriete boeken; geen betaalde AI-dienst |
