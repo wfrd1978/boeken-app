@@ -288,6 +288,39 @@ export async function zoekCover(boek, { opTitel = true } = {}) {
   return { cover: null, coverUrl: reserve };
 }
 
+// Alle covers die de bronnen van dit boek kennen, van verschillende uitgaven, om uit te kiezen.
+export async function zoekCoverKeuzes(boek) {
+  const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
+  const vragen = [
+    haalJson(googleUrl(`intitle:${boek.titel}${auteur ? ` inauthor:${auteur}` : ''}`, '&maxResults=20')).then((d) =>
+      (d.items ?? [])
+        .filter((i) => vindDubbel(boek, [{ titel: i.volumeInfo.title, auteurs: i.volumeInfo.authors ?? [] }]))
+        .map((i) => i.volumeInfo.imageLinks?.thumbnail)
+    ),
+    boek.isbn
+      ? haalJson(googleUrl(`isbn:${boek.isbn}`, '&maxResults=3')).then((d) => (d.items ?? []).map((i) => i.volumeInfo.imageLinks?.thumbnail))
+      : [],
+    zoekOpenLibrary({ titel: boek.titel, auteur }, 5).then((r) => r.filter((k) => vindDubbel(boek, [k])).map((k) => k.coverUrl)),
+    // Bij Open Library hangen alle uitgaven (en hun covers) aan het werk.
+    boek.werk
+      ? haalJson(`https://openlibrary.org${boek.werk}/editions.json?limit=60`).then((d) =>
+          (d.entries ?? []).flatMap((e) => (e.covers ?? []).filter((c) => c > 0).slice(0, 1)).map((c) => `https://covers.openlibrary.org/b/id/${c}-M.jpg`)
+        )
+      : [],
+  ];
+  const uitkomsten = await Promise.allSettled(vragen);
+  const urls = uitkomsten.flatMap((u) => u.value ?? []).filter(Boolean).map((u) => u.replace('http://', 'https://'));
+  // Google-plaatjes zonder randje (edge=curl) en zonder dubbelen.
+  return [...new Set(urls.map((u) => u.replace('&edge=curl', '')))].slice(0, 30);
+}
+
+// Een gekozen cover bewaren: Open Library als bestand (ook offline zichtbaar),
+// Google alleen als adres (Google staat opslaan niet toe).
+export async function bewaarbareCover(url) {
+  const blob = await haalPlaatje(url);
+  return blob ? { cover: blob, coverUrl: url } : { cover: null, coverUrl: url };
+}
+
 // Verkleint een eigen foto tot een nette cover, zodat de opslag niet volloopt.
 export async function verkleinFoto(bestand) {
   const bitmap = await createImageBitmap(bestand);
