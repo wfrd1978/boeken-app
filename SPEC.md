@@ -72,9 +72,9 @@ Inspiratie: de apps van de Volkskrant, Trouw en NOS. Simpel en strak, zoals een 
 
 Gekozen: accentkleur donkergroen (#1F4D3F), de lijst als rijtje (kleine cover links). Titels in de schreefletter van de iPhone (New York), de rest in de systeemletter. De lijst heeft tabjes per status; de balk onderin vervangt de losse +-knop en de link naar Instellingen.
 
-## Buiten Fase 1
+## Nog te doen en buiten beeld
 
-Startscherm met covers per status, synopsis en boekentips (Fase 2, stap 10–12; zie CLAUDE.md). Daarna eventueel informatie over de schrijver en verfilmingen. Delen met anderen en wekelijkse tips (Fase 3). Geen accounts, geen synchronisatie tussen apparaten, geen betaalde diensten.
+Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips en statistieken volgen (stap 13–14; zie CLAUDE.md). Daarna eventueel informatie over de schrijver en verfilmingen. Delen met anderen en wekelijkse tips (Fase 3). Geen accounts, geen synchronisatie tussen apparaten, geen betaalde diensten.
 
 ## Besluiten
 
