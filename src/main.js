@@ -30,7 +30,7 @@ import {
 import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
-import { zichtbareTips, zetTipReactie } from './tips.js';
+import { tipsUitArchief, verversTips, zetTipReactie } from './tips.js';
 import {
   maakBackupBestand,
   bewaarBackup,
@@ -499,7 +499,7 @@ async function toonLijst() {
     if (knop) kiesTab(knop.dataset.tab);
   });
   // 'Alles ›' bij een rij op het startscherm: naar die tab in de lijst eronder.
-  toonTipsRij(boeken);
+  await toonTipsRij(boeken);
   document.querySelector('.start')?.addEventListener('click', (e) => {
     const knop = e.target.closest('[data-naar-tab]');
     if (!knop) return;
@@ -1197,10 +1197,17 @@ async function tipCover(tip) {
   return cache[tip.id];
 }
 
-async function toonTipsRij(boeken) {
+// Eerst de tips die het toestel al heeft (meteen, zodat het scherm niet verspringt),
+// daarna op de achtergrond kijken of er een nieuwe ronde is.
+async function toonTipsRij(boeken, verversen = true) {
   const vak = document.getElementById('tips-rij');
   if (!vak) return;
-  const tips = await zichtbareTips(boeken);
+  const tips = await tipsUitArchief(boeken);
+  if (verversen) {
+    verversTips().then((nieuw) => {
+      if (nieuw > 0 && document.body.contains(vak)) toonTipsRij(boeken, false);
+    });
+  }
   if (!tips.length || !document.body.contains(vak)) return;
   vak.hidden = false;
   vak.innerHTML = `
@@ -1217,11 +1224,15 @@ async function toonTipsRij(boeken) {
         )
         .join('')}
     </div>`;
-  vak.addEventListener('click', (e) => {
+  vak.onclick = (e) => {
     const knop = e.target.closest('[data-tip]');
     if (knop) toonTip(tips.find((t) => t.id === knop.dataset.tip), boeken);
-  });
-  // Covers één voor één erbij zetten.
+  };
+  // Covers één voor één erbij zetten, zonder het scherm op te houden.
+  vulTipCovers(vak, tips);
+}
+
+async function vulTipCovers(vak, tips) {
   for (const t of tips) {
     const url = await tipCover(t);
     const plek = vak.querySelector(`[data-cover-voor="${CSS.escape(t.id)}"]`);
@@ -1525,7 +1536,13 @@ async function toonBoek(id) {
 
 // --- Navigatie ---
 
-async function route() {
+// Waar je op elke pagina was, zodat 'terug' je daar weer neerzet.
+const scrollPlekken = {};
+let vorigeHash = location.hash || '#/';
+
+async function route({ naarBoven = false } = {}) {
+  scrollPlekken[vorigeHash] = window.scrollY;
+  vorigeHash = location.hash || '#/';
   sluitScanner();
   // Een recensie die nog niet bewaard is, eerst opslaan.
   if (toonBoek.bewaarOpenstaand) {
@@ -1546,7 +1563,11 @@ async function route() {
     const veld = document.getElementById('lijst-zoek');
     veld?.focus({ preventScroll: true });
     document.getElementById('lijst-kop')?.scrollIntoView();
-  } else toonLijst();
+  } else {
+    await toonLijst();
+    // Terug op het startscherm: verder waar je was. Onderin op Boeken tikken: naar boven.
+    if (!naarBoven && scrollPlekken['#/']) window.scrollTo(0, scrollPlekken['#/']);
+  }
 }
 
 window.addEventListener('hashchange', route);
@@ -1560,7 +1581,7 @@ document.querySelector('.balk').addEventListener('click', (e) => {
       laatsteZoekterm = '';
       laatsteResultaten = [];
     }
-    route();
+    route({ naarBoven: true });
   }
 });
 route();

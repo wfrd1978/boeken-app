@@ -24,9 +24,30 @@ export async function zetTipReactie(tip, reactie) {
   await db.instellingen.put({ sleutel: 'tipReacties', waarde: reacties });
 }
 
-// Tips zonder reactie en zonder boek dat al in de lijst staat (ook niet als vertaling).
-export async function zichtbareTips(boeken) {
-  const [lijst, reacties] = await Promise.all([haalTips(), tipReacties()]);
-  if (!lijst?.tips?.length) return [];
-  return lijst.tips.filter((t) => !reacties[t.id] && !vindDubbel(t, boeken));
+// Alle tips die de app ooit kreeg, bewaard op het toestel. Zo blijven tips waar Wilfred
+// nog niet op reageerde staan als er een nieuwe ronde komt; nieuwe tips komen vooraan.
+const MAX_ZICHTBAAR = 12;
+
+async function bewaarArchief(nieuw) {
+  const archief = (await db.instellingen.get('tipArchief'))?.waarde ?? [];
+  const bekend = new Set(archief.map((t) => t.id));
+  const erbij = (nieuw ?? []).filter((t) => !bekend.has(t.id));
+  const samen = [...erbij, ...archief];
+  if (erbij.length) await db.instellingen.put({ sleutel: 'tipArchief', waarde: samen });
+  return samen;
+}
+
+// Tips zonder reactie en zonder boek dat al in de lijst staat (ook niet als vertaling),
+// uit wat het toestel al heeft: direct beschikbaar, zonder te wachten op internet.
+export async function tipsUitArchief(boeken) {
+  const [archief, reacties] = await Promise.all([db.instellingen.get('tipArchief'), tipReacties()]);
+  return (archief?.waarde ?? []).filter((t) => !reacties[t.id] && !vindDubbel(t, boeken)).slice(0, MAX_ZICHTBAAR);
+}
+
+// Haalt de nieuwste ronde op en bewaart nieuwe tips. Geeft het aantal nieuwe tips terug.
+export async function verversTips() {
+  const lijst = await haalTips();
+  const voor = (await db.instellingen.get('tipArchief'))?.waarde?.length ?? 0;
+  const na = (await bewaarArchief(lijst?.tips)).length;
+  return na - voor;
 }
