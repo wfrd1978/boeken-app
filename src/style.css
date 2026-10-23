@@ -437,3 +437,11 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .recensie-regel .link-knop { padding: 10px 0; }
 #hulp-laag .hoofdknop, #hulp-laag .tweede-knop { margin-top: 18px; width: 100%; }
 #hulp-laag .veld { margin-top: 16px; }
+
+/* Covers nalopen */
+.nalopen-regel { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--lijn); }
+.nalopen-regel .boek-tekst { flex: 1 1 auto; min-width: 0; }
+.nalopen-knoppen { display: flex; align-items: center; gap: 12px; flex: none; }
+.nalopen-knoppen .link-knop { padding: 8px 0; }
+.nalopen-regel.klaar .boek-tekst { opacity: 0.6; }
+#cover-laag .tweede-knop { margin-top: 10px; width: 100%; }

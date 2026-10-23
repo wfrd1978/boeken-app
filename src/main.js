@@ -32,6 +32,8 @@ import {
   googleStand,
   googleWeerOm,
   vierkanteFoto,
+  googleAfbeeldingenUrl,
+  coverUitKlembord,
 } from './zoeken.js';
 import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
@@ -681,6 +683,7 @@ function overDezeAppHtml() {
         <p>Na een import of bij nieuwe boeken zoekt de app op de achtergrond covers, gegevens en een korte synopsis. Dat gaat alleen door zolang de app open is.</p>
         <p>Google Books beantwoordt 1.000 vragen per dag. Het werk op de achtergrond gebruikt er hooguit 600, zodat zoeken altijd blijft werken. Is het op, dan gaat het de volgende ochtend vanaf 9:00 of 10:00 verder.</p>
         <p>Covers van Open Library worden als plaatje op je telefoon bewaard. Covers van Google bewaart de app zo goed als het gaat, zodat ze snel verschijnen.</p>
+        <p>Geen cover gevonden? Via Covers zelf nalopen zoek je per boek in Google Afbeeldingen, kopieer je het plaatje en plak je het in de app. Automatisch de eerste hit van Google gebruiken kan niet: Google biedt daar geen gratis koppeling meer voor.</p>
       </details>
       <details>
         <summary>Hoe leren de tips?</summary>
@@ -753,6 +756,7 @@ async function toonInstellingen() {
       <p id="synopsis-telling" class="zacht"></p>
       <p class="verrijk-status" id="verrijk-status" hidden></p>
       <button class="tweede-knop" id="covers-opnieuw" hidden>Zoek opnieuw naar ontbrekende covers</button>
+      <a class="tweede-knop" id="covers-nalopen" href="#/covers" hidden>Covers zelf nalopen</a>
       <button class="link-knop" id="bronnen-test">Test de verbinding met de boekenbronnen</button>
       <p class="zacht" id="bronnen-uitslag"></p>
     </section>
@@ -801,6 +805,9 @@ async function toonInstellingen() {
     : '';
   const opnieuw = document.getElementById('covers-opnieuw');
   opnieuw.hidden = !zonder;
+  const nalopen = document.getElementById('covers-nalopen');
+  nalopen.hidden = !zonder;
+  nalopen.textContent = `Covers zelf nalopen (${zonder})`;
   opnieuw.textContent = `Zoek opnieuw naar ontbrekende covers (${zonder})`;
   opnieuw.addEventListener('click', async () => {
     opnieuw.disabled = true;
@@ -1754,9 +1761,9 @@ async function toonCoverKeuze(boek, bewaar, klaar) {
        <div class="laag-blad">
          <div class="laag-kop"><h2>Kies een cover</h2><button class="link-knop" id="laag-sluit">Sluiten</button></div>
          <div id="keuzes"><p class="bezig">Covers zoeken bij Google Books en Open Library…</p></div>
-         <a class="tweede-knop" target="_blank" rel="noopener"
-            href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(`${boek.titel} ${boek.auteurs?.[0] ?? ''} boek cover`)}">Zelf zoeken op internet ↗</a>
-         <p class="zacht klein">Gevonden op internet? Houd het plaatje vast, kies <b>Voeg toe aan Foto's</b> en gebruik daarna <b>Eigen foto</b>.</p>
+         <a class="tweede-knop" target="_blank" rel="noopener" href="${googleAfbeeldingenUrl(boek)}">Zelf zoeken op internet ↗</a>
+         <button class="tweede-knop" id="cover-plak">Plak gekopieerde cover</button>
+         <p class="zacht klein">Gevonden op internet? Houd het plaatje vast, kies <b>Kopieer</b>, kom terug en tik op <b>Plak gekopieerde cover</b>.</p>
        </div>
      </div>`
   );
@@ -1764,6 +1771,14 @@ async function toonCoverKeuze(boek, bewaar, klaar) {
   const sluit = () => laag.remove();
   document.getElementById('laag-sluit').addEventListener('click', sluit);
   laag.addEventListener('click', (e) => e.target === laag && sluit());
+  document.getElementById('cover-plak').addEventListener('click', async () => {
+    const cover = await plakCover();
+    if (!cover) return;
+    await bewaar(cover);
+    klaar();
+    sluit();
+    melding('Cover bewaard');
+  });
 
   const urls = (await zoekCoverKeuzes(boek)).map(veiligeUrl).filter(Boolean);
   const vak = document.getElementById('keuzes');
@@ -1782,6 +1797,70 @@ async function toonCoverKeuze(boek, bewaar, klaar) {
     await bewaar(await bewaarbareCover(urls[Number(knop.dataset.i)]));
     klaar();
     sluit();
+    melding('Cover bewaard');
+  });
+}
+
+// Leest een gekopieerde cover uit het klembord, met een duidelijke melding als dat niet lukt.
+async function plakCover() {
+  try {
+    const cover = await coverUitKlembord();
+    if (cover) return cover;
+    melding('Geen afbeelding gevonden. Houd het plaatje vast en kies Kopieer.');
+  } catch {
+    melding('Plakken lukt niet. Houd het plaatje vast en kies Kopieer, of gebruik Eigen foto.');
+  }
+  return null;
+}
+
+// --- Covers nalopen: alle boeken zonder cover op een rij ---
+
+async function toonCoversNalopen() {
+  const nr = schermNr;
+  ruimCoversOp();
+  const zonder = (await alleBoeken())
+    .filter((b) => !b.cover && !b.coverUrl)
+    .sort((a, b) => achternaam(a).localeCompare(achternaam(b), 'nl') || a.titel.localeCompare(b.titel, 'nl'));
+  if (nr !== schermNr) return;
+  app.innerHTML = `
+    <header class="kop">
+      <a class="terug" href="#/instellingen">‹ Instellingen</a>
+      <h1>Covers nalopen</h1>
+    </header>
+    <p class="zacht">Per boek: tik op <b>Zoek</b>, houd in Google het juiste plaatje vast en kies <b>Kopieer</b>. Kom terug en tik op <b>Plak</b>. De cover wordt op je telefoon bewaard.</p>
+    ${
+      zonder.length
+        ? `<p class="zacht" id="nalopen-aantal">${zonder.length === 1 ? 'Nog 1 boek' : `Nog ${zonder.length} boeken`} zonder cover.</p>
+           <ul class="lijst" id="nalopen">${zonder
+             .map(
+               (b) => `
+             <li class="nalopen-regel" data-id="${b.id}">
+               <div class="cover-vak">${coverHtml(b, 'cover-klein')}</div>
+               <div class="boek-tekst"><strong>${veilig(b.titel)}</strong><span>${veilig(auteurTekst(b))}</span></div>
+               <div class="nalopen-knoppen">
+                 <a class="link-knop" href="${googleAfbeeldingenUrl(b)}" target="_blank" rel="noopener">Zoek ↗</a>
+                 <button class="keuze" data-plak="${b.id}">Plak</button>
+               </div>
+             </li>`
+             )
+             .join('')}</ul>`
+        : '<p class="leeg">Alle boeken hebben een cover.</p>'
+    }`;
+  document.getElementById('nalopen')?.addEventListener('click', async (e) => {
+    const knop = e.target.closest('[data-plak]');
+    if (!knop) return;
+    const cover = await plakCover();
+    if (!cover) return;
+    const id = Number(knop.dataset.plak);
+    await boekBijwerken(id, cover);
+    const regel = knop.closest('li');
+    const boek = await haalBoek(id);
+    regel.querySelector('.cover-vak').innerHTML = coverHtml(boek, 'cover-klein', lijstLinks);
+    knop.textContent = '✓';
+    knop.disabled = true;
+    regel.classList.add('klaar');
+    const over = document.querySelectorAll('.nalopen-regel:not(.klaar)').length;
+    document.getElementById('nalopen-aantal').textContent = over ? `Nog ${over === 1 ? '1 boek' : `${over} boeken`} zonder cover.` : 'Alle covers staan erin.';
     melding('Cover bewaard');
   });
 }
@@ -2031,11 +2110,12 @@ async function route({ naarBoven = false } = {}) {
   }
   window.scrollTo(0, 0);
   const boekId = location.hash.match(/^#\/boek\/(\d+)$/);
-  const plek = { '#/toevoegen': 'toevoegen', '#/instellingen': 'instellingen', '#/zoek': 'zoek' }[location.hash] || 'lijst';
+  const plek = { '#/toevoegen': 'toevoegen', '#/instellingen': 'instellingen', '#/covers': 'instellingen', '#/zoek': 'zoek' }[location.hash] || 'lijst';
   document.querySelectorAll('.balk a').forEach((a) => a.classList.toggle('actief', a.dataset.plek === plek));
   if (location.hash === '#/toevoegen') toonToevoegen();
   else if (location.hash === '#/instellingen') toonInstellingen();
   else if (location.hash === '#/profiel') toonProfiel();
+  else if (location.hash === '#/covers') toonCoversNalopen();
   else if (boekId) toonBoek(Number(boekId[1]));
   else if (location.hash === '#/zoek') {
     // Zoeken = de lijst met de cursor in het zoekveld.
