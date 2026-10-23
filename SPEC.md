@@ -38,7 +38,7 @@ https://wfrd1978.github.io/boeken-app/
 1. **Lijst** — alle boeken met cover, titel, auteur, status en sterren. Naar links vegen toont een rode knop Verwijder (zoals Apple Mail); daarna kan het 5 seconden ongedaan worden gemaakt. Bovenin een zoekveld. Sorteren op: laatst toegevoegd (standaard), titel, auteur, laatste leesdatum, sterren.
 2. **Toevoegen** — drie manieren: titel typen, ISBN scannen, foto van de kaft. Altijd eerst een voorstel tonen ("Bedoel je dit boek?") voordat het wordt opgeslagen.
 3. **Boek** — alle gegevens; sterren, status, leesdata en recensie aanpassen; een leesdatum toevoegen bij herlezen; verwijderen (met bevestiging).
-4. **Instellingen** — backup maken, backup terugzetten, Excel importeren, Excel-export.
+4. **Instellingen** — backup maken, backup terugzetten, Excel importeren, covers opnieuw zoeken, Excel-export.
 
 ## Gedrag
 
@@ -66,7 +66,7 @@ Inspiratie: de apps van de Volkskrant, Trouw en NOS. Simpel en strak, zoals een 
 6. **Tabjes bovenaan** met een streep onder de actieve: Alles · Bezig · Gelezen · Wil ik lezen.
 7. **Zwevende balk onderin** met de belangrijkste plekken: Boeken, Toevoegen, Zoek, Instellingen.
 
-Nog te kiezen in de ontwerpronde: de accentkleur en de lijst als rijtje of als raster van covers.
+Gekozen: accentkleur donkergroen (#1F4D3F), de lijst als rijtje (kleine cover links). Titels in de schreefletter van de iPhone (New York), de rest in de systeemletter. De lijst heeft tabjes per status; de balk onderin vervangt de losse +-knop en de link naar Instellingen.
 
 ## Buiten Fase 1
 
@@ -86,3 +86,5 @@ Synopsis, informatie over de schrijver, verfilmingen, boekentips (Fase 2). Delen
 | 2026-10-23 | Typefouten worden in de Excel-lijst zelf verbeterd, niet door de app |
 | 2026-10-23 | Vormgeving naar het voorbeeld van nieuwsapps (Volkskrant, Trouw, NOS); ontwerpronde na stap 6 |
 | 2026-10-23 | Verwijderen ook door naar links te vegen in de lijst, met 'Ongedaan maken' in plaats van een bevestigingsvraag |
+| 2026-10-23 | Ontwerp: donkergroen, rijtje, tabjes per status, zwevende balk onderin |
+| 2026-10-23 | Weigert een bron tijdelijk (daglimiet Google), dan wordt het boek later opnieuw geprobeerd; knop in Instellingen om ontbrekende covers opnieuw te zoeken |

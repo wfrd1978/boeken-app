@@ -1,7 +1,7 @@
 // Op de achtergrond covers en gegevens ophalen voor geïmporteerde boeken.
 // Titel en auteur uit de lijst blijven altijd zoals Wilfred ze schreef.
 import { db } from './db.js';
-import { zoekBijpassend, zoekCover, zoekWerk } from './zoeken.js';
+import { zoekBijpassend, zoekCover, zoekWerk, TijdelijkeFout } from './zoeken.js';
 
 const AANVULLEN = ['isbn', 'werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal'];
 const PAUZE = 400;
@@ -21,14 +21,20 @@ export async function verrijkAlles() {
   try {
     const open = await db.boeken.filter((b) => b.verrijkt === false).toArray();
     let klaar = 0;
+    let foutenOpRij = 0;
     for (const boek of open) {
       if (!navigator.onLine) break;
       let gevonden;
       try {
         gevonden = await zoekBijpassend(boek);
-      } catch {
-        // Geen verbinding: stoppen en de volgende keer verder.
-        break;
+        foutenOpRij = 0;
+      } catch (fout) {
+        // Een bron weigert even: dit boek later opnieuw. Gebeurt het steeds,
+        // dan pauzeren (bijvoorbeeld daglimiet van Google) en de volgende keer verder.
+        foutenOpRij += 1;
+        if (!(fout instanceof TijdelijkeFout) || foutenOpRij >= 3) break;
+        await wacht(PAUZE * 3);
+        continue;
       }
       const actueel = await db.boeken.get(boek.id);
       if (!actueel) continue;
@@ -38,7 +44,7 @@ export async function verrijkAlles() {
         if (!actueel[veld] && gevonden?.[veld]) aanvulling[veld] = gevonden[veld];
       }
       if (!actueel.cover) {
-        const cover = await zoekCover({ ...actueel, ...aanvulling });
+        const cover = await zoekCover({ ...actueel, ...aanvulling }, { opTitel: false });
         if (cover.cover) aanvulling.cover = cover.cover;
         if (cover.coverUrl) aanvulling.coverUrl = cover.coverUrl;
       }
@@ -53,6 +59,19 @@ export async function verrijkAlles() {
   } finally {
     bezig = false;
   }
+}
+
+// Boeken zonder cover opnieuw in de wachtrij zetten (knop in Instellingen).
+export async function zonderCoverOpnieuw() {
+  const zonder = await db.boeken.filter((b) => !b.cover && !b.coverUrl).primaryKeys();
+  await db.boeken.where('id').anyOf(zonder).modify({ verrijkt: false });
+  verrijkAlles();
+  return zonder.length;
+}
+
+export async function coverTelling() {
+  const alle = await db.boeken.toArray();
+  return { totaal: alle.length, met: alle.filter((b) => b.cover || b.coverUrl).length };
 }
 
 export async function aantalTeVerrijken() {
