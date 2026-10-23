@@ -9,6 +9,7 @@ import {
   STATUSSEN,
 } from './db.js';
 import { zoekBoeken, zoekCover, verkleinFoto } from './zoeken.js';
+import { kaal, achternaam, vindDubbel } from './dubbel.js';
 
 const app = document.getElementById('app');
 
@@ -94,16 +95,6 @@ try {
   sortering = localStorage.getItem('sortering') || sortering;
 } catch {
   // Zonder opslag gewoon de standaard.
-}
-
-function kaal(tekst) {
-  return (tekst || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-}
-
-// Achternaam = laatste woord van de eerste auteur ("Michel van Egmond" -> "egmond").
-function achternaam(boek) {
-  const naam = (boek.auteurs?.[0] || '').split('&')[0].trim();
-  return kaal(naam.split(/\s+/).pop());
 }
 
 function laatsteLeesdatum(boek) {
@@ -255,9 +246,10 @@ function koppelZelfInvullen() {
   );
 }
 
-function toonResultaten(resultaten) {
+async function toonResultaten(resultaten) {
   const vak = document.getElementById('resultaten');
   if (!vak) return;
+  const mijnBoeken = await alleBoeken();
   vak.innerHTML = `
     ${resultaten.length ? '' : '<p class="leeg">Niets gevonden. Probeer andere woorden.</p>'}
     <ul class="lijst">
@@ -269,6 +261,7 @@ function toonResultaten(resultaten) {
           <div class="boek-tekst">
             <strong>${veilig(b.titel)}</strong>
             <span>${veilig(auteurTekst(b))}${b.jaar ? ` · ${b.jaar}` : ''}${b.taal ? ` · ${veilig(b.taal.toUpperCase())}` : ''}</span>
+            ${vindDubbel(b, mijnBoeken) ? `<span class="al-in-lijst">Staat al in je lijst · ${veilig(vindDubbel(b, mijnBoeken).status)}</span>` : ''}
           </div>
         </button></li>`
         )
@@ -282,9 +275,10 @@ function toonResultaten(resultaten) {
   koppelZelfInvullen();
 }
 
-function toonBevestigen(boek) {
+async function toonBevestigen(boek) {
   ruimCoversOp();
   let status = 'Wil ik lezen';
+  const dubbel = boek.handmatig ? null : vindDubbel(boek, await alleBoeken());
   app.innerHTML = `
     <header class="kop">
       <button class="terug link-knop" id="anders">‹ Ander boek</button>
@@ -303,11 +297,12 @@ function toonBevestigen(boek) {
                .map(veilig)
                .join(' · ')}</p>`
       }
+      ${dubbel ? waarschuwingHtml(dubbel) : ''}
       <p class="label">Status</p>
       <div class="keuzes" id="statussen">
         ${STATUSSEN.map((s) => `<button class="keuze${s === status ? ' actief' : ''}" data-s="${s}">${s}</button>`).join('')}
       </div>
-      <button class="hoofdknop" id="opslaan">Toevoegen</button>
+      <button class="${dubbel ? 'tweede-knop' : 'hoofdknop'}" id="opslaan">${dubbel ? 'Toch toevoegen' : 'Toevoegen'}</button>
     </section>
   `;
 
@@ -330,6 +325,15 @@ function toonBevestigen(boek) {
         return;
       }
       gegevens = { titel, auteurs: auteur ? [auteur] : [] };
+      // Bij zelf invullen pas na het typen controleren, en één keer waarschuwen.
+      const zelfDubbel = vindDubbel(gegevens, await alleBoeken());
+      if (zelfDubbel && !knop.dataset.gewaarschuwd) {
+        knop.dataset.gewaarschuwd = 'ja';
+        knop.insertAdjacentHTML('beforebegin', waarschuwingHtml(zelfDubbel));
+        knop.textContent = 'Toch toevoegen';
+        knop.className = 'tweede-knop';
+        return;
+      }
     }
     knop.disabled = true;
     knop.textContent = 'Bezig met opslaan…';
@@ -340,6 +344,17 @@ function toonBevestigen(boek) {
     location.hash = '#/';
     melding('Toegevoegd');
   });
+}
+
+function waarschuwingHtml(bestaand) {
+  const oordeel = bestaand.sterren ? `, ${bestaand.sterren} ${bestaand.sterren === 1 ? 'ster' : 'sterren'}` : '';
+  const gelezen = bestaand.leesdata?.length ? `, gelezen ${datumTekst(bestaand.leesdata[bestaand.leesdata.length - 1])}` : '';
+  return `
+    <div class="waarschuwing">
+      <p><strong>Dit boek staat al in je lijst</strong><br />
+      ${veilig(bestaand.titel)} · ${veilig(bestaand.status)}${oordeel}${gelezen}</p>
+      <a class="hoofdknop" href="#/boek/${bestaand.id}">Open dat boek</a>
+    </div>`;
 }
 
 // --- Boek ---
