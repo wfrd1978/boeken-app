@@ -114,14 +114,21 @@ export function schoneTekst(html) {
 export async function zoekSynopsis(boek) {
   const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
   let google = [];
-  try {
-    if (boek.isbn) google = await zoekGoogleBooks(`isbn:${boek.isbn}`, false, 3);
-    if (!google.some((k) => k.synopsis)) {
+  // Zoeken op ISBN geeft bij Google vaak een storing; dan gewoon door op titel en auteur.
+  if (boek.isbn) {
+    try {
+      google = await zoekGoogleBooks(`isbn:${boek.isbn}`, false, 3);
+    } catch {
+      google = [];
+    }
+  }
+  if (!google.some((k) => k.synopsis)) {
+    try {
       const opTitel = await zoekGoogleBooks(`intitle:${boek.titel}${auteur ? ` inauthor:${auteur}` : ''}`, false, 10);
       google = google.concat(opTitel.filter((k) => vindDubbel(boek, [k])));
+    } catch (fout) {
+      if (tijdelijk(fout)) throw new TijdelijkeFout('Google weigert even', fout.status ?? 0);
     }
-  } catch (fout) {
-    if (tijdelijk(fout)) throw new TijdelijkeFout('Google weigert even', fout.status ?? 0);
   }
   // Liefst een Nederlandse beschrijving.
   const metTekst = google.filter((k) => k.synopsis);
