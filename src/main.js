@@ -11,6 +11,7 @@ import {
   vulWerkenAan,
   zetKoboOm,
   STATUSSEN,
+  statusNaam,
 } from './db.js';
 import { zoekBoeken, zoekCover, verkleinFoto, zoekWerk } from './zoeken.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
@@ -192,7 +193,7 @@ function boekRegel(b) {
       ${coverHtml(b, 'cover-klein')}
       <div class="boek-tekst">
         <span class="regel">
-          <span class="status status-${STATUSSEN.indexOf(b.status)}">${veilig(b.status)}</span>
+          <span class="status status-${STATUSSEN.indexOf(b.status)}">${veilig(statusNaam(b.status))}</span>
           ${b.koboWacht ? '<span class="status kobo">· Wacht op Kobo Plus</span>' : ''}
           ${b.sterren ? `<span class="sterren-klein" aria-label="${b.sterren} sterren">${sterrenTekst(b.sterren)}</span>` : ''}
         </span>
@@ -303,7 +304,7 @@ async function toonLijst() {
     ${
       boeken.length
         ? `<nav class="tabs" id="tabs">${TABS.map(
-            (t) => `<button class="tab${t === tab ? ' actief' : ''}" data-tab="${t}">${t}</button>`
+            (t) => `<button class="tab${t === tab ? ' actief' : ''}" data-tab="${t}">${statusNaam(t)}</button>`
           ).join('')}</nav>`
         : ''
     }
@@ -341,7 +342,7 @@ async function toonLijst() {
     const zichtbaar = sorteer(filter(boeken));
     document.getElementById('lijst').innerHTML = zichtbaar.length
       ? zichtbaar.map(boekRegel).join('')
-      : `<li class="leeg">${zoekterm ? `Geen boek gevonden voor "${veilig(zoekterm)}".` : `Nog geen boeken bij ${veilig(tab)}.`}</li>`;
+      : `<li class="leeg">${zoekterm ? `Geen boek gevonden voor "${veilig(zoekterm)}".` : `Nog geen boeken bij ${veilig(statusNaam(tab))}.`}</li>`;
     document.getElementById('aantal').textContent = zichtbaar.length === 1 ? '1 boek' : `${zichtbaar.length} boeken`;
   };
 
@@ -690,7 +691,7 @@ async function toonResultaten(resultaten) {
           <div class="boek-tekst">
             <strong>${veilig(b.titel)}</strong>
             <span>${veilig(auteurTekst(b))}${b.jaar ? ` · ${b.jaar}` : ''}${b.taal ? ` · ${veilig(b.taal.toUpperCase())}` : ''}</span>
-            ${vindDubbel(b, mijnBoeken) ? `<span class="al-in-lijst">Staat al in je lijst · ${veilig(vindDubbel(b, mijnBoeken).status)}</span>` : ''}
+            ${vindDubbel(b, mijnBoeken) ? `<span class="al-in-lijst">Staat al in je lijst · ${veilig(statusNaam(vindDubbel(b, mijnBoeken).status))}</span>` : ''}
           </div>
         </button></li>`
         )
@@ -730,7 +731,7 @@ async function toonBevestigen(boek) {
       ${dubbel ? waarschuwingHtml(dubbel) : ''}
       <p class="label">Status</p>
       <div class="keuzes" id="statussen">
-        ${STATUSSEN.map((s) => `<button class="keuze${s === status ? ' actief' : ''}" data-s="${s}">${s}</button>`).join('')}
+        ${STATUSSEN.map((s) => `<button class="keuze${s === status ? ' actief' : ''}" data-s="${s}">${statusNaam(s)}</button>`).join('')}
       </div>
       <button class="${dubbel ? 'tweede-knop' : 'hoofdknop'}" id="opslaan">${dubbel ? 'Toch toevoegen' : 'Toevoegen'}</button>
     </section>
@@ -798,7 +799,7 @@ function waarschuwingHtml(bestaand) {
   return `
     <div class="waarschuwing">
       <p><strong>Dit boek staat al in je lijst</strong><br />
-      ${veilig(bestaand.titel)} · ${veilig(bestaand.status)}${oordeel}${gelezen}</p>
+      ${veilig(bestaand.titel)} · ${veilig(statusNaam(bestaand.status))}${oordeel}${gelezen}</p>
       <a class="hoofdknop" href="#/boek/${bestaand.id}">Open dat boek</a>
     </div>`;
 }
@@ -841,7 +842,7 @@ async function toonBoek(id) {
 
       <p class="label">Status</p>
       <div class="keuzes" id="statussen">
-        ${STATUSSEN.map((s) => `<button class="keuze" data-s="${s}">${s}</button>`).join('')}
+        ${STATUSSEN.map((s) => `<button class="keuze" data-s="${s}">${statusNaam(s)}</button>`).join('')}
       </div>
 
       <p class="label">Kobo</p>
