@@ -123,4 +123,5 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die Wilfred zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van Wilfred: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Stap 15 getest en klaar; daarmee is het stappenplan van fase 2 (10–16) af. Volgende werk komt van de werklijst, in de volgorde van Wilfred |
 | 2026-10-24 | Stap 14 getest en klaar. Statistieken (stap 15) op de profielpagina, zonder grafiekbibliotheek: eenvoudige staafjes in de accentkleur |
