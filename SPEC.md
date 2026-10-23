@@ -47,7 +47,7 @@ https://wfrd1978.github.io/boeken-app/
 
 ## Gedrag
 
-**Gegevens ophalen.** Eerst Open Library, daarna Google Books als aanvulling. Beide gratis. Google Books gebruikt een eigen gratis sleutel (beperkt tot het adres van de app en de Books API), omdat de gedeelde limiet zonder sleutel steeds op was. Lukt ophalen niet, dan kan de gebruiker het boek gewoon met de hand invullen.
+**Gegevens ophalen.** Eerst Open Library, daarna Google Books als aanvulling. Beide gratis. Google Books gebruikt een eigen gratis sleutel (beperkt tot het adres van de app en de Books API), omdat de gedeelde limiet zonder sleutel steeds op was. Lukt ophalen niet, dan kan de gebruiker het boek gewoon met de hand invullen. **Zuinig met Google:** de sleutel mag 1.000 vragen per dag (de teller gaat om 9:00 of 10:00 Nederlandse tijd op nul). Het ophalen op de achtergrond (covers, synopsis) gebruikt er hooguit 600 per dag; de rest blijft voor zoeken en toevoegen. Is de daglimiet bereikt, dan vraagt de app die dag niets meer aan Google en gaat het achtergrondwerk de volgende dag verder; zoeken loopt dan via Open Library. De bronnentest in Instellingen toont hoeveel vragen er vandaag zijn gebruikt. **Covers bewaren:** Google-covers mag de app niet als bestand opslaan; de service worker bewaart ze wel (hooguit 600, en alleen als er ruim plek is), zodat ze na een herstart meteen zichtbaar zijn.
 
 **Dubbel-waarschuwing.** Bij toevoegen kijkt de app of het boek er al staat: gelijk ISBN, hetzelfde werk bij Open Library (zo worden vertalingen herkend), of dezelfde titel en achternaam van de auteur (hoofdletters, leestekens, lidwoorden vooraan en ondertitels maken niet uit). Dan verschijnt: "Dit boek staat al in je lijst (status: Gelezen, 4 sterren)". De gebruiker kiest zelf of hij het toch toevoegt.
 
@@ -124,6 +124,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die de gebruiker zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van de gebruiker: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Google-daglimiet (1.000) was om 0:10 al op door het achtergrondwerk: budget van 600 voor de achtergrond, stoppen bij de daglimiet, covers bewaard door de service worker |
 | 2026-10-24 | Van de werklijst: tips op de Toevoegen-pagina en een boek delen (tekst via het deelmenu, nog geen deelkaart als afbeelding) |
 | 2026-10-24 | Stap 15 getest en klaar; daarmee is het stappenplan van fase 2 (10–16) af. Volgende werk komt van de werklijst, in de volgorde van de gebruiker |
 | 2026-10-24 | Stap 14 getest en klaar. Statistieken (stap 15) op de profielpagina, zonder grafiekbibliotheek: eenvoudige staafjes in de accentkleur |

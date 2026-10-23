@@ -27,6 +27,8 @@ import {
   zoekCover,
   zoekCoverKeuzes,
   bewaarbareCover,
+  googleStand,
+  googleWeerOm,
 } from './zoeken.js';
 import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
@@ -72,14 +74,16 @@ zetKoboOm()
   .then(verrijkAlles);
 
 // Voortgang van het ophalen van covers tonen waar dat kan.
-opVoortgang(({ soort = 'covers', klaar, totaal, gestopt, wacht, laatsteFout }) => {
+opVoortgang(({ soort = 'covers', klaar, totaal, gestopt, wacht, laatsteFout, googleOp }) => {
   const naam = soort === 'synopsis' ? 'Synopsis' : 'Covers en gegevens';
   const code = laatsteFout ? ` (Google: fout ${laatsteFout})` : '';
   const el = document.getElementById('verrijk-status');
   if (el) {
     el.textContent =
       klaar < totaal
-        ? gestopt
+        ? googleOp
+          ? `${naam} ophalen gaat morgen verder (${klaar} van ${totaal}): Google beantwoordt maar een beperkt aantal vragen per dag, en zoeken naar nieuwe boeken gaat voor.`
+          : gestopt
           ? `${naam} ophalen gepauzeerd (${klaar} van ${totaal})${code}: een bron weigert even. Het gaat later vanzelf verder.`
           : wacht
             ? `${naam} ophalen: ${klaar} van ${totaal}. Google vraagt om even te wachten${code}; over ${wacht} seconden verder…`
@@ -157,6 +161,8 @@ document.addEventListener(
   (e) => {
     const img = e.target;
     if (!(img instanceof HTMLImageElement)) return;
+    // Een kapotte cover niet bewaard houden, zodat hij de volgende keer opnieuw wordt gehaald.
+    if (img.src.startsWith('https://')) navigator.serviceWorker?.controller?.postMessage({ coverWeg: img.src });
     if (img.dataset.bijFout === 'letter') {
       const vlak = document.createElement('div');
       vlak.className = `${img.className} geen-cover`;
@@ -787,9 +793,13 @@ async function toonInstellingen() {
       r.ok
         ? `${naam}: werkt`
         : `${naam}: werkt niet${
-            r.status === 429 ? ' (daglimiet bereikt)' : r.status === 403 ? ' (sleutel geweigerd)' : r.status ? ` (fout ${r.status})` : ' (geen verbinding)'
+            r.daglimiet
+              ? ` (daglimiet bereikt, weer beschikbaar om ${googleWeerOm().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })})`
+              : r.status === 429
+                ? ' (even te druk, probeer het zo nog eens)'
+                : r.status === 403 ? ' (sleutel geweigerd)' : r.status ? ` (fout ${r.status})` : ' (geen verbinding)'
           }`;
-    uitslag.textContent = `${regel('Open Library', openLibrary)}. ${regel('Google Books', google)}.`;
+    uitslag.textContent = `${regel('Open Library', openLibrary)}. ${regel('Google Books', google)}. Vandaag ${googleStand().gebruikt} van de 1.000 Google-vragen gebruikt.`;
   });
 
   const verrijkOpen = await aantalTeVerrijken();

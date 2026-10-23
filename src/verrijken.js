@@ -1,7 +1,7 @@
 // Op de achtergrond covers en gegevens ophalen voor geïmporteerde boeken.
 // Titel en auteur uit de lijst blijven altijd zoals de gebruiker ze schreef.
 import { db } from './db.js';
-import { zoekBijpassend, zoekCover, zoekWerk, zoekSynopsis, TijdelijkeFout } from './zoeken.js';
+import { zoekBijpassend, zoekCover, zoekWerk, zoekSynopsis, TijdelijkeFout, googleStand } from './zoeken.js';
 
 const AANVULLEN = ['isbn', 'werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal', 'synopsis'];
 // Rustig tempo: Google heeft naast een daglimiet ook een limiet per minuut.
@@ -20,6 +20,11 @@ async function metGeduld(taak, soort, stand) {
       return { uitkomst: await taak() };
     } catch (fout) {
       stand.laatsteFout = fout.status ?? 0;
+      // Daglimiet van Google: vandaag niet meer proberen.
+      if (fout.daglimiet || !googleStand().achtergrondMag) {
+        stand.googleOp = true;
+        return null;
+      }
       if (!(fout instanceof TijdelijkeFout)) return null;
       if (fout.status === 429) {
         if (poging >= WACHTTIJDEN.length) return null;
@@ -73,6 +78,7 @@ export async function verrijkAlles() {
   let gestopt = false;
   let laatsteFout = 0;
   let overgeslagen = 0;
+  let googleOp = false;
   try {
     do {
       nogEenRonde = false;
@@ -85,9 +91,16 @@ export async function verrijkAlles() {
           gestopt = true;
           break;
         }
+        // Het achtergronddeel van de Google-vragen voor vandaag is op: morgen verder.
+        if (!googleStand().achtergrondMag) {
+          gestopt = true;
+          googleOp = true;
+          break;
+        }
         const stand = { klaar, totaal };
         const poging = await metGeduld(() => zoekBijpassend(boek), 'covers', stand);
         laatsteFout = stand.laatsteFout;
+        if (stand.googleOp) googleOp = true;
         if (!poging || (poging.overslaan && ++overgeslagen >= MAX_OVERGESLAGEN_OP_RIJ)) {
           gestopt = true;
           break;
@@ -130,10 +143,12 @@ export async function verrijkAlles() {
         await wacht(PAUZE);
       }
     } while (nogEenRonde && !gestopt);
-    luisteraar({ klaar, totaal, gestopt: gestopt || klaar < totaal, laatsteFout });
+    luisteraar({ klaar, totaal, gestopt: gestopt || klaar < totaal, laatsteFout, googleOp });
   } finally {
     bezig = false;
   }
+  // Google is voor vandaag op: de synopsis kan ook wachten.
+  if (googleOp) return;
   // Daarna de synopsis bij boeken die er nog geen hebben.
   vulSynopsisAan();
 }
@@ -156,6 +171,7 @@ export async function vulSynopsisAan() {
     let klaar = 0;
     let gestopt = false;
     let laatsteFout = 0;
+    let googleOp = false;
     for (const boek of zonder) {
       // Covers gaan voor; die roepen de synopsis daarna vanzelf weer aan.
       if (bezig || mijnGeneratie !== generatie) return;
@@ -163,9 +179,15 @@ export async function vulSynopsisAan() {
         gestopt = true;
         break;
       }
+      if (!googleStand().achtergrondMag) {
+        gestopt = true;
+        googleOp = true;
+        break;
+      }
       const stand = { klaar, totaal };
       const poging = await metGeduld(() => zoekSynopsis(boek), 'synopsis', stand);
       laatsteFout = stand.laatsteFout;
+      if (stand.googleOp) googleOp = true;
       if (!poging || (poging.overslaan && ++overgeslagen >= MAX_OVERGESLAGEN_OP_RIJ)) {
         gestopt = true;
         break;
@@ -185,7 +207,7 @@ export async function vulSynopsisAan() {
       await wacht(PAUZE);
     }
     // Overgeslagen boeken (storing bij Google) komen bij de volgende keer openen terug.
-    if (zonder.length) luisteraar({ soort: 'synopsis', klaar, totaal, gestopt: gestopt || klaar < totaal, laatsteFout });
+    if (zonder.length) luisteraar({ soort: 'synopsis', klaar, totaal, gestopt: gestopt || klaar < totaal, laatsteFout, googleOp });
   } finally {
     synopsisBezig = false;
   }
