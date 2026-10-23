@@ -8,7 +8,7 @@ import {
   vraagBlijvendeOpslag,
   STATUSSEN,
 } from './db.js';
-import { zoekBoeken, haalCover } from './zoeken.js';
+import { zoekBoeken, zoekCover, verkleinFoto } from './zoeken.js';
 
 const app = document.getElementById('app');
 
@@ -237,8 +237,8 @@ function toonBevestigen(boek) {
     }
     knop.disabled = true;
     knop.textContent = 'Bezig met opslaan…';
-    const cover = await haalCover(gegevens.coverUrl);
-    await boekToevoegen({ ...gegevens, cover, status, bron: 'getypt' });
+    const cover = await zoekCover(gegevens);
+    await boekToevoegen({ ...gegevens, ...cover, status, bron: 'getypt' });
     laatsteZoekterm = '';
     laatsteResultaten = [];
     location.hash = '#/';
@@ -266,7 +266,11 @@ async function toonBoek(id) {
       <a class="terug" href="#/">‹ Boeken</a>
     </header>
     <section class="bevestig">
-      ${coverHtml(boek, 'cover-groot')}
+      <div id="cover-vak">${coverHtml(boek, 'cover-groot')}</div>
+      <div class="cover-knoppen">
+        ${boek.cover || boek.coverUrl ? '' : '<button class="link-knop" id="cover-zoeken">Cover zoeken</button>'}
+        <label class="link-knop" id="foto-label">${boek.cover || boek.coverUrl ? 'Andere cover (foto)' : 'Eigen foto'}<input type="file" accept="image/*" id="cover-foto" hidden /></label>
+      </div>
       <h2>${veilig(boek.titel)}</h2>
       <p>${veilig(auteurTekst(boek))}</p>
       <p class="details">${[boek.uitgever, boek.jaar, boek.paginas && `${boek.paginas} blz.`, boek.isbn && `ISBN ${boek.isbn}`]
@@ -296,6 +300,35 @@ async function toonBoek(id) {
       <button class="verwijder" id="verwijder">Boek verwijderen</button>
     </section>
   `;
+
+  const toonNieuweCover = () => {
+    document.getElementById('cover-vak').innerHTML = coverHtml(boek, 'cover-groot');
+    document.getElementById('cover-zoeken')?.remove();
+    document.getElementById('foto-label').firstChild.textContent = 'Andere cover (foto)';
+  };
+  document.getElementById('cover-zoeken')?.addEventListener('click', async (e) => {
+    const knop = e.currentTarget;
+    knop.disabled = true;
+    knop.textContent = 'Zoeken…';
+    const gevonden = await zoekCover(boek);
+    if (gevonden.cover || gevonden.coverUrl) {
+      await bewaar(gevonden);
+      toonNieuweCover();
+      melding('Cover gevonden');
+    } else {
+      knop.disabled = false;
+      knop.textContent = 'Cover zoeken';
+      melding('Geen cover gevonden. Maak er zelf een foto van.');
+    }
+  });
+  document.getElementById('cover-foto').addEventListener('change', async (e) => {
+    const bestand = e.target.files?.[0];
+    if (!bestand) return;
+    const cover = await verkleinFoto(bestand);
+    await bewaar({ cover, coverUrl: '' });
+    toonNieuweCover();
+    melding('Cover bewaard');
+  });
 
   const tekenSterren = () => {
     document.getElementById('sterren').innerHTML = [1, 2, 3, 4, 5]

@@ -107,17 +107,62 @@ export async function zoekBoeken(tekst) {
   return resultaten.slice(0, 15);
 }
 
-// Haal de cover op als bestand, zodat hij ook offline zichtbaar blijft.
-export async function haalCover(url) {
-  if (!url) return null;
+// Haal een plaatje op als bestand, zodat het ook offline zichtbaar blijft.
+// Lukt dat niet (Google Books staat het niet toe), dan bewaren we alleen het adres.
+async function haalPlaatje(url) {
   try {
     const res = await fetch(url);
     if (!res.ok) return null;
     const blob = await res.blob();
-    // Open Library geeft een piepklein plaatje terug als er geen cover is.
+    // Een piepklein plaatje is een lege plek, geen cover.
     if (blob.size < 1000 || !blob.type.startsWith('image/')) return null;
     return blob;
   } catch {
     return null;
   }
+}
+
+async function googleCoverUrl(zoekvraag) {
+  try {
+    const data = await haalJson(
+      `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(zoekvraag)}&maxResults=5`
+    );
+    const met = (data.items ?? []).find((i) => i.volumeInfo?.imageLinks);
+    const links = met?.volumeInfo.imageLinks;
+    return (links?.thumbnail || links?.smallThumbnail || '').replace('http://', 'https://');
+  } catch {
+    return '';
+  }
+}
+
+// Zoekt een cover in een vaste volgorde: het gevonden plaatje, Open Library via ISBN,
+// Google Books via ISBN, en tot slot Google Books via titel en auteur.
+export async function zoekCover(boek) {
+  const kandidaten = [
+    () => boek.coverUrl,
+    () => boek.isbn && `https://covers.openlibrary.org/b/isbn/${boek.isbn}-M.jpg?default=false`,
+    () => boek.isbn && googleCoverUrl(`isbn:${boek.isbn}`),
+    () => googleCoverUrl(`intitle:${boek.titel}${boek.auteurs?.[0] ? ` inauthor:${boek.auteurs[0]}` : ''}`),
+  ];
+  let reserve = '';
+  for (const kandidaat of kandidaten) {
+    const url = await kandidaat();
+    if (!url) continue;
+    const blob = await haalPlaatje(url);
+    if (blob) return { cover: blob, coverUrl: url };
+    // Google-plaatjes kunnen we niet opslaan, maar wel tonen.
+    if (!reserve && url.includes('books.google')) reserve = url;
+  }
+  return { cover: null, coverUrl: reserve };
+}
+
+// Verkleint een eigen foto tot een nette cover, zodat de opslag niet volloopt.
+export async function verkleinFoto(bestand) {
+  const bitmap = await createImageBitmap(bestand);
+  const schaal = Math.min(1, 600 / bitmap.height);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * schaal);
+  canvas.height = Math.round(bitmap.height * schaal);
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  return new Promise((klaar) => canvas.toBlob(klaar, 'image/jpeg', 0.85));
 }
