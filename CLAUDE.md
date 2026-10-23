@@ -8,7 +8,7 @@ Wilfred bouwt een persoonlijke mobiele webapp om zijn boeken bij te houden. Hij 
 
 ## Fases
 
-1. **Kern** — toevoegen via ISBN-scan, foto van de kaft of getypte titel; cover en gegevens automatisch ophalen; sterren, leesdatum, recensie; zoeken; dubbel-waarschuwing; Excel-export; backup/terugzetten; Goodreads-import.
+1. **Kern** — toevoegen via ISBN-scan, foto van de kaft of getypte titel; cover en gegevens automatisch ophalen; sterren, leesdatum, recensie; zoeken; dubbel-waarschuwing; Excel-export; backup/terugzetten; import van de bestaande Excel-lijst.
 2. **Verrijking** — synopsis, informatie over de schrijver, verfilmingen, boekentips op basis van het leesprofiel.
 3. **Delen** — delen met anderen en een wekelijkse tip uit nieuwe titels.
 
@@ -50,7 +50,7 @@ Geen betaalde diensten of API-sleutels zonder expliciete toestemming van Wilfred
 | 3 | Zoeken en sorteren in de lijst |
 | 4 | Dubbel-waarschuwing bij toevoegen |
 | 5 | Backup maken en terugzetten (+ herinnering na 14 dagen) |
-| 6 | Goodreads-CSV importeren |
+| 6 | Bestaande Excel-lijst importeren |
 | 7 | ISBN-scan met de camera |
 | 8 | Excel-export |
 | 9 | Toevoegen via foto van de kaft |
