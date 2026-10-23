@@ -30,6 +30,8 @@ Werk alleen aan de fase die actief is. Nu actief: **Fase 1**.
 
 Geen betaalde diensten of API-sleutels zonder expliciete toestemming van Wilfred.
 
+Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository: die is openbaar. Ze staan in de app en in Wilfreds backups.
+
 ## Werkafspraken
 
 1. **Kleine stappen.** Eén stap = één zichtbaar resultaat dat Wilfred op zijn telefoon kan testen. Begin elke stap met één zin: wat we gaan bouwen en hoe hij het test.
@@ -61,4 +63,6 @@ Geen betaalde diensten of API-sleutels zonder expliciete toestemming van Wilfred
 |------|------------------------|
 | 10 | Warm startscherm zoals een nieuwsapp: groot het boek dat je nu leest, daaronder rijen covers van Gelezen en Wil ik lezen |
 | 11 | Korte synopsis bij elk boek, op de achtergrond opgehaald (Google Books, Open Library) |
-| 12 | Boekentips op het startscherm. Claude maakt de tiplijst in een sessie op basis van Wilfreds lezersprofiel en favoriete boeken; geen betaalde AI-dienst |
+| 12 | Profiel: icoon rechtsboven, pagina met informatie over Wilfred en zijn lezersprofiel; gaat mee in de backup |
+| 13 | Boekentips op het startscherm. Claude maakt de tiplijst in een sessie op basis van het lezersprofiel en de boeken met 5 sterren; geen betaalde AI-dienst |
+| 14 | Statistieken op de profielpagina (bijvoorbeeld boeken per jaar, genres, gemiddelde sterren) |
