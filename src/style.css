@@ -219,7 +219,12 @@ a.boek { color: inherit; text-decoration: none; }
 .veeg { position: relative; overflow: hidden; transition: max-height 0.25s ease, opacity 0.25s ease; max-height: 200px; }
 .veeg.weg { max-height: 0; opacity: 0; }
 .veeg.weg .boek { transform: translate3d(-100%, 0, 0) !important; transition: transform 0.25s ease !important; }
-.veeg .boek { position: relative; background: var(--bg); touch-action: pan-y; will-change: transform; }
+.veeg .boek { position: relative; background: var(--bg); touch-action: pan-y; }
+/* De rode knop (en de extra laag om soepel te schuiven) alleen tijdens het vegen,
+   anders kan iOS hem bij snel scrollen door de lijst heen laten zien. */
+.veeg-actie { visibility: hidden; }
+.veeg.veegt .veeg-actie { visibility: visible; }
+.veeg.veegt .boek { will-change: transform; }
 .veeg-actie {
   position: absolute; top: 0; right: 0; bottom: 1px; width: 96px;
   border: 0; background: #d64541; color: #fff; font-weight: 600; font-size: 0.95rem;
