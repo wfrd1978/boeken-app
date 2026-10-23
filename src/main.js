@@ -14,7 +14,7 @@ import {
   STATUSSEN,
   statusNaam,
 } from './db.js';
-import { zoekBoeken, zoekCover, verkleinFoto, zoekWerk, zoekOpIsbn } from './zoeken.js';
+import { zoekBoeken, zoekCover, verkleinFoto, zoekWerk, zoekOpIsbn, testBronnen, GoogleWeigert } from './zoeken.js';
 import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
@@ -498,6 +498,8 @@ async function toonInstellingen() {
       <p id="cover-telling" class="zacht">&nbsp;</p>
       <p class="verrijk-status" id="verrijk-status" hidden></p>
       <button class="tweede-knop" id="covers-opnieuw" hidden>Zoek opnieuw naar ontbrekende covers</button>
+      <button class="link-knop" id="bronnen-test">Test de verbinding met de boekenbronnen</button>
+      <p class="zacht" id="bronnen-uitslag"></p>
     </section>
 
     <p class="versie">Versie van ${__VERSIE__}</p>
@@ -543,6 +545,15 @@ async function toonInstellingen() {
     const el = document.getElementById('verrijk-status');
     el.textContent = `Bezig met ${n} boeken…`;
     el.hidden = false;
+  });
+
+  document.getElementById('bronnen-test').addEventListener('click', async () => {
+    const uitslag = document.getElementById('bronnen-uitslag');
+    uitslag.textContent = 'Testen…';
+    const { openLibrary, google } = await testBronnen();
+    const regel = (naam, r) =>
+      r.ok ? `${naam}: werkt` : `${naam}: werkt niet${r.status === 429 ? ' (daglimiet bereikt)' : r.status ? ` (fout ${r.status})` : ' (geen verbinding)'}`;
+    uitslag.textContent = `${regel('Open Library', openLibrary)}. ${regel('Google Books', google)}.`;
   });
 
   const verrijkOpen = await aantalTeVerrijken();
@@ -725,17 +736,18 @@ async function toonScanner() {
 // Boek opzoeken met een ISBN (gescand of getypt) en het voorstel tonen.
 async function zoekGescandBoek(isbn, bron) {
   let boek = null;
+  let reden = 'onbekend';
   try {
     boek = await zoekOpIsbn(isbn);
-  } catch {
-    melding('Geen verbinding. Probeer het zo nog eens.');
-    return;
+  } catch (fout) {
+    if (!(fout instanceof GoogleWeigert)) {
+      melding('Geen verbinding. Probeer het zo nog eens.');
+      return;
+    }
+    reden = 'google';
   }
   if (boek) toonBevestigen({ ...boek, bron });
-  else {
-    melding(`ISBN ${isbn} niet gevonden. Vul het boek zelf in.`);
-    toonBevestigen({ titel: '', auteurs: [], isbn, handmatig: true, bron });
-  }
+  else toonBevestigen({ titel: '', auteurs: [], isbn, handmatig: true, bron, reden });
 }
 
 async function zoek(tekst) {
@@ -815,7 +827,14 @@ async function toonBevestigen(boek) {
         boek.handmatig
           ? `<label>Titel<input id="titel" value="${veilig(boek.titel)}" /></label>
              <label>Auteur<input id="auteur" placeholder="Bijvoorbeeld Toon Tellegen" /></label>
-             ${boek.isbn ? `<p class="details">ISBN ${veilig(boek.isbn)}</p>` : ''}`
+             ${boek.isbn ? `<p class="details">ISBN ${veilig(boek.isbn)}</p>` : ''}
+             ${
+               boek.reden === 'google'
+                 ? '<p class="details">Open Library kent dit ISBN niet, en Google Books gaf geen antwoord (mogelijk de daglimiet). Vul titel en auteur zelf in; cover en gegevens worden later aangevuld.</p>'
+                 : boek.reden === 'onbekend'
+                   ? '<p class="details">Dit ISBN is bij Open Library en Google Books niet bekend. Vul titel en auteur zelf in.</p>'
+                   : ''
+             }`
           : `${coverHtml(boek, 'cover-groot')}
              <h2>${veilig(boek.titel)}</h2>
              <p>${veilig(auteurTekst(boek))}</p>
@@ -881,7 +900,10 @@ async function toonBevestigen(boek) {
     knop.textContent = 'Bezig met opslaan…';
     const cover = await zoekCover(gegevens);
     if (!gegevens.werk && gegevens.isbn) gegevens.werk = await zoekWerk(gegevens.isbn);
-    await boekToevoegen({ ...gegevens, ...cover, status, bron: boek.bron ?? 'getypt' });
+    // Zelf ingevuld zonder cover: later op de achtergrond nog eens zoeken.
+    const verrijkt = !(boek.handmatig && !cover.cover && !cover.coverUrl);
+    await boekToevoegen({ ...gegevens, ...cover, status, bron: boek.bron ?? 'getypt', verrijkt });
+    if (!verrijkt) verrijkAlles();
     laatsteZoekterm = '';
     laatsteResultaten = [];
     location.hash = '#/';
@@ -1104,4 +1126,17 @@ async function route() {
 }
 
 window.addEventListener('hashchange', route);
+
+// Tik op de plek waar je al bent (bijvoorbeeld Toevoegen vanaf een voorstel): opnieuw beginnen.
+document.querySelector('.balk').addEventListener('click', (e) => {
+  const a = e.target.closest('a');
+  if (a && a.getAttribute('href') === (location.hash || '#/')) {
+    e.preventDefault();
+    if (a.dataset.plek === 'toevoegen') {
+      laatsteZoekterm = '';
+      laatsteResultaten = [];
+    }
+    route();
+  }
+});
 route();

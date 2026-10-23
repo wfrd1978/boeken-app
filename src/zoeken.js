@@ -9,7 +9,7 @@ async function haalJson(url) {
   const timer = setTimeout(() => ctrl.abort(), WACHTTIJD);
   try {
     const res = await fetch(url, { signal: ctrl.signal });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { status: res.status });
     return await res.json();
   } finally {
     clearTimeout(timer);
@@ -120,20 +120,72 @@ export async function zoekBoeken(tekst) {
 export class TijdelijkeFout extends Error {}
 
 // Een boek opzoeken met een gescand of getypt ISBN. Geeft null als geen bron het kent.
+// Google Books gaf geen antwoord (bijvoorbeeld de daglimiet) en Open Library kende het boek niet.
+export class GoogleWeigert extends Error {}
+
+// Open Library per uitgave: kent soms ISBN's die de zoekfunctie nog niet heeft.
+async function openLibraryUitgave(isbn) {
+  const uitgave = await haalJson(`https://openlibrary.org/isbn/${encodeURIComponent(isbn)}.json`);
+  const namen = await Promise.all(
+    (uitgave.authors ?? []).slice(0, 3).map((a) =>
+      haalJson(`https://openlibrary.org${a.key}.json`).then((x) => x.name).catch(() => '')
+    )
+  );
+  const cover = uitgave.covers?.find((c) => c > 0);
+  return {
+    werk: uitgave.works?.[0]?.key ?? '',
+    titel: uitgave.subtitle && !/^roman$/i.test(uitgave.subtitle) ? `${uitgave.title}: ${uitgave.subtitle}` : uitgave.title,
+    auteurs: namen.filter(Boolean),
+    coverUrl: cover ? `https://covers.openlibrary.org/b/id/${cover}-M.jpg` : '',
+    uitgever: uitgave.publishers?.[0] ?? '',
+    jaar: Number(String(uitgave.publish_date ?? '').match(/\d{4}/)?.[0]) || null,
+    paginas: uitgave.number_of_pages ?? null,
+    taal: { '/languages/dut': 'nl', '/languages/eng': 'en' }[uitgave.languages?.[0]?.key] ?? '',
+  };
+}
+
+// Een boek opzoeken met een gescand of getypt ISBN. Geeft null als geen bron het kent.
 export async function zoekOpIsbn(isbn) {
   const pogingen = await Promise.allSettled([zoekOpenLibrary({ isbn }, 1), zoekGoogleBooks(`isbn:${isbn}`, false, 3)]);
-  if (pogingen.every((p) => p.status === 'rejected')) throw new TijdelijkeFout('Geen verbinding');
   const [ol, gb] = pogingen.map((p) => p.value ?? []);
-  // Google Books beschrijft precies deze uitgave; Open Library vult aan (werk, cover).
-  const beste = gb[0] ?? ol[0];
-  if (!beste) return null;
-  const ander = gb[0] ? ol[0] : null;
+  let beste = gb[0] ?? ol[0];
+  let ander = gb[0] ? ol[0] : null;
+  if (!beste) {
+    // Tweede kans bij Open Library, per uitgave.
+    try {
+      beste = await openLibraryUitgave(isbn);
+    } catch {
+      beste = null;
+    }
+  }
+  if (!beste?.titel) {
+    if (pogingen.every((p) => p.status === 'rejected')) throw new TijdelijkeFout('Geen verbinding');
+    if (pogingen[1].status === 'rejected') throw new GoogleWeigert('Google Books antwoordt niet');
+    return null;
+  }
   if (ander) {
     for (const veld of ['werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal']) {
       if (!beste[veld] && ander[veld]) beste[veld] = ander[veld];
     }
   }
   return { ...beste, isbn };
+}
+
+// Voor de test in Instellingen: antwoordt elke bron?
+export async function testBronnen() {
+  const proef = async (url) => {
+    try {
+      await haalJson(url);
+      return { ok: true };
+    } catch (fout) {
+      return { ok: false, status: fout.status ?? 0 };
+    }
+  };
+  const [openLibrary, google] = await Promise.all([
+    proef('https://openlibrary.org/search.json?q=harry+potter&limit=1&fields=key'),
+    proef('https://www.googleapis.com/books/v1/volumes?q=isbn:9789025444112&maxResults=1'),
+  ]);
+  return { openLibrary, google };
 }
 
 // Zoekt de gegevens bij een boek waarvan titel en auteur bekend zijn (bijvoorbeeld uit
