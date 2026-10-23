@@ -8,6 +8,12 @@ db.version(1).stores({
   boeken: '++id, isbn, titel, toegevoegdOp, status',
 });
 
+// Versie 2: een vakje voor persoonlijke gegevens (profiel). De boeken blijven ongewijzigd.
+db.version(2).stores({
+  boeken: '++id, isbn, titel, toegevoegdOp, status',
+  instellingen: 'sleutel',
+});
+
 export const STATUSSEN = ['Wil ik lezen', 'Bezig', 'Gelezen', 'Gestopt'];
 
 // Zo heet een status in beeld. In de opslag blijft de oorspronkelijke naam staan,
@@ -119,4 +125,14 @@ export function boekVerwijderen(id) {
 // Voor 'Ongedaan maken': zet een verwijderd boek precies terug, met hetzelfde id.
 export function boekTerugzetten(boek) {
   return db.boeken.put(boek);
+}
+
+// --- Profiel ---
+
+export async function haalProfiel() {
+  return (await db.instellingen.get('profiel'))?.waarde ?? { naam: '', overMij: '', lezersprofiel: '' };
+}
+
+export async function bewaarProfiel(profiel) {
+  await db.instellingen.put({ sleutel: 'profiel', waarde: profiel });
 }
