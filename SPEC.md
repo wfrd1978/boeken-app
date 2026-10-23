@@ -53,6 +53,20 @@ https://wfrd1978.github.io/boeken-app/
 
 **Excel-export.** Eén .xlsx-bestand met één regel per boek en de velden hierboven als kolommen (zonder cover). Bij herlezen staan alle leesdata in één cel.
 
+## Vormgeving
+
+Inspiratie: de apps van de Volkskrant, Trouw en NOS. Simpel en strak, zoals een nieuwsapp. Wat we daaruit overnemen:
+
+1. **Rustige basis.** Witte achtergrond, zwarte tekst, dunne grijze scheidingslijnen. Geen schaduwen of versieringen.
+2. **Beeld voorop.** Covers groot en scherp, zoals de foto's in een nieuwsapp; het nieuwste of huidige boek groot bovenaan.
+3. **Letters met karakter.** Titels in een stevige schreefletter (zoals de Volkskrant); de rest in een eenvoudige, schreefloze letter.
+4. **Eén accentkleur.** Zoals rood bij NOS en blauw bij Trouw. Gebruikt voor kleine labels (status, zoals "ANALYSE" bij de Volkskrant) en de actieve knop.
+5. **Woordmerk in het midden.** "Boeken" als titel bovenaan in het midden.
+6. **Tabjes bovenaan** met een streep onder de actieve: Alles · Bezig · Gelezen · Wil ik lezen.
+7. **Zwevende balk onderin** met de belangrijkste plekken: Boeken, Toevoegen, Zoek, Instellingen.
+
+Nog te kiezen in de ontwerpronde: de accentkleur en de lijst als rijtje of als raster van covers.
+
 ## Buiten Fase 1
 
 Synopsis, informatie over de schrijver, verfilmingen, boekentips (Fase 2). Delen met anderen en wekelijkse tips (Fase 3). Geen accounts, geen synchronisatie tussen apparaten, geen betaalde diensten.
@@ -69,3 +83,4 @@ Synopsis, informatie over de schrijver, verfilmingen, boekentips (Fase 2). Delen
 | 2026-10-23 | Leesdatum mag alleen maand en jaar zijn (bijv. oktober 2025) |
 | 2026-10-23 | Verzamelregels in de Excel-lijst (zoals een trilogie) worden losse boeken |
 | 2026-10-23 | Typefouten worden in de Excel-lijst zelf verbeterd, niet door de app |
+| 2026-10-23 | Vormgeving naar het voorbeeld van nieuwsapps (Volkskrant, Trouw, NOS); ontwerpronde na stap 6 |
