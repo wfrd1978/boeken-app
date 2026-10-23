@@ -52,7 +52,7 @@ https://wfrd1978.github.io/boeken-app/
 
 **Zoeken.** Zoekt in titel, auteur en ISBN, terwijl je typt.
 
-**Backup.** Eén JSON-bestand met alle boeken én covers, te bewaren via het deelmenu (bijvoorbeeld in iCloud Drive). Terugzetten vervangt de huidige lijst pas na een duidelijke bevestiging. Is de laatste backup ouder dan 14 dagen, dan toont de app een rustige herinnering.
+**Backup.** Eén JSON-bestand met alle boeken én covers (plus profiel en reacties op tips), te bewaren via het deelmenu (bijvoorbeeld in iCloud Drive). Terugzetten vervangt de huidige lijst pas na een duidelijke bevestiging. Elk boek in de backup wordt eerst gecontroleerd (een kapotte backup wordt geweigerd vóór er iets verandert), en werk op de achtergrond stopt voordat de lijst wordt vervangen. Is de laatste backup ouder dan 14 dagen, dan toont de app een rustige herinnering.
 
 **Excel-import.** De bestaande boekenlijst (.xlsx) inlezen. Welke kolom wat betekent (titel, auteur, sterren, datum, status …) stellen we vast aan de hand van zijn eigen bestand; bij twijfel vraagt de app het. Covers en ontbrekende gegevens (ISBN, jaar, uitgever) worden daarna op de achtergrond opgehaald, zolang de app open is en er internet is; het gaat de volgende keer vanzelf verder. Titel en auteur uit de lijst blijven altijd zoals de gebruiker ze schreef. Importeren kan pas als er die dag of de dag ervoor een backup is gemaakt. Staat een boek er al en heeft het nog geen sterren, dan vult de import de sterren uit het bestand aan (vooraf getoond); sterren die de gebruiker zelf gaf, blijven staan. Vooraf een backup; dubbele boeken worden overgeslagen en gemeld, en vooraf toont de app hoeveel boeken er worden toegevoegd. Indeling van het (verbeterde) bestand: kolommen Auteur, Titel, Gelezen (maand), Sterren, Opmerking; alle boeken krijgen status *Gelezen*. Het bestand zelf komt niet in de repository (die is openbaar).
 
@@ -64,6 +64,14 @@ https://wfrd1978.github.io/boeken-app/
 - **Vermijden:** heel dikke boeken, literaire romans, Engelstalige boeken. Nooit een boek dat al in de lijst staat (ook niet als vertaling) of eerder met *Niet voor mij* is weggetikt.
 - **Op het startscherm:** rij *Tips voor jou* met cover, titel, auteur en één zin waarom. Tik: synopsis en knoppen *Wil ik lezen*, *Al gelezen* (met sterren) en *Niet voor mij*. Reacties gaan mee in de backup. Tips zonder reactie blijven staan als er een nieuwe ronde komt (nieuwe vooraan, hooguit 12 tegelijk); de app bewaart ze op het toestel.
 - **Hoe:** de app haalt `tips.json` op van de eigen site. Een wekelijkse geplande taak van Claude (Routine 'Wekelijkse boekentips', zaterdag 06:38) zet daar nieuwe tips neer; de gebruiker hoeft niets te doen. De uitleg bij een tip is algemeen ("voor wie houdt van …") en noemt zijn eigen boeken niet. Eens per maand of zo stuurt de gebruiker een backup, zodat de smaak wordt bijgesteld.
+
+## Veiligheid en betrouwbaarheid
+
+- Alles wat van buiten komt (zoekbronnen, backups, tips) wordt afgeschermd voordat het in beeld komt, ook aanhalingstekens. Als cover worden alleen https-, blob- en ingebakken plaatjes gebruikt.
+- Een Content-Security-Policy staat alleen de eigen code toe; geen inline scripts.
+- Ophalen op de achtergrond vult alleen velden die nog leeg zijn, in één handeling, en alleen als het nog hetzelfde boek is.
+- De service worker wacht hooguit 3 seconden op internet en bewaart alleen goede antwoorden.
+- Automatische tests (`npm test`) draaien vóór elke keer online zetten.
 
 ## Vormgeving
 

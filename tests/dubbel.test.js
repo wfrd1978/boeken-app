@@ -35,3 +35,36 @@ describe('dubbele boeken herkennen', () => {
     expect(kaal('Ibrahimović')).toBe('ibrahimovic');
   });
 });
+
+import { veilig, veiligeUrl } from '../src/veilig.js';
+import { normaliseerBoek } from '../src/db.js';
+
+describe('veilig weergeven', () => {
+  it('schermt ook aanhalingstekens af', () => {
+    expect(veilig(`Wil "Fred" 't <b>`)).toBe('Wil &quot;Fred&quot; &#39;t &lt;b&gt;');
+  });
+  it('laat alleen veilige adressen door als cover', () => {
+    expect(veiligeUrl('https://covers.openlibrary.org/b/id/1-M.jpg')).toBeTruthy();
+    expect(veiligeUrl('blob:https://x/1')).toBeTruthy();
+    expect(veiligeUrl('javascript:alert(1)')).toBe('');
+    expect(veiligeUrl('x" onerror="alert(1)')).toBe('');
+  });
+});
+
+describe('boeken uit een backup controleren', () => {
+  it('weigert een boek zonder titel', () => {
+    expect(() => normaliseerBoek({ auteurs: ['X'] })).toThrow(/titel/);
+  });
+  it('maakt verkeerde gegevens leeg en houdt goede gegevens', () => {
+    const b = normaliseerBoek({
+      id: 7, titel: 'Vaderland', auteurs: ['Robert Harris', 5], sterren: '<img src=x>', leesdata: ['2025-10', 'kapot'],
+      status: 'Iets', toegevoegdOp: 'geen datum', onbekend: 'weg', synopsis: 'Tekst', koboWacht: 'ja',
+    });
+    expect(b).toMatchObject({ id: 7, titel: 'Vaderland', auteurs: ['Robert Harris'], sterren: null, leesdata: ['2025-10'], status: 'Wil ik lezen', synopsis: 'Tekst', koboWacht: false });
+    expect(b.onbekend).toBeUndefined();
+    expect(Date.parse(b.toegevoegdOp)).not.toBeNaN();
+  });
+  it('laat een ontbrekende synopsis open, zodat hij later wordt opgehaald', () => {
+    expect(normaliseerBoek({ titel: 'X' }).synopsis).toBeUndefined();
+  });
+});

@@ -36,6 +36,12 @@ async function metGeduld(taak, soort, stand) {
 
 let bezig = false;
 let nogEenRonde = false;
+
+// Verhoogd bij het terugzetten van een backup: lopend werk hoort dan bij een oude lijst en stopt.
+let generatie = 0;
+export function stopAchtergrond() {
+  generatie += 1;
+}
 let luisteraar = () => {};
 
 export function opVoortgang(functie) {
@@ -60,6 +66,7 @@ export async function verrijkAlles() {
     return;
   }
   bezig = true;
+  const mijnGeneratie = generatie;
   const geprobeerd = new Set();
   let klaar = 0;
   let totaal = 0;
@@ -73,6 +80,7 @@ export async function verrijkAlles() {
       totaal += open.length;
       for (const boek of open) {
         geprobeerd.add(boek.id);
+        if (mijnGeneratie !== generatie) return;
         if (!navigator.onLine) {
           gestopt = true;
           break;
@@ -91,20 +99,32 @@ export async function verrijkAlles() {
         overgeslagen = 0;
         const gevonden = poging.uitkomst;
         const actueel = await db.boeken.get(boek.id);
-        if (!actueel) continue;
-        // Alleen lege velden aanvullen; wat al is ingevuld blijft staan.
+        if (!actueel || mijnGeneratie !== generatie) continue;
         const aanvulling = {};
         for (const veld of AANVULLEN) {
           if (!actueel[veld] && gevonden?.[veld]) aanvulling[veld] = gevonden[veld];
         }
-        if (!actueel.cover) {
-          const cover = await zoekCover({ ...actueel, ...aanvulling }, { opTitel: false });
-          if (cover.cover) aanvulling.cover = cover.cover;
-          if (cover.coverUrl) aanvulling.coverUrl = cover.coverUrl;
+        let nieuweCover = null;
+        if (!actueel.cover && !actueel.coverUrl) {
+          nieuweCover = await zoekCover({ ...actueel, ...aanvulling }, { opTitel: false });
         }
         const isbn = aanvulling.isbn || actueel.isbn;
-        if (!actueel.werk && !aanvulling.werk && isbn) aanvulling.werk = await zoekWerk(isbn);
-        await db.boeken.update(boek.id, { ...aanvulling, werk: aanvulling.werk || actueel.werk || '', verrijkt: true });
+        if (!actueel.werk && !aanvulling.werk && isbn) aanvulling.werk = (await zoekWerk(isbn)) || '';
+        if (mijnGeneratie !== generatie) return;
+        // Controle en schrijven in één handeling: alleen velden die nog steeds leeg zijn,
+        // en alleen als het nog hetzelfde boek is. Wat de gebruiker intussen koos, blijft staan.
+        await db.boeken.where('id').equals(boek.id).modify((b) => {
+          if (b.titel !== boek.titel || b.toegevoegdOp !== boek.toegevoegdOp) return;
+          for (const veld of AANVULLEN) {
+            if (veld !== 'coverUrl' && !b[veld] && aanvulling[veld]) b[veld] = aanvulling[veld];
+          }
+          if (!b.cover && !b.coverUrl) {
+            if (nieuweCover?.cover) b.cover = nieuweCover.cover;
+            b.coverUrl = nieuweCover?.coverUrl || aanvulling.coverUrl || '';
+          }
+          if (!b.werk) b.werk = aanvulling.werk || b.werk || '';
+          b.verrijkt = true;
+        });
         klaar += 1;
         luisteraar({ klaar, totaal });
         await wacht(PAUZE);
@@ -127,6 +147,7 @@ let synopsisBezig = false;
 export async function vulSynopsisAan() {
   if (synopsisBezig || bezig) return;
   synopsisBezig = true;
+  const mijnGeneratie = generatie;
   try {
     // Elke keer in een andere volgorde, zodat een paar lastige boeken de rest niet ophouden.
     const zonder = schud(await db.boeken.filter((b) => b.synopsis === undefined).toArray());
@@ -136,6 +157,8 @@ export async function vulSynopsisAan() {
     let gestopt = false;
     let laatsteFout = 0;
     for (const boek of zonder) {
+      // Covers gaan voor; die roepen de synopsis daarna vanzelf weer aan.
+      if (bezig || mijnGeneratie !== generatie) return;
       if (!navigator.onLine) {
         gestopt = true;
         break;
@@ -153,8 +176,10 @@ export async function vulSynopsisAan() {
       }
       overgeslagen = 0;
       const synopsis = poging.uitkomst;
-      const actueel = await db.boeken.get(boek.id);
-      if (actueel && actueel.synopsis === undefined) await db.boeken.update(boek.id, { synopsis });
+      if (mijnGeneratie !== generatie) return;
+      await db.boeken.where('id').equals(boek.id).modify((b) => {
+        if (b.synopsis === undefined && b.titel === boek.titel && b.toegevoegdOp === boek.toegevoegdOp) b.synopsis = synopsis;
+      });
       klaar += 1;
       luisteraar({ soort: 'synopsis', klaar, totaal });
       await wacht(PAUZE);

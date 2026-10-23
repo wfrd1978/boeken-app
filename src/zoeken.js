@@ -139,7 +139,9 @@ export async function zoekSynopsis(boek) {
       const werk = await haalJson(`https://openlibrary.org${boek.werk}.json`);
       const d = werk.description;
       return schoneTekst(typeof d === 'string' ? d : d?.value);
-    } catch {
+    } catch (fout) {
+      // Een storing is geen 'geen synopsis': dan later opnieuw proberen.
+      if (tijdelijk(fout)) throw new TijdelijkeFout('Open Library tijdelijk niet bereikbaar', fout.status ?? 0);
       return '';
     }
   }
@@ -180,9 +182,10 @@ export async function zoekBoeken(tekst) {
   return resultaten.slice(0, 15);
 }
 
+// Tijdelijk: geen verbinding (0), sleutel of limiet (403), te druk (429), storing (5xx).
 function tijdelijk(fout) {
   const status = fout?.status ?? 0;
-  return status === 429 || status >= 500 || status === 0;
+  return status === 0 || status === 403 || status === 429 || status >= 500;
 }
 
 export class TijdelijkeFout extends Error {
@@ -266,6 +269,8 @@ export async function testBronnen() {
 // uitgaven eerst. Geeft null als niets past, en een fout als geen bron bereikbaar is.
 export async function zoekBijpassend(boek) {
   const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
+  // Zonder auteur en ISBN is een gelijke titel te weinig zekerheid: dan niets aanvullen.
+  if (!auteur && !boek.isbn) return null;
   const pogingen = await Promise.allSettled([
     zoekOpenLibrary({ titel: boek.titel, auteur }, 5),
     zoekGoogleBooks(`intitle:${boek.titel}${auteur ? ` inauthor:${auteur}` : ''}`, false, 5),
@@ -299,7 +304,8 @@ export async function zoekWerk(isbn) {
     const data = await haalJson(`https://openlibrary.org/search.json?isbn=${encodeURIComponent(isbn)}&fields=key&limit=1`);
     return data.docs?.[0]?.key ?? '';
   } catch {
-    return '';
+    // null = niet gelukt (anders dan '' = niet bekend), zodat het later opnieuw kan.
+    return null;
   }
 }
 
