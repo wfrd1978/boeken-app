@@ -66,3 +66,4 @@ Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository:
 | 13 | Boekentips op het startscherm (rij 'Tips voor jou', met Wil ik lezen / Al gelezen / Niet voor mij). De app haalt `tips.json` op; Claude maakt de eerste ronde in een sessie. Daarna een wekelijkse geplande taak (Routine) die elke week nieuwe tips online zet; geen betaalde AI-dienst |
 | 14 | Categorieën: elk boek in een categorie (bijvoorbeeld Thriller, Oorlog & geschiedenis, Sport & biografie, Humor, Journalistiek & samenleving, Geloof). Samen met de gebruiker de indeling kiezen; Claude deelt zijn bestaande boeken in via een import, nieuwe boeken krijgen een voorstel |
 | 15 | Statistieken op de profielpagina (bijvoorbeeld boeken per jaar, per categorie, gemiddelde sterren) |
+| 16 | Zoeken/filteren op 'Wacht op Kobo Plus' (alle boeken met dat label in één overzicht) |
