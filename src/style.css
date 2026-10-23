@@ -403,3 +403,17 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .staaf-aantal { font-variant-numeric: tabular-nums; text-align: right; min-width: 2ch; }
 .stat-vanaf { display: flex; align-items: center; gap: 10px; margin-top: 20px; color: var(--zacht); font-size: 0.9rem; }
 .stat-vanaf input { font-size: 16px; padding: 6px 10px; border: 1px solid var(--lijn); border-radius: 8px; background: var(--vlak); color: var(--tekst); }
+
+/* Tips op de Toevoegen-pagina */
+.toevoeg-tips { margin-top: 28px; }
+.tip-regel { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--lijn); transition: opacity 0.25s ease; }
+.tip-regel .boek { border-bottom: 0; flex: 1 1 auto; min-width: 0; cursor: pointer; }
+.tip-regel.weg { opacity: 0; }
+.tip-kort { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.85rem; margin-top: 2px; }
+.tip-plus {
+  flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--accent);
+  background: none; color: var(--accent); font-size: 1.5rem; line-height: 1; cursor: pointer;
+}
+.tip-plus:disabled { opacity: 0.4; }
+.deel-knop { margin-left: auto; padding: 8px 0; display: inline-flex; align-items: center; gap: 6px; }
+.deel-knop svg { width: 20px; height: 20px; fill: currentColor; }

@@ -72,9 +72,9 @@ Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository:
 
 Volgorde en keuzes bepaalt de gebruiker; bij elk idee eerst kort de opties en kosten voorleggen.
 
-- **Toevoegen-pagina aankleden** met de tips, zodat hij ze daar direct kan toevoegen.
+- ~~**Toevoegen-pagina aankleden** met de tips~~ — gebouwd (oktober 2026).
 - **Profielfoto** uploaden bij het profiel (op het toestel bewaard, mee in de backup).
-- **Gelezen boeken delen** met zijn netwerk: knop 'Deel dit boek' (deelmenu met titel, sterren, zin uit de recensie), deelkaart als afbeelding, 'Mijn leesmaand/-jaar'.
+- **Gelezen boeken delen** met zijn netwerk: knop 'Deel' is gebouwd (deelmenu met titel, sterren, zin uit de recensie). Nog open: deelkaart als afbeelding, 'Mijn leesmaand/-jaar'.
 - **De app delen met anderen**: welkomstscherm, tips per persoon of uit, Kobo optioneel. 
 - **Lezen interactief maken met andere gebruikers** (samen lezen, elkaars tips, boekenclub). Vraagt om een gedeelde plek voor gegevens; eerst samen nadenken over privacy en kosten.
 - **Nieuws over boeken en schrijvers**, bijvoorbeeld wekelijks via dezelfde geplande taak als de tips (een nieuws.json).
