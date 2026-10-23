@@ -341,3 +341,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .keuze-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .keuze-cover.gekozen { border-color: var(--accent); }
 .klein { font-size: 0.85rem; margin-top: 10px; }
+
+/* --- Synopsis --- */
+.synopsis { text-align: left; font-family: var(--schreef); font-size: 1.02rem; line-height: 1.55; }
+.synopsis p { margin: 0 0 10px; }
+.synopsis.kort { display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; }
+.synopsis.voorproef { -webkit-line-clamp: 4; margin-top: 14px; color: var(--zacht); font-size: 0.95rem; }
+.link-knop.meer { padding: 4px 0 0; }

@@ -40,7 +40,14 @@ import {
 } from './backup.js';
 import { leesExcel, planImport } from './importeren.js';
 import { maakExcel, deelBestand } from './exporteren.js';
-import { verrijkAlles, opVoortgang, aantalTeVerrijken, zonderCoverOpnieuw, coverTelling } from './verrijken.js';
+import {
+  verrijkAlles,
+  opVoortgang,
+  aantalTeVerrijken,
+  zonderCoverOpnieuw,
+  coverTelling,
+  synopsisTelling,
+} from './verrijken.js';
 
 const app = document.getElementById('app');
 
@@ -613,8 +620,9 @@ async function toonInstellingen() {
     </section>
 
     <section class="blok">
-      <h2>Covers</h2>
+      <h2>Covers en synopsis</h2>
       <p id="cover-telling" class="zacht">&nbsp;</p>
+      <p id="synopsis-telling" class="zacht"></p>
       <p class="verrijk-status" id="verrijk-status" hidden></p>
       <button class="tweede-knop" id="covers-opnieuw" hidden>Zoek opnieuw naar ontbrekende covers</button>
       <button class="link-knop" id="bronnen-test">Test de verbinding met de boekenbronnen</button>
@@ -655,6 +663,10 @@ async function toonInstellingen() {
   document.getElementById('cover-telling').textContent = telling.totaal
     ? `${telling.met} van de ${telling.totaal} boeken hebben een cover.`
     : 'Nog geen boeken.';
+  const syn = await synopsisTelling();
+  document.getElementById('synopsis-telling').textContent = syn.totaal
+    ? `${syn.met} van de ${syn.totaal} boeken hebben een synopsis${syn.open ? ` (nog ${syn.open} te zoeken)` : ''}.`
+    : '';
   const opnieuw = document.getElementById('covers-opnieuw');
   opnieuw.hidden = !zonder;
   opnieuw.textContent = `Zoek opnieuw naar ontbrekende covers (${zonder})`;
@@ -994,7 +1006,8 @@ async function toonBevestigen(boek) {
              <p class="details">${[boek.jaar, boek.paginas && `${boek.paginas} blz.`, boek.isbn && `ISBN ${boek.isbn}`]
                .filter(Boolean)
                .map(veilig)
-               .join(' · ')}</p>`
+               .join(' · ')}</p>
+             ${boek.synopsis ? `<div class="synopsis kort voorproef">${synopsisHtml(boek.synopsis)}</div>` : ''}`
       }
       ${dubbel ? waarschuwingHtml(dubbel) : ''}
       <p class="label">Status</p>
@@ -1075,6 +1088,13 @@ function waarschuwingHtml(bestaand) {
     </div>`;
 }
 
+function synopsisHtml(tekst) {
+  return tekst
+    .split(/\n{2,}/)
+    .map((alinea) => `<p>${veilig(alinea).replace(/\n/g, '<br />')}</p>`)
+    .join('');
+}
+
 // --- Cover kiezen ---
 
 async function toonCoverKeuze(boek, bewaar, klaar) {
@@ -1148,6 +1168,13 @@ async function toonBoek(id) {
         .map(veilig)
         .join(' · ')}</p>
       ${boek.opmerking ? `<p class="details">${veilig(boek.opmerking)}</p>` : ''}
+      ${
+        boek.synopsis
+          ? `<p class="label">Over het boek</p>
+             <div class="synopsis kort" id="synopsis">${synopsisHtml(boek.synopsis)}</div>
+             <button class="link-knop meer" id="synopsis-meer">Lees meer</button>`
+          : ''
+      }
 
       <p class="label">Mijn oordeel</p>
       <div class="sterren" id="sterren" role="radiogroup" aria-label="Sterren"></div>
@@ -1177,6 +1204,18 @@ async function toonBoek(id) {
       <button class="verwijder" id="verwijder">Boek verwijderen</button>
     </section>
   `;
+
+  const synopsisVak = document.getElementById('synopsis');
+  const meer = document.getElementById('synopsis-meer');
+  if (synopsisVak) {
+    // Alleen 'Lees meer' tonen als de tekst echt langer is dan het stukje dat je ziet.
+    if (synopsisVak.scrollHeight <= synopsisVak.clientHeight + 4) meer.remove();
+    else
+      meer.addEventListener('click', () => {
+        synopsisVak.classList.remove('kort');
+        meer.remove();
+      });
+  }
 
   const toonNieuweCover = () => {
     document.getElementById('cover-vak').innerHTML = coverHtml(boek, 'cover-groot');
