@@ -99,14 +99,18 @@ export async function leesExcel(bestand) {
   return boeken;
 }
 
-// Splitst in: toevoegen, en overslaan omdat het boek er al is (of dubbel in het bestand staat).
+// Splitst in: toevoegen, bijwerken en overslaan.
+// Bijwerken = het boek staat er al, heeft nog geen sterren en het bestand geeft er wel.
+// Sterren die Wilfred zelf al gaf, blijven altijd staan.
 export function planImport(nieuw, bestaand) {
   const toevoegen = [];
+  const bijwerken = [];
   const overslaan = [];
   for (const boek of nieuw) {
-    const al = vindDubbel(boek, bestaand) || vindDubbel(boek, toevoegen);
-    if (al) overslaan.push({ boek, al });
+    const al = vindDubbel(boek, bestaand);
+    if (al && boek.sterren && !al.sterren && !bijwerken.some((b) => b.al === al)) bijwerken.push({ boek, al });
+    else if (al || vindDubbel(boek, toevoegen)) overslaan.push({ boek, al: al || vindDubbel(boek, toevoegen) });
     else toevoegen.push(boek);
   }
-  return { toevoegen, overslaan };
+  return { toevoegen, bijwerken, overslaan };
 }

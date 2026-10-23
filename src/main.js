@@ -7,6 +7,7 @@ import {
   boekVerwijderen,
   boekTerugzetten,
   boekenImporteren,
+  sterrenAanvullen,
   vraagBlijvendeOpslag,
   vulWerkenAan,
   zetKoboOm,
@@ -564,13 +565,28 @@ async function toonInstellingen() {
       vak.innerHTML = `<div class="waarschuwing"><p>${veilig(fout.message)}</p></div>`;
       return;
     }
-    const { toevoegen, overslaan } = plan;
+    const { toevoegen, bijwerken, overslaan } = plan;
     const n = toevoegen.length;
+    const m = bijwerken.length;
+    const boekTekst = (x) => (x === 1 ? '1 boek' : `${x} boeken`);
+    const knopTekst = [n && `importeer ${boekTekst(n)}`, m && `vul sterren aan bij ${boekTekst(m)}`].filter(Boolean).join(' en ');
     vak.innerHTML = `
       <div class="waarschuwing">
-        <p><strong>${n === 1 ? '1 boek' : `${n} boeken`} om toe te voegen</strong><br />
-        ${toevoegen.filter((b) => b.sterren).length} met sterren, ${toevoegen.filter((b) => b.leesdata.length).length} met leesdatum.
-        Covers en verdere gegevens worden daarna op de achtergrond opgehaald.</p>
+        ${
+          n
+            ? `<p><strong>${boekTekst(n)} om toe te voegen</strong><br />
+               ${toevoegen.filter((b) => b.sterren).length} met sterren, ${toevoegen.filter((b) => b.leesdata.length).length} met leesdatum.
+               Covers en verdere gegevens worden daarna op de achtergrond opgehaald.</p>`
+            : ''
+        }
+        ${
+          m
+            ? `<details${n ? '' : ' open'}><summary><strong>Bij ${boekTekst(m)} die je al hebt, worden de sterren aangevuld</strong></summary>
+                 <ul class="overslaan">${bijwerken
+                   .map(({ boek, al }) => `<li>${veilig(al.titel)} <span class="zacht">→ ${sterrenTekst(boek.sterren)}</span></li>`)
+                   .join('')}</ul></details>`
+            : ''
+        }
         ${
           overslaan.length
             ? `<details><summary>${overslaan.length} ${overslaan.length === 1 ? 'boek staat' : 'boeken staan'} al in je lijst en ${overslaan.length === 1 ? 'wordt' : 'worden'} overgeslagen</summary>
@@ -579,23 +595,25 @@ async function toonInstellingen() {
                    .join('')}</ul></details>`
             : ''
         }
-        ${n ? `<button class="hoofdknop" id="importeren">Importeer ${n === 1 ? '1 boek' : `${n} boeken`}</button>` : ''}
-        <button class="link-knop" id="import-annuleer">${n ? 'Annuleren' : 'Sluiten'}</button>
+        ${!n && !m ? '<p>Er is niets toe te voegen of bij te werken.</p>' : ''}
+        ${knopTekst ? `<button class="hoofdknop" id="importeren">${knopTekst.charAt(0).toUpperCase() + knopTekst.slice(1)}</button>` : ''}
+        <button class="link-knop" id="import-annuleer">${knopTekst ? 'Annuleren' : 'Sluiten'}</button>
       </div>`;
     document.getElementById('import-annuleer').addEventListener('click', () => (vak.innerHTML = ''));
     document.getElementById('importeren')?.addEventListener('click', async (k) => {
       k.currentTarget.disabled = true;
-      k.currentTarget.textContent = 'Bezig met importeren…';
+      k.currentTarget.textContent = 'Bezig…';
       try {
-        await boekenImporteren(toevoegen);
+        if (n) await boekenImporteren(toevoegen);
+        if (m) await sterrenAanvullen(bijwerken.map(({ boek, al }) => ({ id: al.id, sterren: boek.sterren })));
       } catch {
-        vak.innerHTML = '<div class="waarschuwing"><p>Importeren is mislukt. Er is niets toegevoegd.</p></div>';
+        vak.innerHTML = '<div class="waarschuwing"><p>Importeren is mislukt. Maak zo nodig je backup terug.</p></div>';
         return;
       }
       zoekterm = '';
       location.hash = '#/';
-      melding(`${n} boeken toegevoegd`);
-      verrijkAlles();
+      melding([n && `${boekTekst(n)} toegevoegd`, m && `sterren bij ${boekTekst(m)}`].filter(Boolean).join(', '));
+      if (n) verrijkAlles();
     });
   });
 
