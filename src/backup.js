@@ -1,5 +1,6 @@
 // Backup: alle boeken (met covers) in één JSON-bestand, en weer terugzetten.
-import { db } from './db.js';
+import { db, normaliseerBoek } from './db.js';
+import { stopAchtergrond } from './verrijken.js';
 
 const SLEUTEL = 'laatsteBackup';
 const HERINNER_NA_DAGEN = 14;
@@ -13,8 +14,13 @@ function blobNaarTekst(blob) {
   });
 }
 
+// Zelf ontleden in plaats van fetch(): de veiligheidsregels van de app staan fetch van
+// 'data:'-adressen bewust niet toe.
 async function tekstNaarBlob(dataUrl) {
-  return (await fetch(dataUrl)).blob();
+  const [kop, gegevens = ''] = dataUrl.split(',');
+  const type = kop.match(/^data:([^;,]+)/)?.[1] ?? 'image/jpeg';
+  const bytes = /;base64$/.test(kop) ? atob(gegevens) : decodeURIComponent(gegevens);
+  return new Blob([Uint8Array.from(bytes, (c) => c.charCodeAt(0))], { type });
 }
 
 export async function maakBackupBestand() {
@@ -110,20 +116,52 @@ export async function leesBackup(bestand) {
   if (inhoud.versie > 2) {
     throw new Error('Deze backup is gemaakt met een nieuwere versie van de app. Werk de app eerst bij.');
   }
+  // Elk boek nu al controleren, zodat een kapotte backup vóór het vervangen wordt geweigerd.
+  inhoud.boeken.forEach(normaliseerBoek);
   return inhoud;
+}
+
+function schoonProfiel(p) {
+  if (!p || typeof p !== 'object') return null;
+  const tekst = (v) => (typeof v === 'string' ? v : '');
+  return { naam: tekst(p.naam), overMij: tekst(p.overMij), lezersprofiel: tekst(p.lezersprofiel) };
+}
+
+function schoneReacties(r) {
+  if (!r || typeof r !== 'object') return null;
+  const schoon = {};
+  for (const [id, v] of Object.entries(r)) {
+    if (v && ['wil', 'gelezen', 'nee'].includes(v.reactie)) {
+      schoon[id] = {
+        reactie: v.reactie,
+        titel: String(v.titel ?? ''),
+        auteurs: Array.isArray(v.auteurs) ? v.auteurs.map(String) : [],
+        op: String(v.op ?? ''),
+      };
+    }
+  }
+  return schoon;
 }
 
 // Vervangt de hele lijst door de backup, in één keer: lukt iets niet, dan blijft alles zoals het was.
 export async function zetBackupTerug(inhoud) {
   const boeken = await Promise.all(
-    inhoud.boeken.map(async (b) => ({ ...b, cover: b.cover ? await tekstNaarBlob(b.cover) : null }))
+    inhoud.boeken.map(async (b) => {
+      // Alleen echte ingebakken plaatjes worden weer een cover.
+      const cover = typeof b.cover === 'string' && b.cover.startsWith('data:image/') ? await tekstNaarBlob(b.cover) : null;
+      return normaliseerBoek({ ...b, cover });
+    })
   );
+  const profiel = schoonProfiel(inhoud.profiel);
+  const reacties = schoneReacties(inhoud.tipReacties);
+  // Werk op de achtergrond (covers, synopsis) eerst stoppen: dat hoort bij de oude lijst.
+  stopAchtergrond();
   await db.transaction('rw', db.boeken, db.instellingen, async () => {
     await db.boeken.clear();
     await db.boeken.bulkAdd(boeken);
     // Een oudere backup zonder profiel laat het huidige profiel staan.
-    if (inhoud.profiel) await db.instellingen.put({ sleutel: 'profiel', waarde: inhoud.profiel });
-    if (inhoud.tipReacties) await db.instellingen.put({ sleutel: 'tipReacties', waarde: inhoud.tipReacties });
+    if (profiel) await db.instellingen.put({ sleutel: 'profiel', waarde: profiel });
+    if (reacties) await db.instellingen.put({ sleutel: 'tipReacties', waarde: reacties });
   });
   return boeken.length;
 }

@@ -29,7 +29,11 @@ function tweeCijfers(n) {
 function leesLeesdatum(waarde) {
   if (!waarde) return '';
   if (waarde instanceof Date && !isNaN(waarde)) {
-    return `${waarde.getFullYear()}-${tweeCijfers(waarde.getMonth() + 1)}-${tweeCijfers(waarde.getDate())}`;
+    // Een half dagje erbij, zodat een tijdzoneverschil geen dag eerder oplevert.
+    const d = new Date(waarde.getTime() + 12 * 3600 * 1000);
+    const maand = `${d.getFullYear()}-${tweeCijfers(d.getMonth() + 1)}`;
+    // Een maand als datumcel ('okt-25') komt binnen als de 1e: dan geen dag verzinnen.
+    return d.getDate() === 1 ? maand : `${maand}-${tweeCijfers(d.getDate())}`;
   }
   const tekst = kaal(String(waarde)).trim();
   const maand = tekst.match(/^([a-z]+)\s+(\d{4})$/);

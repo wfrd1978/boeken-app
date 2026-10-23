@@ -39,6 +39,41 @@ export function alleBoeken() {
   return db.boeken.orderBy('toegevoegdOp').reverse().toArray();
 }
 
+const DATUM = /^\d{4}-\d{2}(-\d{2})?$/;
+
+// Controleert een boek uit een backup en zet het in de vaste vorm. Onbekende velden
+// vallen weg, verkeerde soorten gegevens worden leeg. Zonder titel: een fout.
+export function normaliseerBoek(b) {
+  if (!b || typeof b !== 'object') throw new Error('Ongeldig boek in de backup.');
+  const titel = typeof b.titel === 'string' ? b.titel.trim() : '';
+  if (!titel) throw new Error('Er staat een boek zonder titel in de backup.');
+  const tekst = (v) => (typeof v === 'string' ? v : '');
+  const getal = (v, min, max) => (Number.isInteger(v) && v >= min && v <= max ? v : null);
+  return {
+    ...(Number.isInteger(b.id) && b.id > 0 ? { id: b.id } : {}),
+    titel,
+    auteurs: Array.isArray(b.auteurs) ? b.auteurs.filter((a) => typeof a === 'string' && a.trim()) : [],
+    isbn: tekst(b.isbn).replace(/[^0-9X]/gi, ''),
+    werk: typeof b.werk === 'string' ? b.werk : undefined,
+    cover: b.cover instanceof Blob ? b.cover : null,
+    coverUrl: tekst(b.coverUrl),
+    uitgever: tekst(b.uitgever),
+    jaar: getal(b.jaar, 0, 3000),
+    paginas: getal(b.paginas, 1, 50000),
+    taal: tekst(b.taal),
+    status: STATUSSEN.includes(b.status) ? b.status : 'Wil ik lezen',
+    sterren: getal(b.sterren, 1, 5),
+    leesdata: Array.isArray(b.leesdata) ? b.leesdata.filter((d) => typeof d === 'string' && DATUM.test(d)) : [],
+    recensie: tekst(b.recensie),
+    opmerking: tekst(b.opmerking),
+    koboWacht: b.koboWacht === true,
+    synopsis: typeof b.synopsis === 'string' ? b.synopsis : undefined,
+    toegevoegdOp: typeof b.toegevoegdOp === 'string' && !isNaN(Date.parse(b.toegevoegdOp)) ? b.toegevoegdOp : new Date().toISOString(),
+    bron: tekst(b.bron) || 'backup',
+    verrijkt: b.verrijkt !== false,
+  };
+}
+
 // Een compleet boek met alle velden, zodat elk boek dezelfde vorm heeft.
 function nieuwBoek(boek, toegevoegdOp = new Date().toISOString()) {
   return {
@@ -95,8 +130,13 @@ export async function vulWerkenAan(zoekWerk) {
   // Boeken die nog verrijkt worden, krijgen hun werk daar al.
   const zonder = await db.boeken.filter((b) => b.werk === undefined && b.verrijkt !== false).toArray();
   for (const boek of zonder) {
+    if (!navigator.onLine) return;
     const werk = boek.isbn ? await zoekWerk(boek.isbn) : '';
-    await db.boeken.update(boek.id, { werk });
+    // null = opzoeken lukte niet (bijvoorbeeld geen internet): later opnieuw.
+    if (werk === null) continue;
+    await db.boeken.where('id').equals(boek.id).modify((b) => {
+      if (b.werk === undefined) b.werk = werk;
+    });
   }
 }
 

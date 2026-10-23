@@ -2,6 +2,11 @@
 <html lang="nl">
   <head>
     <meta charset="UTF-8" />
+    <!-- Alleen eigen code mag draaien; plaatjes en gegevens mogen van https-adressen komen. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https:; connect-src 'self' https:; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#121413" media="(prefers-color-scheme: dark)" />

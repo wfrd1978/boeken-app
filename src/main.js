@@ -30,6 +30,7 @@ import {
 import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
+import { veilig, veiligeUrl } from './veilig.js';
 import { tipsUitArchief, verversTips, zetTipReactie } from './tips.js';
 import {
   maakBackupBestand,
@@ -97,12 +98,6 @@ window.addEventListener('online', verrijkAlles);
 
 // --- Hulpjes ---
 
-function veilig(tekst) {
-  const div = document.createElement('div');
-  div.textContent = tekst ?? '';
-  return div.innerHTML;
-}
-
 function auteurTekst(boek) {
   return boek.auteurs?.length ? boek.auteurs.join(', ') : 'Onbekende auteur';
 }
@@ -119,7 +114,7 @@ function coverSrc(boek, links = coverLinks) {
     links.add(src);
     return src;
   }
-  return boek.coverUrl || '';
+  return veiligeUrl(boek.coverUrl);
 }
 
 function coverHtml(boek, klasse, links = coverLinks) {
@@ -127,7 +122,7 @@ function coverHtml(boek, klasse, links = coverLinks) {
   const letter = veilig((boek.titel || '?').charAt(0));
   // Laadt een cover niet (bijvoorbeeld offline bij een Google-cover), dan het vlak met de beginletter.
   if (src) {
-    return `<img class="${klasse}" src="${veilig(src)}" alt="" loading="lazy" data-letter="${letter}" onerror="geenCover(this)" />`;
+    return `<img class="${klasse}" src="${veilig(src)}" alt="" loading="lazy" data-letter="${letter}" data-bij-fout="letter" />`;
   }
   return `<div class="${klasse} geen-cover">${letter}</div>`;
 }
@@ -151,12 +146,24 @@ function vandaag() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-window.geenCover = (img) => {
-  const vlak = document.createElement('div');
-  vlak.className = `${img.className} geen-cover`;
-  vlak.textContent = img.dataset.letter;
-  img.replaceWith(vlak);
-};
+// Laadt een plaatje niet: een cover wordt het vlak met de beginletter, een keuze verdwijnt.
+// (Eén luisteraar voor de hele pagina in plaats van onerror in de HTML; dat is veiliger.)
+document.addEventListener(
+  'error',
+  (e) => {
+    const img = e.target;
+    if (!(img instanceof HTMLImageElement)) return;
+    if (img.dataset.bijFout === 'letter') {
+      const vlak = document.createElement('div');
+      vlak.className = `${img.className} geen-cover`;
+      vlak.textContent = img.dataset.letter;
+      img.replaceWith(vlak);
+    } else if (img.dataset.bijFout === 'weg') {
+      img.closest('.keuze-cover')?.remove();
+    }
+  },
+  true
+);
 
 function ruimOp(links) {
   links.forEach((url) => URL.revokeObjectURL(url));
@@ -313,6 +320,12 @@ function maakVeegbaar(lijst, onVerwijder) {
     frame = requestAnimationFrame(() => zet(li, x, false));
   }, { passive: false });
 
+  // Onderbroken (bijvoorbeeld door een melding): regel netjes dichtschuiven.
+  lijst.addEventListener('touchcancel', () => {
+    if (start?.li) zet(start.li, start.basis, true);
+    start = null;
+  });
+
   lijst.addEventListener('touchend', (e) => {
     if (!start) return;
     if (start.richting === 'opzij') {
@@ -362,7 +375,7 @@ function heldHtml(b) {
   const src = coverSrc(b);
   return `
     <a class="held" href="#/boek/${b.id}">
-      ${src ? `<div class="held-achtergrond" style="background-image:url('${veilig(src)}')"></div>` : ''}
+      ${src ? `<div class="held-achtergrond" data-achtergrond="${veilig(src)}"></div>` : ''}
       ${coverHtml(b, 'held-cover')}
       <div class="held-tekst">
         <span class="status status-1">${veilig(statusNaam(b.status))}</span>
@@ -428,8 +441,11 @@ function startHtml(boeken, naam) {
 }
 
 async function toonLijst() {
+  const nr = schermNr;
   ruimCoversOp();
   const [boeken, profiel] = await Promise.all([alleBoeken(), haalProfiel()]);
+  // Intussen naar een ander scherm gegaan? Dan dit scherm niet meer tekenen.
+  if (nr !== schermNr) return;
   app.innerHTML = `
     <header class="woordmerk">
       <h1>Boeken</h1>
@@ -499,7 +515,11 @@ async function toonLijst() {
     if (knop) kiesTab(knop.dataset.tab);
   });
   // 'Alles ›' bij een rij op het startscherm: naar die tab in de lijst eronder.
+  document.querySelectorAll('[data-achtergrond]').forEach((el) => {
+    el.style.backgroundImage = `url(${JSON.stringify(el.dataset.achtergrond)})`;
+  });
   await toonTipsRij(boeken);
+  if (nr !== schermNr) return;
   document.querySelector('.start')?.addEventListener('click', (e) => {
     const knop = e.target.closest('[data-naar-tab]');
     if (!knop) return;
@@ -514,9 +534,12 @@ async function toonLijst() {
   };
   maakVeegbaar(document.getElementById('lijst'), async (li) => {
     const id = Number(li.dataset.id);
-    const boek = boeken.find((b) => b.id === id);
+    // De nieuwste versie bewaren voor 'Ongedaan maken' (met covers en synopsis van daarnet).
+    const boek = (await haalBoek(id)) ?? boeken.find((b) => b.id === id);
+    if (!boek) return;
     await boekVerwijderen(id);
-    boeken.splice(boeken.indexOf(boek), 1);
+    const plek = boeken.findIndex((b) => b.id === id);
+    if (plek !== -1) boeken.splice(plek, 1);
     li.classList.add('weg');
     setTimeout(() => li.remove(), 250);
     zetAantal();
@@ -524,6 +547,8 @@ async function toonLijst() {
       tekst: 'Ongedaan maken',
       actie: async () => {
         await boekTerugzetten(boek);
+        // Staat de lijst nog open, dan bijwerken; anders ziet Wilfred hem straks vanzelf.
+        if (!document.getElementById('lijst')) return;
         boeken.push(boek);
         zetAantal();
         teken();
@@ -596,8 +621,10 @@ function backupNodig(aantal) {
 }
 
 async function toonInstellingen() {
+  const nr = schermNr;
   ruimCoversOp();
   const aantal = (await alleBoeken()).length;
+  if (nr !== schermNr) return;
   app.innerHTML = `
     <header class="kop">
       <a class="terug" href="#/">‹ Boeken</a>
@@ -979,7 +1006,7 @@ async function toonResultaten(resultaten) {
           ${coverHtml(b, 'cover-klein')}
           <div class="boek-tekst">
             <strong>${veilig(b.titel)}</strong>
-            <span>${veilig(auteurTekst(b))}${b.jaar ? ` · ${b.jaar}` : ''}${b.taal ? ` · ${veilig(b.taal.toUpperCase())}` : ''}</span>
+            <span>${veilig(auteurTekst(b))}${b.jaar ? ` · ${veilig(b.jaar)}` : ''}${b.taal ? ` · ${veilig(b.taal.toUpperCase())}` : ''}</span>
             ${vindDubbel(b, mijnBoeken) ? `<span class="al-in-lijst">Staat al in je lijst · ${veilig(statusNaam(vindDubbel(b, mijnBoeken).status))}</span>` : ''}
           </div>
         </button></li>`
@@ -1115,8 +1142,10 @@ function synopsisHtml(tekst) {
 // --- Profiel ---
 
 async function toonProfiel() {
+  const nr = schermNr;
   ruimCoversOp();
   const [profiel, boeken] = await Promise.all([haalProfiel(), alleBoeken()]);
+  if (nr !== schermNr) return;
   const top = boeken
     .filter((b) => b.sterren === 5)
     .sort((a, b) => laatsteLeesdatum(b).localeCompare(laatsteLeesdatum(a)) || a.titel.localeCompare(b.titel, 'nl'));
@@ -1184,7 +1213,7 @@ function tipCoverCache() {
 }
 
 async function tipCover(tip) {
-  if (tip.coverUrl) return tip.coverUrl;
+  if (veiligeUrl(tip.coverUrl)) return veiligeUrl(tip.coverUrl);
   const cache = tipCoverCache();
   if (tip.id in cache) return cache[tip.id];
   const { coverUrl } = await zoekCover(tip, { opTitel: true });
@@ -1237,7 +1266,7 @@ async function vulTipCovers(vak, tips) {
     const url = await tipCover(t);
     const plek = vak.querySelector(`[data-cover-voor="${CSS.escape(t.id)}"]`);
     if (url && plek) {
-      plek.outerHTML = `<img class="rij-cover" src="${veilig(url)}" alt="" data-letter="${veilig(t.titel.charAt(0))}" onerror="geenCover(this)" />`;
+      plek.outerHTML = `<img class="rij-cover" src="${veilig(url)}" alt="" data-letter="${veilig(t.titel.charAt(0))}" data-bij-fout="letter" />`;
       t.coverUrl = url;
     }
   }
@@ -1250,10 +1279,10 @@ function toonTip(tip, boeken) {
        <div class="laag-blad tip-blad">
          <div class="laag-kop"><span class="status status-1">${tip.soort === 'parel' ? 'Parel die je misschien gemist hebt' : 'Nieuw verschenen'}</span><button class="link-knop" id="laag-sluit">Sluiten</button></div>
          <div class="tip-boven">
-           ${tip.coverUrl ? `<img class="held-cover" src="${veilig(tip.coverUrl)}" alt="" />` : `<div class="held-cover geen-cover">${veilig(tip.titel.charAt(0))}</div>`}
+           ${veiligeUrl(tip.coverUrl) ? `<img class="held-cover" src="${veilig(veiligeUrl(tip.coverUrl))}" alt="" />` : `<div class="held-cover geen-cover">${veilig(tip.titel.charAt(0))}</div>`}
            <div>
              <h2>${veilig(tip.titel)}</h2>
-             <p class="zacht">${veilig(auteurTekst(tip))}${tip.jaar ? ` · ${tip.jaar}` : ''}</p>
+             <p class="zacht">${veilig(auteurTekst(tip))}${tip.jaar ? ` · ${veilig(tip.jaar)}` : ''}</p>
            </div>
          </div>
          <p class="tip-reden">${veilig(tip.reden)}</p>
@@ -1330,7 +1359,7 @@ async function toonCoverKeuze(boek, bewaar, klaar) {
   document.getElementById('laag-sluit').addEventListener('click', sluit);
   laag.addEventListener('click', (e) => e.target === laag && sluit());
 
-  const urls = await zoekCoverKeuzes(boek);
+  const urls = (await zoekCoverKeuzes(boek)).map(veiligeUrl).filter(Boolean);
   const vak = document.getElementById('keuzes');
   if (!vak) return;
   if (!urls.length) {
@@ -1338,7 +1367,7 @@ async function toonCoverKeuze(boek, bewaar, klaar) {
     return;
   }
   vak.innerHTML = `<div class="keuze-raster">${urls
-    .map((u, i) => `<button class="keuze-cover" data-i="${i}"><img src="${veilig(u)}" alt="" loading="lazy" onerror="this.parentElement.remove()" /></button>`)
+    .map((u, i) => `<button class="keuze-cover" data-i="${i}"><img src="${veilig(u)}" alt="" loading="lazy" data-bij-fout="weg" /></button>`)
     .join('')}</div>`;
   vak.addEventListener('click', async (e) => {
     const knop = e.target.closest('.keuze-cover');
@@ -1354,8 +1383,10 @@ async function toonCoverKeuze(boek, bewaar, klaar) {
 // --- Boek ---
 
 async function toonBoek(id) {
+  const nr = schermNr;
   ruimCoversOp();
   const boek = await haalBoek(id);
+  if (nr !== schermNr) return;
   if (!boek) {
     location.hash = '#/';
     return;
@@ -1540,7 +1571,11 @@ async function toonBoek(id) {
 const scrollPlekken = {};
 let vorigeHash = location.hash || '#/';
 
+// Elk nieuw scherm krijgt een volgnummer; een trager, ouder scherm tekent dan niet meer.
+let schermNr = 0;
+
 async function route({ naarBoven = false } = {}) {
+  schermNr += 1;
   scrollPlekken[vorigeHash] = window.scrollY;
   vorigeHash = location.hash || '#/';
   sluitScanner();
@@ -1564,13 +1599,21 @@ async function route({ naarBoven = false } = {}) {
     veld?.focus({ preventScroll: true });
     document.getElementById('lijst-kop')?.scrollIntoView();
   } else {
+    const nr = schermNr;
     await toonLijst();
     // Terug op het startscherm: verder waar je was. Onderin op Boeken tikken: naar boven.
-    if (!naarBoven && scrollPlekken['#/']) window.scrollTo(0, scrollPlekken['#/']);
+    if (nr === schermNr && !naarBoven && scrollPlekken['#/']) window.scrollTo(0, scrollPlekken['#/']);
   }
 }
 
 window.addEventListener('hashchange', route);
+
+// Gaat de app naar de achtergrond, dan een half getypte recensie of profieltekst meteen bewaren.
+const bewaarNu = () => toonBoek.bewaarOpenstaand?.();
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') bewaarNu();
+});
+window.addEventListener('pagehide', bewaarNu);
 
 // Tik op de plek waar je al bent (bijvoorbeeld Toevoegen vanaf een voorstel): opnieuw beginnen.
 document.querySelector('.balk').addEventListener('click', (e) => {
