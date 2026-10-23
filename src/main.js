@@ -84,13 +84,22 @@ function auteurTekst(boek) {
 }
 
 // Cover als <img>, of een rustig vlak met de beginletter als er geen cover is.
+// Tijdelijke adressen van covers op het toestel; de lijst ververst die van zichzelf
+// vaak (bij typen), dus die houden we apart van de rest van het scherm.
 const coverLinks = new Set();
-function coverHtml(boek, klasse) {
-  let src = boek.coverUrl;
+const lijstLinks = new Set();
+
+function coverSrc(boek, links = coverLinks) {
   if (boek.cover instanceof Blob) {
-    src = URL.createObjectURL(boek.cover);
-    coverLinks.add(src);
+    const src = URL.createObjectURL(boek.cover);
+    links.add(src);
+    return src;
   }
+  return boek.coverUrl || '';
+}
+
+function coverHtml(boek, klasse, links = coverLinks) {
+  const src = coverSrc(boek, links);
   const letter = veilig((boek.titel || '?').charAt(0));
   // Laadt een cover niet (bijvoorbeeld offline bij een Google-cover), dan het vlak met de beginletter.
   if (src) {
@@ -125,9 +134,14 @@ window.geenCover = (img) => {
   img.replaceWith(vlak);
 };
 
+function ruimOp(links) {
+  links.forEach((url) => URL.revokeObjectURL(url));
+  links.clear();
+}
+
 function ruimCoversOp() {
-  coverLinks.forEach((url) => URL.revokeObjectURL(url));
-  coverLinks.clear();
+  ruimOp(coverLinks);
+  ruimOp(lijstLinks);
 }
 
 // Korte melding onderin, eventueel met een knop (zoals 'Ongedaan maken').
@@ -204,7 +218,7 @@ function boekRegel(b) {
     <li class="veeg" data-id="${b.id}">
       <button class="veeg-actie" tabindex="-1">Verwijder</button>
       <a class="boek" href="#/boek/${b.id}">
-      ${coverHtml(b, 'cover-klein')}
+      ${coverHtml(b, 'cover-klein', lijstLinks)}
       <div class="boek-tekst">
         <span class="regel">
           <span class="status status-${STATUSSEN.indexOf(b.status)}">${veilig(statusNaam(b.status))}</span>
@@ -310,14 +324,93 @@ function maakVeegbaar(lijst, onVerwijder) {
   });
 }
 
+// --- Startscherm: zoals de voorpagina van een nieuwsapp ---
+
+function groet() {
+  const uur = new Date().getHours();
+  const deel = uur < 6 ? 'Goedenacht' : uur < 12 ? 'Goedemorgen' : uur < 18 ? 'Goedemiddag' : 'Goedenavond';
+  const datum = new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+  return { deel, datum };
+}
+
+function heldHtml(b) {
+  const src = coverSrc(b);
+  return `
+    <a class="held" href="#/boek/${b.id}">
+      ${src ? `<div class="held-achtergrond" style="background-image:url('${veilig(src)}')"></div>` : ''}
+      ${coverHtml(b, 'held-cover')}
+      <div class="held-tekst">
+        <span class="status status-1">${veilig(statusNaam(b.status))}</span>
+        <strong>${veilig(b.titel)}</strong>
+        <span>${veilig(auteurTekst(b))}</span>
+        ${b.opmerking ? `<span class="zacht">${veilig(b.opmerking)}</span>` : ''}
+      </div>
+    </a>`;
+}
+
+function rijHtml(titel, boeken, naarTab) {
+  if (!boeken.length) return '';
+  return `
+    <section class="rij">
+      <div class="rij-kop">
+        <h2>${titel}</h2>
+        <button class="link-knop" data-naar-tab="${naarTab}">Alles ›</button>
+      </div>
+      <div class="rij-covers">
+        ${boeken
+          .map(
+            (b) => `
+          <a class="rij-boek" href="#/boek/${b.id}">
+            ${coverHtml(b, 'rij-cover')}
+            <span class="rij-titel">${veilig(b.titel)}</span>
+            ${b.sterren ? `<span class="sterren-klein">${'★'.repeat(b.sterren)}</span>` : ''}
+          </a>`
+          )
+          .join('')}
+      </div>
+    </section>`;
+}
+
+function startHtml(boeken) {
+  const { deel, datum } = groet();
+  const nu = boeken.filter((b) => b.status === 'Bezig');
+  const gelezen = boeken
+    .filter((b) => b.status === 'Gelezen')
+    .sort((a, b) => laatsteLeesdatum(b).localeCompare(laatsteLeesdatum(a)) || b.toegevoegdOp.localeCompare(a.toegevoegdOp))
+    .slice(0, 12);
+  const wil = boeken
+    .filter((b) => b.status === 'Wil ik lezen')
+    .sort((a, b) => b.toegevoegdOp.localeCompare(a.toegevoegdOp))
+    .slice(0, 12);
+  return `
+    <section class="start">
+      <p class="groet">${deel}<span>${datum}</span></p>
+      ${
+        nu.length
+          ? `<div class="helden${nu.length > 1 ? ' meer' : ''}">${nu.map(heldHtml).join('')}</div>`
+          : `<div class="held leeg-held">
+               <div class="held-tekst">
+                 <span class="status">Aan het lezen</span>
+                 <strong>Wat ga je hierna lezen?</strong>
+                 <span>Open een boek en kies <b>Aan het lezen</b>, dan staat het hier.</span>
+               </div>
+             </div>`
+      }
+      ${rijHtml('Onlangs gelezen', gelezen, 'Gelezen')}
+      ${rijHtml('Wil ik lezen', wil, 'Wil ik lezen')}
+    </section>`;
+}
+
 async function toonLijst() {
   ruimCoversOp();
   const boeken = await alleBoeken();
   app.innerHTML = `
     <header class="woordmerk"><h1>Boeken</h1></header>
+    ${boeken.length ? startHtml(boeken) : ''}
     ${
       boeken.length
-        ? `<nav class="tabs" id="tabs">${TABS.map(
+        ? `<h2 class="lijst-kop" id="lijst-kop">Al je boeken</h2>
+           <nav class="tabs" id="tabs">${TABS.map(
             (t) => `<button class="tab${t === tab ? ' actief' : ''}" data-tab="${t}">${statusNaam(t)}</button>`
           ).join('')}</nav>`
         : ''
@@ -352,7 +445,7 @@ async function toonLijst() {
   });
 
   const teken = () => {
-    ruimCoversOp();
+    ruimOp(lijstLinks);
     const zichtbaar = sorteer(filter(boeken));
     document.getElementById('lijst').innerHTML = zichtbaar.length
       ? zichtbaar.map(boekRegel).join('')
@@ -360,17 +453,26 @@ async function toonLijst() {
     document.getElementById('aantal').textContent = zichtbaar.length === 1 ? '1 boek' : `${zichtbaar.length} boeken`;
   };
 
-  document.getElementById('tabs').addEventListener('click', (e) => {
-    const knop = e.target.closest('.tab');
-    if (!knop) return;
-    tab = knop.dataset.tab;
+  const kiesTab = (nieuw) => {
+    tab = nieuw;
     try {
       localStorage.setItem('tab', tab);
     } catch {
       // Niet erg.
     }
-    document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('actief', t === knop));
+    document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('actief', t.dataset.tab === tab));
     teken();
+  };
+  document.getElementById('tabs').addEventListener('click', (e) => {
+    const knop = e.target.closest('.tab');
+    if (knop) kiesTab(knop.dataset.tab);
+  });
+  // 'Alles ›' bij een rij op het startscherm: naar die tab in de lijst eronder.
+  document.querySelector('.start')?.addEventListener('click', (e) => {
+    const knop = e.target.closest('[data-naar-tab]');
+    if (!knop) return;
+    kiesTab(knop.dataset.naarTab);
+    document.getElementById('lijst-kop').scrollIntoView({ behavior: 'smooth' });
   });
   teken();
 
@@ -1158,7 +1260,9 @@ async function route() {
   else if (location.hash === '#/zoek') {
     // Zoeken = de lijst met de cursor in het zoekveld.
     await toonLijst();
-    document.getElementById('lijst-zoek')?.focus();
+    const veld = document.getElementById('lijst-zoek');
+    veld?.focus({ preventScroll: true });
+    document.getElementById('lijst-kop')?.scrollIntoView();
   } else toonLijst();
 }
 
