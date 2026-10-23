@@ -371,3 +371,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
   border: 1px solid var(--lijn); border-radius: 10px; background: var(--vlak); font-family: var(--schreefloos);
 }
 .veld textarea { resize: vertical; font-family: var(--schreef); font-size: 17px; line-height: 1.5; }
+
+/* --- Tips --- */
+button.rij-boek { border: 0; background: none; padding: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.tip-auteur { font-size: 0.78rem; color: var(--zacht); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.tip-blad .laag-kop { margin-bottom: 16px; }
+.tip-boven { display: flex; gap: 16px; align-items: flex-end; margin-bottom: 14px; }
+.tip-boven h2 { margin: 0 0 4px; font-family: var(--schreef); font-size: 1.4rem; line-height: 1.2; }
+.tip-boven p { margin: 0; }
+.tip-reden { font-family: var(--schreef); font-size: 1.05rem; font-style: italic; margin: 0 0 14px; padding-left: 12px; border-left: 3px solid var(--accent); }
+.tip-blad .synopsis { font-size: 0.95rem; color: var(--zacht); }
+.tip-blad .hoofdknop { margin-top: 18px; }
+.tip-knoppen { display: flex; gap: 10px; }
+.tip-knoppen .tweede-knop { flex: 1; }
+.tip-kobo { display: block; text-align: center; margin: 6px auto 0; }

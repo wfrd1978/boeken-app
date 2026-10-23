@@ -30,6 +30,7 @@ import {
 import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
+import { zichtbareTips, zetTipReactie } from './tips.js';
 import {
   maakBackupBestand,
   bewaarBackup,
@@ -420,6 +421,7 @@ function startHtml(boeken, naam) {
                </div>
              </div>`
       }
+      <section class="rij" id="tips-rij" hidden></section>
       ${rijHtml('Onlangs gelezen', gelezen, 'Gelezen')}
       ${rijHtml('Wil ik lezen', wil, 'Wil ik lezen')}
     </section>`;
@@ -497,6 +499,7 @@ async function toonLijst() {
     if (knop) kiesTab(knop.dataset.tab);
   });
   // 'Alles ›' bij een rij op het startscherm: naar die tab in de lijst eronder.
+  toonTipsRij(boeken);
   document.querySelector('.start')?.addEventListener('click', (e) => {
     const knop = e.target.closest('[data-naar-tab]');
     if (!knop) return;
@@ -1167,6 +1170,133 @@ async function toonProfiel() {
     veld.addEventListener('blur', bewaar);
   }
   toonBoek.bewaarOpenstaand = bewaar;
+}
+
+// --- Boekentips ---
+
+// Covers van tips onthouden, zodat ze niet elke keer opnieuw gezocht worden.
+function tipCoverCache() {
+  try {
+    return JSON.parse(localStorage.getItem('tipCovers') || '{}');
+  } catch {
+    return {};
+  }
+}
+
+async function tipCover(tip) {
+  if (tip.coverUrl) return tip.coverUrl;
+  const cache = tipCoverCache();
+  if (tip.id in cache) return cache[tip.id];
+  const { coverUrl } = await zoekCover(tip, { opTitel: true });
+  cache[tip.id] = coverUrl || '';
+  try {
+    localStorage.setItem('tipCovers', JSON.stringify(cache));
+  } catch {
+    // Niet erg; dan zoeken we hem de volgende keer opnieuw.
+  }
+  return cache[tip.id];
+}
+
+async function toonTipsRij(boeken) {
+  const vak = document.getElementById('tips-rij');
+  if (!vak) return;
+  const tips = await zichtbareTips(boeken);
+  if (!tips.length || !document.body.contains(vak)) return;
+  vak.hidden = false;
+  vak.innerHTML = `
+    <div class="rij-kop"><h2>Tips voor jou</h2></div>
+    <div class="rij-covers">
+      ${tips
+        .map(
+          (t) => `
+        <button class="rij-boek tip" data-tip="${veilig(t.id)}">
+          <div class="rij-cover geen-cover" data-cover-voor="${veilig(t.id)}">${veilig(t.titel.charAt(0))}</div>
+          <span class="rij-titel">${veilig(t.titel)}</span>
+          <span class="tip-auteur">${veilig(auteurTekst(t))}</span>
+        </button>`
+        )
+        .join('')}
+    </div>`;
+  vak.addEventListener('click', (e) => {
+    const knop = e.target.closest('[data-tip]');
+    if (knop) toonTip(tips.find((t) => t.id === knop.dataset.tip), boeken);
+  });
+  // Covers één voor één erbij zetten.
+  for (const t of tips) {
+    const url = await tipCover(t);
+    const plek = vak.querySelector(`[data-cover-voor="${CSS.escape(t.id)}"]`);
+    if (url && plek) {
+      plek.outerHTML = `<img class="rij-cover" src="${veilig(url)}" alt="" data-letter="${veilig(t.titel.charAt(0))}" onerror="geenCover(this)" />`;
+      t.coverUrl = url;
+    }
+  }
+}
+
+function toonTip(tip, boeken) {
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `<div class="laag" id="tip-laag">
+       <div class="laag-blad tip-blad">
+         <div class="laag-kop"><span class="status status-1">${tip.soort === 'parel' ? 'Parel die je misschien gemist hebt' : 'Nieuw verschenen'}</span><button class="link-knop" id="laag-sluit">Sluiten</button></div>
+         <div class="tip-boven">
+           ${tip.coverUrl ? `<img class="held-cover" src="${veilig(tip.coverUrl)}" alt="" />` : `<div class="held-cover geen-cover">${veilig(tip.titel.charAt(0))}</div>`}
+           <div>
+             <h2>${veilig(tip.titel)}</h2>
+             <p class="zacht">${veilig(auteurTekst(tip))}${tip.jaar ? ` · ${tip.jaar}` : ''}</p>
+           </div>
+         </div>
+         <p class="tip-reden">${veilig(tip.reden)}</p>
+         ${tip.synopsis ? `<div class="synopsis">${synopsisHtml(tip.synopsis)}</div>` : ''}
+         <button class="hoofdknop" data-reactie="wil">Wil ik lezen</button>
+         <div class="tip-knoppen">
+           <button class="tweede-knop" data-reactie="gelezen">Al gelezen</button>
+           <button class="tweede-knop" data-reactie="nee">Niet voor mij</button>
+         </div>
+         <a class="link-knop tip-kobo" href="${koboZoekUrl(tip)}" target="_blank" rel="noopener">Zoek bij Kobo ↗</a>
+       </div>
+     </div>`
+  );
+  const laag = document.getElementById('tip-laag');
+  const sluit = () => laag.remove();
+  document.getElementById('laag-sluit').addEventListener('click', sluit);
+  laag.addEventListener('click', async (e) => {
+    if (e.target === laag) return sluit();
+    const knop = e.target.closest('[data-reactie]');
+    if (!knop) return;
+    laag.querySelectorAll('[data-reactie]').forEach((k) => (k.disabled = true));
+    const reactie = knop.dataset.reactie;
+    await zetTipReactie(tip, reactie);
+    if (reactie === 'nee') {
+      sluit();
+      melding('Deze tip zie je niet meer');
+      toonLijst();
+      return;
+    }
+    knop.textContent = 'Bezig…';
+    const cover = await zoekCover(tip);
+    const id = await boekToevoegen({
+      titel: tip.titel,
+      auteurs: tip.auteurs ?? [],
+      isbn: tip.isbn ?? '',
+      uitgever: tip.uitgever ?? '',
+      jaar: tip.jaar ?? null,
+      synopsis: tip.synopsis || undefined,
+      ...cover,
+      status: reactie === 'gelezen' ? 'Gelezen' : 'Wil ik lezen',
+      bron: 'tip',
+      verrijkt: false,
+    });
+    verrijkAlles();
+    sluit();
+    if (reactie === 'gelezen') {
+      // Meteen naar het boek, om sterren te geven.
+      location.hash = `#/boek/${id}`;
+      melding('Toegevoegd als gelezen. Geef je oordeel!');
+    } else {
+      melding('Op je lijst gezet: Wil ik lezen');
+      toonLijst();
+    }
+  });
 }
 
 // --- Cover kiezen ---

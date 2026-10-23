@@ -31,6 +31,7 @@ export async function maakBackupBestand() {
     aantal: boeken.length,
     boeken: metCovers,
     profiel: (await db.instellingen.get('profiel'))?.waarde ?? null,
+    tipReacties: (await db.instellingen.get('tipReacties'))?.waarde ?? null,
   };
   const datum = nu.toISOString().slice(0, 10);
   return new File([JSON.stringify(inhoud)], `boeken-backup-${datum}.json`, { type: 'application/json' });
@@ -122,6 +123,7 @@ export async function zetBackupTerug(inhoud) {
     await db.boeken.bulkAdd(boeken);
     // Een oudere backup zonder profiel laat het huidige profiel staan.
     if (inhoud.profiel) await db.instellingen.put({ sleutel: 'profiel', waarde: inhoud.profiel });
+    if (inhoud.tipReacties) await db.instellingen.put({ sleutel: 'tipReacties', waarde: inhoud.tipReacties });
   });
   return boeken.length;
 }
