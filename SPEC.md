@@ -44,7 +44,7 @@ https://wfrd1978.github.io/boeken-app/
 
 ## Gedrag
 
-**Gegevens ophalen.** Eerst Open Library, daarna Google Books als aanvulling. Beide gratis, geen sleutel nodig. Lukt ophalen niet, dan kan Wilfred het boek gewoon met de hand invullen.
+**Gegevens ophalen.** Eerst Open Library, daarna Google Books als aanvulling. Beide gratis. Google Books gebruikt Wilfreds eigen gratis sleutel (beperkt tot het adres van de app en de Books API), omdat de gedeelde limiet zonder sleutel steeds op was. Lukt ophalen niet, dan kan Wilfred het boek gewoon met de hand invullen.
 
 **Dubbel-waarschuwing.** Bij toevoegen kijkt de app of het boek er al staat: gelijk ISBN, hetzelfde werk bij Open Library (zo worden vertalingen herkend), of dezelfde titel en achternaam van de auteur (hoofdletters, leestekens, lidwoorden vooraan en ondertitels maken niet uit). Dan verschijnt: "Dit boek staat al in je lijst (status: Gelezen, 4 sterren)". Wilfred kiest zelf of hij het toch toevoegt.
 
@@ -96,3 +96,4 @@ Startscherm met covers per status, synopsis en boekentips (Fase 2, stap 10–12;
 | 2026-10-23 | Boekentips maakt Claude in een sessie (gratis), niet automatisch via een betaalde AI-dienst |
 | 2026-10-23 | Toevoegen via foto van de kaft (stap 9) geschrapt: herkenning op echte kaften te onbetrouwbaar. Scannen en typen blijven |
 | 2026-10-23 | Fase 1 afgerond; Fase 2 actief |
+| 2026-10-23 | Eigen gratis Google-sleutel voor de Books API, met toestemming van Wilfred |

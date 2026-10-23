@@ -1,6 +1,16 @@
 import { vindDubbel } from './dubbel.js';
 
-// Boekgegevens ophalen bij Open Library en Google Books (gratis, geen sleutel).
+// Boekgegevens ophalen bij Open Library en Google Books (gratis).
+
+// Wilfreds eigen, gratis Google-sleutel (met zijn toestemming, 23 okt 2026). Hij werkt alleen
+// vanaf https://wfrd1978.github.io en alleen voor de Books API, dus openbaar zichtbaar is geen
+// probleem. Zonder sleutel deel je de daglimiet met iedereen en krijg je vaak geen antwoord.
+const GOOGLE_SLEUTEL = 'AIzaSyBqtajJfZxGfc6wMAAYVOsIDOoUjaexDq4';
+
+// country=NL: Google wil weten voor welk land de gegevens zijn.
+function googleUrl(zoekvraag, extra = '') {
+  return `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(zoekvraag)}${extra}&country=NL&key=${GOOGLE_SLEUTEL}`;
+}
 
 const WACHTTIJD = 10000;
 
@@ -64,7 +74,7 @@ async function zoekOpenLibrary(zoekvraag, limiet = 10) {
 
 async function zoekGoogleBooks(tekst, alleenNederlands = false, limiet = 10) {
   const taal = alleenNederlands ? '&langRestrict=nl' : '';
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(tekst)}&maxResults=${limiet}${taal}`;
+  const url = googleUrl(tekst, `&maxResults=${limiet}${taal}`);
   const data = await haalJson(url);
   return (data.items ?? []).map(({ volumeInfo: v }) => {
     const ids = v.industryIdentifiers ?? [];
@@ -183,7 +193,7 @@ export async function testBronnen() {
   };
   const [openLibrary, google] = await Promise.all([
     proef('https://openlibrary.org/search.json?q=harry+potter&limit=1&fields=key'),
-    proef('https://www.googleapis.com/books/v1/volumes?q=isbn:9789025444112&maxResults=1'),
+    proef(googleUrl('isbn:9789025444112', '&maxResults=1')),
   ]);
   return { openLibrary, google };
 }
@@ -246,7 +256,7 @@ async function haalPlaatje(url) {
 async function googleCoverUrl(zoekvraag) {
   try {
     const data = await haalJson(
-      `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(zoekvraag)}&maxResults=5`
+      googleUrl(zoekvraag, '&maxResults=5')
     );
     const met = (data.items ?? []).find((i) => i.volumeInfo?.imageLinks);
     const links = met?.volumeInfo.imageLinks;
