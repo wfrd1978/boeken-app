@@ -67,3 +67,16 @@ Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository:
 | 14 | Categorieën: elk boek in een categorie (bijvoorbeeld Thriller, Oorlog & geschiedenis, Sport & biografie, Humor, Journalistiek & samenleving, Geloof). Samen met Wilfred de indeling kiezen; Claude deelt zijn bestaande boeken in via een import, nieuwe boeken krijgen een voorstel |
 | 15 | Statistieken op de profielpagina (bijvoorbeeld boeken per jaar, per categorie, gemiddelde sterren) |
 | 16 | Zoeken/filteren op 'Wacht op Kobo Plus' (alle boeken met dat label in één overzicht) |
+
+## Werklijst (ideeën van Wilfred, nog niet ingepland)
+
+Volgorde en keuzes bepaalt Wilfred; bij elk idee eerst kort de opties en kosten voorleggen.
+
+- **Toevoegen-pagina aankleden** met de tips, zodat hij ze daar direct kan toevoegen.
+- **Profielfoto** uploaden bij het profiel (op het toestel bewaard, mee in de backup).
+- **Gelezen boeken delen** met zijn netwerk: knop 'Deel dit boek' (deelmenu met titel, sterren, zin uit de recensie), deelkaart als afbeelding, 'Mijn leesmaand/-jaar'.
+- **De app delen met anderen**: welkomstscherm, tips per persoon of uit, Kobo optioneel; eventueel via AI Startpunt voor EO-collega's.
+- **Lezen interactief maken met andere gebruikers** (samen lezen, elkaars tips, boekenclub). Vraagt om een gedeelde plek voor gegevens; eerst samen nadenken over privacy en kosten.
+- **Nieuws over boeken en schrijvers**, bijvoorbeeld wekelijks via dezelfde geplande taak als de tips (een nieuws.json).
+- **Hulp bij het schrijven van een recensie**: steekwoorden kiezen of een paar woorden typen, waarna een taalmodel er een mooie tekst van maakt. Opties: een AI-dienst met eigen sleutel (kleine kosten, toestemming nodig), of gratis via de Claude-app (tekst klaarzetten en terugplakken).
+- **Kleinere ideeën**: citaten bewaren, 'Leen bij de bibliotheek', een zacht leesdoel zonder druk.
