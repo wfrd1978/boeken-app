@@ -6,24 +6,30 @@ import { zoekBijpassend, zoekCover, zoekWerk, zoekSynopsis, TijdelijkeFout } fro
 const AANVULLEN = ['isbn', 'werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal', 'synopsis'];
 // Rustig tempo: Google heeft naast een daglimiet ook een limiet per minuut.
 const PAUZE = 1500;
-// Weigert een bron, dan steeds langer wachten (20 s, 40 s, 80 s, 160 s) en het
-// hetzelfde boek opnieuw proberen; pas daarna pauzeren tot de volgende keer.
+// 'Te veel vragen' (429): steeds langer wachten (20 s, 40 s, 80 s, 160 s) en hetzelfde
+// boek opnieuw proberen. Een storing (503) of geen verbinding: na 3 seconden nog één
+// keer proberen, en anders dit boek voorlopig overslaan; het komt later terug.
 const WACHTTIJDEN = [20000, 40000, 80000, 160000];
+const MAX_OVERGESLAGEN_OP_RIJ = 8;
 
-// Probeert 'taak' opnieuw bij een tijdelijke weigering. Geeft null terug als het
-// na alle wachttijden nog niet lukt (dan pauzeren).
+// Geeft { uitkomst }, of { overslaan: true }, of null (pauzeren tot de volgende keer).
 async function metGeduld(taak, soort, stand) {
+  let storingen = 0;
   for (let poging = 0; ; poging += 1) {
     try {
       return { uitkomst: await taak() };
     } catch (fout) {
-      if (!(fout instanceof TijdelijkeFout) || poging >= WACHTTIJDEN.length) {
-        stand.laatsteFout = fout.status ?? 0;
-        return null;
-      }
       stand.laatsteFout = fout.status ?? 0;
-      luisteraar({ soort, ...stand, wacht: WACHTTIJDEN[poging] / 1000 });
-      await wacht(WACHTTIJDEN[poging]);
+      if (!(fout instanceof TijdelijkeFout)) return null;
+      if (fout.status === 429) {
+        if (poging >= WACHTTIJDEN.length) return null;
+        luisteraar({ soort, ...stand, wacht: WACHTTIJDEN[poging] / 1000 });
+        await wacht(WACHTTIJDEN[poging]);
+      } else {
+        storingen += 1;
+        if (storingen > 1) return { overslaan: true };
+        await wacht(3000);
+      }
     }
   }
 }
@@ -51,6 +57,7 @@ export async function verrijkAlles() {
   let totaal = 0;
   let gestopt = false;
   let laatsteFout = 0;
+  let overgeslagen = 0;
   try {
     do {
       nogEenRonde = false;
@@ -64,11 +71,16 @@ export async function verrijkAlles() {
         }
         const stand = { klaar, totaal };
         const poging = await metGeduld(() => zoekBijpassend(boek), 'covers', stand);
-        if (!poging) {
+        laatsteFout = stand.laatsteFout;
+        if (!poging || (poging.overslaan && ++overgeslagen >= MAX_OVERGESLAGEN_OP_RIJ)) {
           gestopt = true;
-          laatsteFout = stand.laatsteFout;
           break;
         }
+        if (poging.overslaan) {
+          totaal -= 1;
+          continue;
+        }
+        overgeslagen = 0;
         const gevonden = poging.uitkomst;
         const actueel = await db.boeken.get(boek.id);
         if (!actueel) continue;
@@ -109,6 +121,8 @@ export async function vulSynopsisAan() {
   synopsisBezig = true;
   try {
     const zonder = await db.boeken.filter((b) => b.synopsis === undefined).toArray();
+    let totaal = zonder.length;
+    let overgeslagen = 0;
     let klaar = 0;
     let gestopt = false;
     let laatsteFout = 0;
@@ -117,21 +131,27 @@ export async function vulSynopsisAan() {
         gestopt = true;
         break;
       }
-      const stand = { klaar, totaal: zonder.length };
+      const stand = { klaar, totaal };
       const poging = await metGeduld(() => zoekSynopsis(boek), 'synopsis', stand);
-      if (!poging) {
+      laatsteFout = stand.laatsteFout;
+      if (!poging || (poging.overslaan && ++overgeslagen >= MAX_OVERGESLAGEN_OP_RIJ)) {
         gestopt = true;
-        laatsteFout = stand.laatsteFout;
         break;
       }
+      if (poging.overslaan) {
+        totaal -= 1;
+        continue;
+      }
+      overgeslagen = 0;
       const synopsis = poging.uitkomst;
       const actueel = await db.boeken.get(boek.id);
       if (actueel && actueel.synopsis === undefined) await db.boeken.update(boek.id, { synopsis });
       klaar += 1;
-      luisteraar({ soort: 'synopsis', klaar, totaal: zonder.length });
+      luisteraar({ soort: 'synopsis', klaar, totaal });
       await wacht(PAUZE);
     }
-    if (zonder.length) luisteraar({ soort: 'synopsis', klaar, totaal: zonder.length, gestopt: gestopt || klaar < zonder.length, laatsteFout });
+    // Overgeslagen boeken (storing bij Google) komen bij de volgende keer openen terug.
+    if (zonder.length) luisteraar({ soort: 'synopsis', klaar, totaal, gestopt: gestopt || klaar < totaal, laatsteFout });
   } finally {
     synopsisBezig = false;
   }
