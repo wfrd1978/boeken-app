@@ -27,7 +27,7 @@ https://wfrd1978.github.io/boeken-app/
 | Uitgever, jaar, aantal pagina's, taal | Automatisch opgehaald waar mogelijk | nee |
 | Status | *Wil ik lezen*, *Bezig*, *Gelezen*, *Gestopt* | ja, standaard *Wil ik lezen* |
 | Sterren | 1 t/m 5, alleen hele sterren | nee |
-| Leesdata | Eén of meer datums waarop het boek uit was; herlezen voegt een datum toe | nee |
+| Leesdata | Eén of meer datums waarop het boek uit was; herlezen voegt een datum toe. Is alleen de maand bekend, dan bewaren we alleen maand en jaar (geen verzonnen dag) | nee |
 | Recensie | Vrije tekst | nee |
 | Toegevoegd op | Automatisch | ja |
 | Bron | Hoe het boek erin kwam: getypt, scan, foto, Excel-import | ja |
@@ -49,7 +49,7 @@ https://wfrd1978.github.io/boeken-app/
 
 **Backup.** Eén JSON-bestand met alle boeken én covers, te bewaren via het deelmenu (bijvoorbeeld in iCloud Drive). Terugzetten vervangt de huidige lijst pas na een duidelijke bevestiging. Is de laatste backup ouder dan 14 dagen, dan toont de app een rustige herinnering.
 
-**Excel-import.** De bestaande boekenlijst (.xlsx) inlezen. Welke kolom wat betekent (titel, auteur, sterren, datum, status …) stellen we vast aan de hand van zijn eigen bestand; bij twijfel vraagt de app het. Covers en ontbrekende gegevens worden daarna op de achtergrond opgehaald. Vooraf een backup; dubbele boeken worden overgeslagen en gemeld, en vooraf toont de app hoeveel boeken er worden toegevoegd.
+**Excel-import.** De bestaande boekenlijst (.xlsx) inlezen. Welke kolom wat betekent (titel, auteur, sterren, datum, status …) stellen we vast aan de hand van zijn eigen bestand; bij twijfel vraagt de app het. Covers en ontbrekende gegevens worden daarna op de achtergrond opgehaald. Vooraf een backup; dubbele boeken worden overgeslagen en gemeld, en vooraf toont de app hoeveel boeken er worden toegevoegd. Indeling van het (verbeterde) bestand: kolommen Auteur, Titel, Gelezen (maand), Sterren, Opmerking; alle boeken krijgen status *Gelezen*. Het bestand zelf komt niet in de repository (die is openbaar).
 
 **Excel-export.** Eén .xlsx-bestand met één regel per boek en de velden hierboven als kolommen (zonder cover). Bij herlezen staan alle leesdata in één cel.
 
@@ -66,3 +66,6 @@ Synopsis, informatie over de schrijver, verfilmingen, boekentips (Fase 2). Delen
 | 2026-10-23 | Herlezen vastleggen: per boek één of meer leesdata |
 | 2026-10-23 | Bij toevoegen kies je meteen de status (standaard *Wil ik lezen*) |
 | 2026-10-23 | Import uit Excel in plaats van Goodreads: de lijst staat in Excel |
+| 2026-10-23 | Leesdatum mag alleen maand en jaar zijn (bijv. oktober 2025) |
+| 2026-10-23 | Verzamelregels in de Excel-lijst (zoals een trilogie) worden losse boeken |
+| 2026-10-23 | Typefouten worden in de Excel-lijst zelf verbeterd, niet door de app |
