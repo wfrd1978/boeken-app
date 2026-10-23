@@ -73,6 +73,13 @@ export function boekenImporteren(boeken) {
   );
 }
 
+// Sterren aanvullen bij bestaande boeken, allemaal tegelijk: lukt het niet, dan verandert er niets.
+export function sterrenAanvullen(lijst) {
+  return db.transaction('rw', db.boeken, () =>
+    Promise.all(lijst.map(({ id, sterren }) => db.boeken.update(id, { sterren })))
+  );
+}
+
 // Oudere boeken krijgen op de achtergrond hun Open Library-werk erbij, zodat
 // de dubbel-waarschuwing ook vertalingen herkent. Alleen dit ene veld wordt
 // toegevoegd; de rest van het boek blijft onaangeroerd.
