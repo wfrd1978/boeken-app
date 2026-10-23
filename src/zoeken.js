@@ -39,7 +39,9 @@ async function zoekOpenLibrary(zoekvraag, limiet = 10) {
   const vraag =
     typeof zoekvraag === 'string'
       ? `q=${encodeURIComponent(zoekvraag)}`
-      : `title=${encodeURIComponent(zoekvraag.titel)}${zoekvraag.auteur ? `&author=${encodeURIComponent(zoekvraag.auteur)}` : ''}`;
+      : zoekvraag.isbn
+        ? `isbn=${encodeURIComponent(zoekvraag.isbn)}`
+        : `title=${encodeURIComponent(zoekvraag.titel)}${zoekvraag.auteur ? `&author=${encodeURIComponent(zoekvraag.auteur)}` : ''}`;
   const url = `https://openlibrary.org/search.json?${vraag}&lang=nl&limit=${limiet}&fields=${velden}`;
   const data = await haalJson(url);
   return (data.docs ?? []).map((d) => {
@@ -116,6 +118,23 @@ export async function zoekBoeken(tekst) {
 }
 
 export class TijdelijkeFout extends Error {}
+
+// Een boek opzoeken met een gescand of getypt ISBN. Geeft null als geen bron het kent.
+export async function zoekOpIsbn(isbn) {
+  const pogingen = await Promise.allSettled([zoekOpenLibrary({ isbn }, 1), zoekGoogleBooks(`isbn:${isbn}`, false, 3)]);
+  if (pogingen.every((p) => p.status === 'rejected')) throw new TijdelijkeFout('Geen verbinding');
+  const [ol, gb] = pogingen.map((p) => p.value ?? []);
+  // Google Books beschrijft precies deze uitgave; Open Library vult aan (werk, cover).
+  const beste = gb[0] ?? ol[0];
+  if (!beste) return null;
+  const ander = gb[0] ? ol[0] : null;
+  if (ander) {
+    for (const veld of ['werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal']) {
+      if (!beste[veld] && ander[veld]) beste[veld] = ander[veld];
+    }
+  }
+  return { ...beste, isbn };
+}
 
 // Zoekt de gegevens bij een boek waarvan titel en auteur bekend zijn (bijvoorbeeld uit
 // de Excel-lijst). Alleen een resultaat dat echt hetzelfde boek is, telt; Nederlandse

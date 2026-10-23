@@ -13,7 +13,8 @@ import {
   STATUSSEN,
   statusNaam,
 } from './db.js';
-import { zoekBoeken, zoekCover, verkleinFoto, zoekWerk } from './zoeken.js';
+import { zoekBoeken, zoekCover, verkleinFoto, zoekWerk, zoekOpIsbn } from './zoeken.js';
+import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import {
@@ -88,8 +89,12 @@ function coverHtml(boek, klasse) {
     src = URL.createObjectURL(boek.cover);
     coverLinks.add(src);
   }
-  if (src) return `<img class="${klasse}" src="${veilig(src)}" alt="" loading="lazy" />`;
-  return `<div class="${klasse} geen-cover">${veilig((boek.titel || '?').charAt(0))}</div>`;
+  const letter = veilig((boek.titel || '?').charAt(0));
+  // Laadt een cover niet (bijvoorbeeld offline bij een Google-cover), dan het vlak met de beginletter.
+  if (src) {
+    return `<img class="${klasse}" src="${veilig(src)}" alt="" loading="lazy" data-letter="${letter}" onerror="geenCover(this)" />`;
+  }
+  return `<div class="${klasse} geen-cover">${letter}</div>`;
 }
 
 function sterrenTekst(aantal) {
@@ -110,6 +115,13 @@ function vandaag() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
+
+window.geenCover = (img) => {
+  const vlak = document.createElement('div');
+  vlak.className = `${img.className} geen-cover`;
+  vlak.textContent = img.dataset.letter;
+  img.replaceWith(vlak);
+};
 
 function ruimCoversOp() {
   coverLinks.forEach((url) => URL.revokeObjectURL(url));
@@ -634,12 +646,18 @@ function toonToevoegen() {
       <a class="terug" href="#/">‹ Terug</a>
       <h1>Toevoegen</h1>
     </header>
+    <button class="hoofdknop scan-knop" id="scan">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h2v14H3zM7 5h1v14H7zM10 5h2v14h-2zM14 5h1v14h-1zM17 5h1v14h-1zM20 5h1v14h-1z" /></svg>
+      Scan streepjescode
+    </button>
+    <p class="of">of zoek op titel, auteur of ISBN</p>
     <form class="zoekbalk" id="zoekform">
-      <input id="zoekveld" type="search" enterkeyhint="search" placeholder="Titel of auteur" value="${veilig(laatsteZoekterm)}" autocomplete="off" />
+      <input id="zoekveld" type="search" enterkeyhint="search" placeholder="Titel, auteur of ISBN" value="${veilig(laatsteZoekterm)}" autocomplete="off" />
       <button type="submit">Zoek</button>
     </form>
     <div id="resultaten"></div>
   `;
+  document.getElementById('scan').addEventListener('click', toonScanner);
   const veld = document.getElementById('zoekveld');
   document.getElementById('zoekform').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -647,11 +665,70 @@ function toonToevoegen() {
     zoek(veld.value.trim());
   });
   if (laatsteResultaten.length) toonResultaten(laatsteResultaten);
-  else veld.focus();
+}
+
+// --- Scannen ---
+
+let stopCamera = null;
+
+function sluitScanner() {
+  stopCamera?.();
+  stopCamera = null;
+  document.getElementById('scanner')?.remove();
+}
+
+async function toonScanner() {
+  sluitScanner();
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `<div class="scanner" id="scanner">
+       <video id="scan-video" playsinline muted autoplay></video>
+       <div class="scan-kader"></div>
+       <p class="scan-tekst" id="scan-tekst">Richt op de streepjescode achterop het boek</p>
+       <button class="scan-sluit" id="scan-sluit">Annuleren</button>
+     </div>`
+  );
+  document.getElementById('scan-sluit').addEventListener('click', sluitScanner);
+  const tekst = document.getElementById('scan-tekst');
+  try {
+    stopCamera = await startScanner(document.getElementById('scan-video'), async (isbn) => {
+      tekst.textContent = `ISBN ${isbn} gevonden. Gegevens ophalen…`;
+      await zoekGescandBoek(isbn, 'scan');
+      sluitScanner();
+    });
+  } catch (fout) {
+    tekst.textContent =
+      fout?.name === 'NotAllowedError'
+        ? 'De app mag de camera niet gebruiken. Sta het toe in Instellingen van je iPhone, of zoek op ISBN.'
+        : 'De camera start niet. Probeer het opnieuw, of typ het ISBN in het zoekveld.';
+  }
+}
+
+// Boek opzoeken met een ISBN (gescand of getypt) en het voorstel tonen.
+async function zoekGescandBoek(isbn, bron) {
+  let boek = null;
+  try {
+    boek = await zoekOpIsbn(isbn);
+  } catch {
+    melding('Geen verbinding. Probeer het zo nog eens.');
+    return;
+  }
+  if (boek) toonBevestigen({ ...boek, bron });
+  else {
+    melding(`ISBN ${isbn} niet gevonden. Vul het boek zelf in.`);
+    toonBevestigen({ titel: '', auteurs: [], isbn, handmatig: true, bron });
+  }
 }
 
 async function zoek(tekst) {
   if (!tekst) return;
+  // Een getypt ISBN direct opzoeken.
+  const cijfers = tekst.replace(/[\s-]/g, '');
+  if (geldigIsbn13(cijfers) || /^\d{9}[\dX]$/i.test(cijfers)) {
+    document.getElementById('resultaten').innerHTML = `<p class="bezig">ISBN opzoeken…</p>`;
+    await zoekGescandBoek(cijfers.toUpperCase(), 'getypt');
+    return;
+  }
   laatsteZoekterm = tekst;
   const vak = document.getElementById('resultaten');
   vak.innerHTML = `<p class="bezig">Zoeken…</p>`;
@@ -719,7 +796,8 @@ async function toonBevestigen(boek) {
       ${
         boek.handmatig
           ? `<label>Titel<input id="titel" value="${veilig(boek.titel)}" /></label>
-             <label>Auteur<input id="auteur" placeholder="Bijvoorbeeld Toon Tellegen" /></label>`
+             <label>Auteur<input id="auteur" placeholder="Bijvoorbeeld Toon Tellegen" /></label>
+             ${boek.isbn ? `<p class="details">ISBN ${veilig(boek.isbn)}</p>` : ''}`
           : `${coverHtml(boek, 'cover-groot')}
              <h2>${veilig(boek.titel)}</h2>
              <p>${veilig(auteurTekst(boek))}</p>
@@ -770,7 +848,7 @@ async function toonBevestigen(boek) {
         melding('Vul een titel in');
         return;
       }
-      gegevens = { titel, auteurs: auteur ? [auteur] : [] };
+      gegevens = { titel, auteurs: auteur ? [auteur] : [], isbn: boek.isbn ?? '' };
       // Bij zelf invullen pas na het typen controleren, en één keer waarschuwen.
       const zelfDubbel = vindDubbel(gegevens, await alleBoeken());
       if (zelfDubbel && !knop.dataset.gewaarschuwd) {
@@ -785,7 +863,7 @@ async function toonBevestigen(boek) {
     knop.textContent = 'Bezig met opslaan…';
     const cover = await zoekCover(gegevens);
     if (!gegevens.werk && gegevens.isbn) gegevens.werk = await zoekWerk(gegevens.isbn);
-    await boekToevoegen({ ...gegevens, ...cover, status, bron: 'getypt' });
+    await boekToevoegen({ ...gegevens, ...cover, status, bron: boek.bron ?? 'getypt' });
     laatsteZoekterm = '';
     laatsteResultaten = [];
     location.hash = '#/';
@@ -987,6 +1065,7 @@ async function toonBoek(id) {
 // --- Navigatie ---
 
 async function route() {
+  sluitScanner();
   // Een recensie die nog niet bewaard is, eerst opslaan.
   if (toonBoek.bewaarOpenstaand) {
     await toonBoek.bewaarOpenstaand();
