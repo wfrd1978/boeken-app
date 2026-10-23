@@ -486,3 +486,27 @@ export async function vierkanteFoto(bestand, maat = 400) {
     URL.revokeObjectURL(url);
   }
 }
+
+// Zelf zoeken: Google Afbeeldingen met titel en auteur.
+export function googleAfbeeldingenUrl(boek) {
+  const zoek = `${boek.titel} ${boek.auteurs?.[0] ?? ''} boek cover`;
+  return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(zoek)}`;
+}
+
+// Een gekopieerde afbeelding (of het adres ervan) uit het klembord als cover.
+// Geeft null als er niets bruikbaars in het klembord staat.
+export async function coverUitKlembord() {
+  for (const item of await navigator.clipboard.read()) {
+    const type = item.types.find((t) => t.startsWith('image/'));
+    if (type) return { cover: await verkleinFoto(await item.getType(type)), coverUrl: '' };
+    if (item.types.includes('text/plain')) {
+      const tekst = (await (await item.getType('text/plain')).text()).trim();
+      if (/^https:\/\/\S+$/.test(tekst)) {
+        const bewaard = await bewaarbareCover(tekst);
+        // Alleen een adres dat echt een plaatje is, of een Google-cover die we alleen kunnen tonen.
+        if (bewaard.cover || tekst.includes('books.google')) return bewaard;
+      }
+    }
+  }
+  return null;
+}
