@@ -1520,8 +1520,13 @@ async function toonToevoegTips(verversen = true) {
     });
   }
   if (!document.body.contains(vak)) return;
-  vak.hidden = !tips.length;
-  if (!tips.length) return;
+  vak.hidden = false;
+  if (!tips.length) {
+    vak.innerHTML = `
+      <h2 class="stat-kop">Tips voor jou</h2>
+      <p class="zacht">Je hebt op alle tips gereageerd. Elke zaterdagochtend komen er nieuwe.</p>`;
+    return;
+  }
   vak.innerHTML = `
     <h2 class="stat-kop">Tips voor jou</h2>
     <ul class="lijst">

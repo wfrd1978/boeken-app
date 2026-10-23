@@ -139,6 +139,8 @@ function schoneReacties(r) {
         titel: String(v.titel ?? ''),
         auteurs: Array.isArray(v.auteurs) ? v.auteurs.map(String) : [],
         op: String(v.op ?? ''),
+        categorie: String(v.categorie ?? ''),
+        soort: String(v.soort ?? ''),
       };
     }
   }

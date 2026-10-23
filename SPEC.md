@@ -61,7 +61,8 @@ https://wfrd1978.github.io/boeken-app/
 
 ## Boekentips (stap 13)
 
-- **Wat:** elke week 8 tips; ongeveer tweederde recent verschenen (afgelopen jaar), eenderde oudere parels. Kwaliteit boven spreiding over thema's. Nederlandse uitgaven die in Nederland te krijgen zijn.
+- **Wat:** elke week 16 tips; ongeveer tweederde recent verschenen (afgelopen jaar), eenderde oudere parels, verspreid over minstens vier categorieën. De app toont er 8 tegelijk; reageert de gebruiker, dan schuift de volgende door.
+- **Leren van keuzes:** op de telefoon zelf, zonder dat er iets online gaat. Per categorie en per soort (nieuw of parel) telt *Wil ik lezen* +2, *Al gelezen* +1 en *Niet voor mij* −2; vijfsterrenboeken tellen licht mee voor hun categorie. De tips met de hoogste score staan vooraan. De wekelijkse taak ziet de reacties niet (ze staan alleen op de telefoon); wil de gebruiker dat Claude ook leert, dan deelt hij af en toe een backup in een sessie en past Claude het profiel in de taak aan. Nederlandse uitgaven die in Nederland te krijgen zijn.
 - **Vermijden:** heel dikke boeken, literaire romans, Engelstalige boeken. Nooit een boek dat al in de lijst staat (ook niet als vertaling) of eerder met *Niet voor mij* is weggetikt.
 - **Op het startscherm:** rij *Tips voor jou* met cover, titel, auteur en één zin waarom. Tik: synopsis en knoppen *Wil ik lezen*, *Al gelezen* (met sterren) en *Niet voor mij*. Reacties gaan mee in de backup. Tips zonder reactie blijven staan als er een nieuwe ronde komt (nieuwe vooraan, hooguit 12 tegelijk); de app bewaart ze op het toestel.
 - **Op de Toevoegen-pagina:** dezelfde tips onder elkaar, met de reden erbij en een knop **+** die de tip meteen op *Wil ik lezen* zet. Tikken op een tip opent hem helemaal (zoals op het startscherm). Elke tip heeft een categorie (veld `categorie` in `tips.json`); die krijgt het boek mee.
@@ -124,6 +125,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die de gebruiker zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van de gebruiker: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Tips: 16 per week, 8 tegelijk zichtbaar, geordend op de eerdere keuzes |
 | 2026-10-24 | Google-daglimiet (1.000) was om 0:10 al op door het achtergrondwerk: budget van 600 voor de achtergrond, stoppen bij de daglimiet, covers bewaard door de service worker |
 | 2026-10-24 | Van de werklijst: tips op de Toevoegen-pagina en een boek delen (tekst via het deelmenu, nog geen deelkaart als afbeelding) |
 | 2026-10-24 | Stap 15 getest en klaar; daarmee is het stappenplan van fase 2 (10–16) af. Volgende werk komt van de werklijst, in de volgorde van de gebruiker |
