@@ -191,3 +191,5 @@ a.boek { color: inherit; text-decoration: none; }
   border: 1px solid var(--lijn); border-radius: 10px; background: var(--vlak); color: var(--tekst);
 }
 .tweede-knop:disabled { opacity: 0.6; }
+
+.versie { text-align: center; color: var(--zacht); font-size: 0.75rem; margin-top: 32px; }

@@ -1,5 +1,5 @@
 // Eenvoudige service worker: eerst het netwerk, bij geen internet de opgeslagen versie.
-const CACHE = 'boeken-v1';
+const CACHE = 'boeken-v2';
 
 self.addEventListener('install', () => self.skipWaiting());
 
@@ -15,7 +15,8 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
   event.respondWith(
-    fetch(request)
+    // 'no-cache': altijd bij de server navragen of er een nieuwere versie is.
+    fetch(request, { cache: 'no-cache' })
       .then((response) => {
         const kopie = response.clone();
         caches.open(CACHE).then((cache) => cache.put(request, kopie));
