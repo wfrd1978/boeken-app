@@ -15,9 +15,16 @@ function kern(tekst) {
   return kaal(tekst).replace(/[^a-z0-9]/g, '');
 }
 
+// Lidwoorden vooraan tellen niet mee: "The Da Vinci Code" = "De Da Vinci Code".
+const LIDWOORDEN = /^(de|het|een|the|a|an|der|die|das|ein|eine|le|la|les|l'|el|il)\s+/;
+
+function zonderLidwoord(titel) {
+  return kaal(titel).trim().replace(LIDWOORDEN, '');
+}
+
 // Titel zonder ondertitel: "Derksen: het verhaal" -> "derksen".
 function hoofdtitel(titel) {
-  return kern((titel || '').split(/[:(]/)[0]);
+  return kern(zonderLidwoord((titel || '').split(/[:(]/)[0]));
 }
 
 function isbnKern(isbn) {
@@ -26,7 +33,10 @@ function isbnKern(isbn) {
 
 function zelfdeBoek(a, b) {
   if (isbnKern(a.isbn) && isbnKern(a.isbn) === isbnKern(b.isbn)) return true;
-  const titelGelijk = kern(a.titel) === kern(b.titel) || hoofdtitel(a.titel) === hoofdtitel(b.titel);
+  // Zelfde werk bij Open Library = zelfde boek, ook in een andere taal.
+  if (a.werk && a.werk === b.werk) return true;
+  const titelGelijk =
+    kern(zonderLidwoord(a.titel)) === kern(zonderLidwoord(b.titel)) || hoofdtitel(a.titel) === hoofdtitel(b.titel);
   if (!titelGelijk || !hoofdtitel(a.titel)) return false;
   // Zonder auteur bij een van beide is een gelijke titel genoeg om te waarschuwen.
   const naamA = achternaam(a);

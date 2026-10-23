@@ -43,7 +43,7 @@ https://wfrd1978.github.io/boeken-app/
 
 **Gegevens ophalen.** Eerst Open Library, daarna Google Books als aanvulling. Beide gratis, geen sleutel nodig. Lukt ophalen niet, dan kan Wilfred het boek gewoon met de hand invullen.
 
-**Dubbel-waarschuwing.** Bij toevoegen kijkt de app of het boek er al staat: gelijk ISBN, of dezelfde titel en auteur (hoofdletters en leestekens maken niet uit). Dan verschijnt: "Dit boek staat al in je lijst (status: Gelezen, 4 sterren)". Wilfred kiest zelf of hij het toch toevoegt.
+**Dubbel-waarschuwing.** Bij toevoegen kijkt de app of het boek er al staat: gelijk ISBN, hetzelfde werk bij Open Library (zo worden vertalingen herkend), of dezelfde titel en achternaam van de auteur (hoofdletters, leestekens, lidwoorden vooraan en ondertitels maken niet uit). Dan verschijnt: "Dit boek staat al in je lijst (status: Gelezen, 4 sterren)". Wilfred kiest zelf of hij het toch toevoegt.
 
 **Zoeken.** Zoekt in titel, auteur en ISBN, terwijl je typt.
 
