@@ -58,6 +58,13 @@ https://wfrd1978.github.io/boeken-app/
 
 **Excel-export.** Eén .xlsx-bestand met één regel per boek, gesorteerd op achternaam van de auteur, met de velden hierboven als kolommen (zonder cover) en een filter op de kop. Bij herlezen staan alle leesdata in één cel, gescheiden door een puntkomma. Delen via het deelmenu (twee tikken: klaarmaken, dan delen).
 
+## Boekentips (stap 13)
+
+- **Wat:** elke week 8 tips; ongeveer tweederde recent verschenen (afgelopen jaar), eenderde oudere parels. Kwaliteit boven spreiding over thema's. Nederlandse uitgaven die in Nederland te krijgen zijn.
+- **Vermijden:** heel dikke boeken, literaire romans, Engelstalige boeken. Nooit een boek dat al in de lijst staat (ook niet als vertaling) of eerder met *Niet voor mij* is weggetikt.
+- **Op het startscherm:** rij *Tips voor jou* met cover, titel, auteur en één zin waarom. Tik: synopsis en knoppen *Wil ik lezen*, *Al gelezen* (met sterren) en *Niet voor mij*. Reacties gaan mee in de backup.
+- **Hoe:** de app haalt `tips.json` op van de eigen site. Een wekelijkse geplande taak van Claude zet daar nieuwe tips neer; de gebruiker hoeft niets te doen. De uitleg bij een tip is algemeen ("voor wie houdt van …") en noemt zijn eigen boeken niet. Eens per maand of zo stuurt de gebruiker een backup, zodat de smaak wordt bijgesteld.
+
 ## Vormgeving
 
 Inspiratie: de apps van de Volkskrant, Trouw en NOS. Simpel en strak, zoals een nieuwsapp. Wat we daaruit overnemen:
@@ -102,3 +109,4 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips e
 | 2026-10-23 | Synopsis: liefst de Nederlandse beschrijving van Google Books, anders die van Open Library; op de achtergrond, na de covers |
 | 2026-10-23 | Profielpagina met lezersprofiel; opslag krijgt een tweede vakje (instellingen), backup versie 2 |
 | 2026-10-23 | Nieuw logo: witte schreef-B met gouden streep op donkergroen (optie 1) |
+| 2026-10-23 | Tips: 8 per week, automatisch via een wekelijkse taak en `tips.json` (openbaar, met algemene uitleg); vermijden: dikke boeken, literaire romans, Engelstalig. Haalt de wekelijkse tip uit fase 3 naar voren |

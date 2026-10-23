@@ -29,7 +29,7 @@ Werk alleen aan de fase die actief is. Nu actief: **Fase 2** (fase 1 is afgerond
 
 Geen betaalde diensten of API-sleutels zonder expliciete toestemming van de gebruiker.
 
-Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository: die is openbaar. Ze staan in de app en in de backups.
+Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository: die is openbaar. Ze staan in de app en in de backups. Uitzondering met toestemming van de gebruiker: de tiplijst (`tips.json`) staat wel online; de uitleg bij een tip is algemeen en verwijst niet naar zijn eigen boeken. Het lezersprofiel staat alleen in de opdracht van de wekelijkse taak (privé in zijn account).
 
 ## Werkafspraken
 
@@ -63,5 +63,5 @@ Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository:
 | 10 | Warm startscherm zoals een nieuwsapp: groot het boek dat je nu leest, daaronder rijen covers van Gelezen en Wil ik lezen |
 | 11 | Korte synopsis bij elk boek, op de achtergrond opgehaald (Google Books, Open Library) |
 | 12 | Profiel: icoon rechtsboven, pagina met informatie over de gebruiker en zijn lezersprofiel; gaat mee in de backup |
-| 13 | Boekentips op het startscherm. Claude maakt de tiplijst in een sessie op basis van het lezersprofiel en de boeken met 5 sterren; geen betaalde AI-dienst |
+| 13 | Boekentips op het startscherm (rij 'Tips voor jou', met Wil ik lezen / Al gelezen / Niet voor mij). De app haalt `tips.json` op; Claude maakt de eerste ronde in een sessie. Daarna een wekelijkse geplande taak (Routine) die elke week nieuwe tips online zet; geen betaalde AI-dienst |
 | 14 | Statistieken op de profielpagina (bijvoorbeeld boeken per jaar, genres, gemiddelde sterren) |
