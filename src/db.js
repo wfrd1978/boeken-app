@@ -43,3 +43,15 @@ export function boekToevoegen(boek) {
     bron: boek.bron ?? 'getypt',
   });
 }
+
+export function haalBoek(id) {
+  return db.boeken.get(id);
+}
+
+export function boekBijwerken(id, wijzigingen) {
+  return db.boeken.update(id, wijzigingen);
+}
+
+export function boekVerwijderen(id) {
+  return db.boeken.delete(id);
+}

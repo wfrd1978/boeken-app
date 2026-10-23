@@ -128,3 +128,36 @@ button, input { font: inherit; color: inherit; }
   transition: opacity 0.2s, transform 0.2s;
 }
 #melding.zichtbaar { opacity: 1; transform: translate(-50%, 0); }
+
+a.boek { color: inherit; text-decoration: none; }
+.regel { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.regel .status { margin-top: 0; }
+.sterren-klein { color: #c9a24a !important; letter-spacing: 1px; font-size: 0.85rem !important; }
+
+.sterren { display: flex; gap: 4px; }
+.ster {
+  border: 0; background: none; padding: 4px 6px; font-size: 2.1rem; line-height: 1;
+  color: var(--lijn);
+}
+.ster.aan { color: #c9a24a; }
+
+.leesdata { list-style: none; margin: 0 0 10px; padding: 0; }
+.leesdata li { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--lijn); }
+.leesdata .weg { padding: 4px 0; font-size: 0.9rem; color: var(--zacht); }
+.zacht { color: var(--zacht); }
+.datum-toevoegen { display: flex; gap: 8px; align-items: center; }
+.datum-toevoegen input {
+  flex: 1; min-width: 0; padding: 8px 10px; font-size: 16px;
+  border: 1px solid var(--lijn); border-radius: 10px; background: var(--vlak);
+}
+
+.bevestig textarea {
+  width: 100%; padding: 12px 14px; font: inherit; font-size: 16px; color: inherit;
+  border: 1px solid var(--lijn); border-radius: 10px; background: var(--vlak); resize: vertical;
+}
+.opgeslagen { text-align: right !important; font-size: 0.85rem; margin: 4px 0 0 !important; }
+
+.verwijder {
+  display: block; margin: 40px auto 0; background: none; border: 0; padding: 12px;
+  color: #b3473f; font-size: 0.95rem;
+}
