@@ -32,6 +32,7 @@ import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
+import { deelTekst, deelBoek } from './delen.js';
 import { berekenStatistieken, huidigeMaand, geldigeStartmaand } from './statistieken.js';
 import { veilig, veiligeUrl } from './veilig.js';
 import { tipsUitArchief, verversTips, zetTipReactie } from './tips.js';
@@ -934,8 +935,10 @@ function toonToevoegen() {
       <button type="submit">Zoek</button>
     </form>
     <div id="resultaten"></div>
+    <section class="toevoeg-tips" id="toevoeg-tips" hidden></section>
   `;
   document.getElementById('scan').addEventListener('click', toonScanner);
+  toonToevoegTips();
   const veld = document.getElementById('zoekveld');
   document.getElementById('zoekform').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -1419,7 +1422,7 @@ async function vulTipCovers(vak, tips) {
   }
 }
 
-function toonTip(tip, boeken) {
+function toonTip(tip, boeken, opnieuw = toonLijst) {
   document.body.insertAdjacentHTML(
     'beforeend',
     `<div class="laag" id="tip-laag">
@@ -1456,24 +1459,11 @@ function toonTip(tip, boeken) {
     if (reactie === 'nee') {
       sluit();
       melding('Deze tip zie je niet meer');
-      toonLijst();
+      opnieuw();
       return;
     }
     knop.textContent = 'Bezig…';
-    const cover = await zoekCover(tip);
-    const id = await boekToevoegen({
-      titel: tip.titel,
-      auteurs: tip.auteurs ?? [],
-      isbn: tip.isbn ?? '',
-      uitgever: tip.uitgever ?? '',
-      jaar: tip.jaar ?? null,
-      synopsis: tip.synopsis || undefined,
-      ...cover,
-      status: reactie === 'gelezen' ? 'Gelezen' : 'Wil ik lezen',
-      bron: 'tip',
-      verrijkt: false,
-    });
-    verrijkAlles();
+    const id = await voegTipToe(tip, reactie, boeken);
     sluit();
     if (reactie === 'gelezen') {
       // Meteen naar het boek, om sterren te geven.
@@ -1481,9 +1471,91 @@ function toonTip(tip, boeken) {
       melding('Toegevoegd als gelezen. Geef je oordeel!');
     } else {
       melding('Op je lijst gezet: Wil ik lezen');
-      toonLijst();
+      opnieuw();
     }
   });
+}
+
+// Een tip als boek in de lijst zetten, met een voorstel voor de categorie.
+async function voegTipToe(tip, reactie, boeken) {
+  const cover = await zoekCover(tip);
+  const id = await boekToevoegen({
+    titel: tip.titel,
+    auteurs: tip.auteurs ?? [],
+    isbn: tip.isbn ?? '',
+    uitgever: tip.uitgever ?? '',
+    jaar: tip.jaar ?? null,
+    synopsis: tip.synopsis || undefined,
+    ...cover,
+    status: reactie === 'gelezen' ? 'Gelezen' : 'Wil ik lezen',
+    // De tip zegt zelf in welke categorie hij hoort; anders een voorstel.
+    categorie: CATEGORIEEN.includes(tip.categorie) ? tip.categorie : raadCategorie(tip, boeken),
+    bron: 'tip',
+    verrijkt: false,
+  });
+  verrijkAlles();
+  return id;
+}
+
+// Op de Toevoegen-pagina: de tips onder elkaar, met de reden erbij en een knop
+// om ze meteen op je lijst te zetten. Tikken op een tip opent hem helemaal.
+async function toonToevoegTips(verversen = true) {
+  const vak = document.getElementById('toevoeg-tips');
+  if (!vak) return;
+  const boeken = await alleBoeken();
+  const tips = await tipsUitArchief(boeken);
+  if (verversen) {
+    verversTips().then((nieuw) => {
+      if (nieuw > 0 && document.body.contains(vak)) toonToevoegTips(false);
+    });
+  }
+  if (!document.body.contains(vak)) return;
+  vak.hidden = !tips.length;
+  if (!tips.length) return;
+  vak.innerHTML = `
+    <h2 class="stat-kop">Tips voor jou</h2>
+    <ul class="lijst">
+      ${tips
+        .map(
+          (t) => `
+        <li class="tip-regel">
+          <button class="boek" data-tip="${veilig(t.id)}">
+            <div class="cover-klein geen-cover" data-cover-voor="${veilig(t.id)}">${veilig(t.titel.charAt(0))}</div>
+            <div class="boek-tekst">
+              <strong>${veilig(t.titel)}</strong>
+              <span>${veilig(auteurTekst(t))}</span>
+              <span class="zacht tip-kort">${veilig(t.reden)}</span>
+            </div>
+          </button>
+          <button class="tip-plus" data-plus="${veilig(t.id)}" aria-label="Zet ${veilig(t.titel)} op Wil ik lezen">+</button>
+        </li>`
+        )
+        .join('')}
+    </ul>`;
+  const vind = (id) => tips.find((t) => t.id === id);
+  vak.onclick = async (e) => {
+    const plus = e.target.closest('[data-plus]');
+    if (plus) {
+      plus.disabled = true;
+      const tip = vind(plus.dataset.plus);
+      await zetTipReactie(tip, 'wil');
+      await voegTipToe(tip, 'wil', boeken);
+      plus.closest('li').classList.add('weg');
+      melding(`"${tip.titel}" op je lijst gezet: Wil ik lezen`);
+      setTimeout(() => toonToevoegTips(false), 250);
+      return;
+    }
+    const knop = e.target.closest('[data-tip]');
+    if (knop) toonTip(vind(knop.dataset.tip), boeken, () => toonToevoegTips(false));
+  };
+  for (const t of tips) {
+    const url = await tipCover(t);
+    const plek = vak.querySelector(`[data-cover-voor="${CSS.escape(t.id)}"]`);
+    if (url && plek) {
+      plek.outerHTML = `<img class="cover-klein" src="${veilig(url)}" alt="" data-letter="${veilig(t.titel.charAt(0))}" data-bij-fout="letter" />`;
+      t.coverUrl = url;
+    }
+  }
 }
 
 // --- Cover kiezen ---
@@ -1547,6 +1619,10 @@ async function toonBoek(id) {
   app.innerHTML = `
     <header class="kop">
       <a class="terug" href="#/">‹ Boeken</a>
+      <button class="link-knop deel-knop" id="deel" aria-label="Deel dit boek">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l4 4-1.4 1.4L13 6.8V15h-2V6.8L9.4 8.4 8 7zM5 11h3v2H7v6h10v-6h-1v-2h3v10H5z" /></svg>
+        Deel
+      </button>
     </header>
     <section class="bevestig">
       <div id="cover-vak">${coverHtml(boek, 'cover-groot')}</div>
@@ -1600,6 +1676,16 @@ async function toonBoek(id) {
       <button class="verwijder" id="verwijder">Boek verwijderen</button>
     </section>
   `;
+
+  document.getElementById('deel').addEventListener('click', async () => {
+    // De recensie zoals hij nu in het vak staat, ook als hij nog niet bewaard is.
+    const tekst = deelTekst(boek, document.getElementById('recensie').value);
+    try {
+      if ((await deelBoek(tekst)) === 'gekopieerd') melding('Tekst gekopieerd. Plak hem waar je wilt.');
+    } catch {
+      melding('Delen lukt hier niet');
+    }
+  });
 
   const synopsisVak = document.getElementById('synopsis');
   const meer = document.getElementById('synopsis-meer');
