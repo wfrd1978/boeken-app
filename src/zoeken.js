@@ -14,12 +14,73 @@ function googleUrl(zoekvraag, extra = '') {
 
 const WACHTTIJD = 10000;
 
+// --- Zuinig met Google ---
+// Wilfreds sleutel mag 1.000 vragen per dag doen. De teller gaat op nul om middernacht in
+// Californië (in Nederland 9:00 of 10:00). Het werk op de achtergrond mag er hooguit 600
+// gebruiken, zodat er altijd genoeg overblijft om boeken te zoeken en toe te voegen.
+const ACHTERGROND_BUDGET = 600;
+
+function googleDag(nu = new Date()) {
+  return nu.toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+}
+
+function leesTeller() {
+  try {
+    const teller = JSON.parse(localStorage.getItem('googleTeller') || 'null');
+    if (teller?.dag === googleDag()) return teller;
+  } catch {
+    // Geen opslag: dan tellen we vanaf nul.
+  }
+  return { dag: googleDag(), n: 0, op: false };
+}
+
+function bewaarTeller(teller) {
+  try {
+    localStorage.setItem('googleTeller', JSON.stringify(teller));
+  } catch {
+    // Niet erg; dan is de telling minder precies.
+  }
+}
+
+// Wanneer Google weer vragen aanneemt: de eerstvolgende middernacht in Californië.
+export function googleWeerOm(nu = new Date()) {
+  const [uur, minuut] = nu
+    .toLocaleTimeString('en-GB', { timeZone: 'America/Los_Angeles', hour12: false })
+    .split(':')
+    .map(Number);
+  return new Date(nu.getTime() + ((24 - uur) * 60 - minuut) * 60000);
+}
+
+export function googleStand() {
+  const { n, op } = leesTeller();
+  return { gebruikt: n, op, achtergrondMag: !op && n < ACHTERGROND_BUDGET };
+}
+
+function daglimietFout() {
+  return Object.assign(new Error('Google: daglimiet bereikt'), { status: 429, daglimiet: true });
+}
+
 async function haalJson(url) {
+  const google = url.startsWith('https://www.googleapis.com/');
+  const teller = google ? leesTeller() : null;
+  // Daglimiet bereikt: niet eens meer vragen, dat scheelt wachten.
+  if (teller?.op) throw daglimietFout();
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), WACHTTIJD);
   try {
+    if (teller) bewaarTeller({ ...teller, n: teller.n + 1 });
     const res = await fetch(url, { signal: ctrl.signal });
-    if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { status: res.status });
+    if (!res.ok) {
+      if (google && res.status === 429) {
+        const tekst = await res.text().catch(() => '');
+        // Google zegt erbij of het om de limiet per dag of per minuut gaat.
+        if (/per day/i.test(tekst)) {
+          bewaarTeller({ ...leesTeller(), op: true });
+          throw daglimietFout();
+        }
+      }
+      throw Object.assign(new Error(`HTTP ${res.status}`), { status: res.status });
+    }
     return await res.json();
   } finally {
     clearTimeout(timer);
@@ -257,7 +318,7 @@ export async function testBronnen() {
       await haalJson(url);
       return { ok: true };
     } catch (fout) {
-      return { ok: false, status: fout.status ?? 0 };
+      return { ok: false, status: fout.status ?? 0, daglimiet: fout.daglimiet === true };
     }
   };
   const [openLibrary, google] = await Promise.all([
