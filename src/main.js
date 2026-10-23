@@ -161,6 +161,7 @@ async function toonLijst() {
            <ul class="lijst" id="lijst"></ul>`
         : `<p class="leeg">Nog geen boeken.<br />Tik op <b>+</b> om je eerste boek toe te voegen.</p>`
     }
+    <p class="versie">Versie van ${__VERSIE__}</p>
     <a class="plus" href="#/toevoegen" aria-label="Boek toevoegen">+</a>
   `;
   if (!boeken.length) return;
