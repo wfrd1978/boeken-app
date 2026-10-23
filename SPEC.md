@@ -101,3 +101,4 @@ Startscherm met covers per status, synopsis en boekentips (Fase 2, stap 10–12;
 | 2026-10-23 | Eigen gratis Google-sleutel voor de Books API, met toestemming van Wilfred |
 | 2026-10-23 | Synopsis: liefst de Nederlandse beschrijving van Google Books, anders die van Open Library; op de achtergrond, na de covers |
 | 2026-10-23 | Profielpagina met lezersprofiel; opslag krijgt een tweede vakje (instellingen), backup versie 2 |
+| 2026-10-23 | Nieuw logo: witte schreef-B met gouden streep op donkergroen (optie 1) |
