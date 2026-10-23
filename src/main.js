@@ -24,7 +24,7 @@ import {
   zetBackupTerug,
 } from './backup.js';
 import { leesExcel, planImport } from './importeren.js';
-import { verrijkAlles, opVoortgang, aantalTeVerrijken } from './verrijken.js';
+import { verrijkAlles, opVoortgang, aantalTeVerrijken, zonderCoverOpnieuw, coverTelling } from './verrijken.js';
 
 const app = document.getElementById('app');
 
@@ -45,7 +45,7 @@ opVoortgang(({ klaar, totaal, gestopt }) => {
     el.textContent =
       klaar < totaal
         ? gestopt
-          ? `Covers ophalen gepauzeerd (${klaar} van ${totaal}). Gaat verder als je weer online bent.`
+          ? `Covers ophalen gepauzeerd (${klaar} van ${totaal}): een bron weigert even, bijvoorbeeld door de daglimiet van Google. Het gaat later vanzelf verder.`
           : `Covers en gegevens ophalen: ${klaar} van ${totaal}…`
         : '';
     el.hidden = !el.textContent;
@@ -139,11 +139,16 @@ const SORTERINGEN = {
   sterren: 'Sterren',
 };
 
-// Zoekterm en sortering blijven bewaard als je een boek opent en terugkomt.
+// Tabjes bovenaan de lijst, zoals in een nieuwsapp.
+const TABS = ['Alles', 'Bezig', 'Gelezen', 'Wil ik lezen'];
+
+// Zoekterm, tab en sortering blijven bewaard als je een boek opent en terugkomt.
 let zoekterm = '';
 let sortering = 'toegevoegd';
+let tab = 'Alles';
 try {
   sortering = localStorage.getItem('sortering') || sortering;
+  tab = localStorage.getItem('tab') || tab;
 } catch {
   // Zonder opslag gewoon de standaard.
 }
@@ -167,8 +172,9 @@ function sorteer(boeken) {
 
 function filter(boeken) {
   const woorden = kaal(zoekterm).split(/\s+/).filter(Boolean);
-  if (!woorden.length) return boeken;
-  return boeken.filter((b) => {
+  const inTab = tab === 'Alles' ? boeken : boeken.filter((b) => b.status === tab);
+  if (!woorden.length) return inTab;
+  return inTab.filter((b) => {
     const tekst = kaal(`${b.titel} ${(b.auteurs || []).join(' ')} ${b.isbn}`);
     return woorden.every((w) => tekst.includes(w));
   });
@@ -181,12 +187,12 @@ function boekRegel(b) {
       <a class="boek" href="#/boek/${b.id}">
       ${coverHtml(b, 'cover-klein')}
       <div class="boek-tekst">
-        <strong>${veilig(b.titel)}</strong>
-        <span>${veilig(auteurTekst(b))}</span>
         <span class="regel">
           <span class="status status-${STATUSSEN.indexOf(b.status)}">${veilig(b.status)}</span>
           ${b.sterren ? `<span class="sterren-klein" aria-label="${b.sterren} sterren">${sterrenTekst(b.sterren)}</span>` : ''}
         </span>
+        <strong>${veilig(b.titel)}</strong>
+        <span>${veilig(auteurTekst(b))}</span>
       </div>
     </a></li>`;
 }
@@ -288,11 +294,14 @@ async function toonLijst() {
   ruimCoversOp();
   const boeken = await alleBoeken();
   app.innerHTML = `
-    <header class="kop">
-      <h1>Boeken</h1>
-      <span class="aantal">${boeken.length === 1 ? '1 boek' : `${boeken.length} boeken`}</span>
-      <a class="instellingen-link" href="#/instellingen">Instellingen</a>
-    </header>
+    <header class="woordmerk"><h1>Boeken</h1></header>
+    ${
+      boeken.length
+        ? `<nav class="tabs" id="tabs">${TABS.map(
+            (t) => `<button class="tab${t === tab ? ' actief' : ''}" data-tab="${t}">${t}</button>`
+          ).join('')}</nav>`
+        : ''
+    }
     ${inSafari() ? safariHtml() : ''}
     ${boeken.length && moetHerinneren() ? herinneringHtml() : ''}
     <p class="verrijk-status" id="verrijk-status" hidden></p>
@@ -300,18 +309,20 @@ async function toonLijst() {
       boeken.length
         ? `<div class="lijst-bediening">
              <input id="lijst-zoek" type="search" placeholder="Zoek op titel, auteur of ISBN" value="${veilig(zoekterm)}" autocomplete="off" enterkeyhint="search" />
-             <label class="sorteer">Sorteer
-               <select id="sorteer">
-                 ${Object.entries(SORTERINGEN)
-                   .map(([k, v]) => `<option value="${k}"${k === sortering ? ' selected' : ''}>${v}</option>`)
-                   .join('')}
-               </select>
-             </label>
+             <div class="lijst-regel">
+               <label class="sorteer">Sorteer
+                 <select id="sorteer">
+                   ${Object.entries(SORTERINGEN)
+                     .map(([k, v]) => `<option value="${k}"${k === sortering ? ' selected' : ''}>${v}</option>`)
+                     .join('')}
+                 </select>
+               </label>
+               <span class="aantal" id="aantal"></span>
+             </div>
            </div>
            <ul class="lijst" id="lijst"></ul>`
-        : `<p class="leeg">Nog geen boeken.<br />Tik op <b>+</b> om je eerste boek toe te voegen.</p>`
+        : `<p class="leeg">Nog geen boeken.<br />Tik onderin op <b>Toevoegen</b> om je eerste boek toe te voegen.</p>`
     }
-    <a class="plus" href="#/toevoegen" aria-label="Boek toevoegen">+</a>
   `;
   if (!boeken.length) return;
 
@@ -325,12 +336,27 @@ async function toonLijst() {
     const zichtbaar = sorteer(filter(boeken));
     document.getElementById('lijst').innerHTML = zichtbaar.length
       ? zichtbaar.map(boekRegel).join('')
-      : `<li class="leeg">Geen boek gevonden voor "${veilig(zoekterm)}".</li>`;
+      : `<li class="leeg">${zoekterm ? `Geen boek gevonden voor "${veilig(zoekterm)}".` : `Nog geen boeken bij ${veilig(tab)}.`}</li>`;
+    document.getElementById('aantal').textContent = zichtbaar.length === 1 ? '1 boek' : `${zichtbaar.length} boeken`;
   };
+
+  document.getElementById('tabs').addEventListener('click', (e) => {
+    const knop = e.target.closest('.tab');
+    if (!knop) return;
+    tab = knop.dataset.tab;
+    try {
+      localStorage.setItem('tab', tab);
+    } catch {
+      // Niet erg.
+    }
+    document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('actief', t === knop));
+    teken();
+  });
   teken();
 
   const zetAantal = () => {
-    document.querySelector('.kop .aantal').textContent = boeken.length === 1 ? '1 boek' : `${boeken.length} boeken`;
+    const zichtbaar = filter(boeken).length;
+    document.getElementById('aantal').textContent = zichtbaar === 1 ? '1 boek' : `${zichtbaar} boeken`;
   };
   maakVeegbaar(document.getElementById('lijst'), async (li) => {
     const id = Number(li.dataset.id);
@@ -446,7 +472,13 @@ async function toonInstellingen() {
              </label>`
       }
       <div id="import-vak"></div>
+    </section>
+
+    <section class="blok">
+      <h2>Covers</h2>
+      <p id="cover-telling" class="zacht">&nbsp;</p>
       <p class="verrijk-status" id="verrijk-status" hidden></p>
+      <button class="tweede-knop" id="covers-opnieuw" hidden>Zoek opnieuw naar ontbrekende covers</button>
     </section>
 
     <p class="versie">Versie van ${__VERSIE__}</p>
@@ -476,6 +508,22 @@ async function toonInstellingen() {
     } catch {
       melding('Bewaren lukte niet. Probeer het nog eens.');
     }
+  });
+
+  const telling = await coverTelling();
+  const zonder = telling.totaal - telling.met;
+  document.getElementById('cover-telling').textContent = telling.totaal
+    ? `${telling.met} van de ${telling.totaal} boeken hebben een cover.`
+    : 'Nog geen boeken.';
+  const opnieuw = document.getElementById('covers-opnieuw');
+  opnieuw.hidden = !zonder;
+  opnieuw.textContent = `Zoek opnieuw naar ontbrekende covers (${zonder})`;
+  opnieuw.addEventListener('click', async () => {
+    opnieuw.disabled = true;
+    const n = await zonderCoverOpnieuw();
+    const el = document.getElementById('verrijk-status');
+    el.textContent = `Bezig met ${n} boeken…`;
+    el.hidden = false;
   });
 
   const verrijkOpen = await aantalTeVerrijken();
@@ -928,10 +976,16 @@ async function route() {
   }
   window.scrollTo(0, 0);
   const boekId = location.hash.match(/^#\/boek\/(\d+)$/);
+  const plek = { '#/toevoegen': 'toevoegen', '#/instellingen': 'instellingen', '#/zoek': 'zoek' }[location.hash] || 'lijst';
+  document.querySelectorAll('.balk a').forEach((a) => a.classList.toggle('actief', a.dataset.plek === plek));
   if (location.hash === '#/toevoegen') toonToevoegen();
   else if (location.hash === '#/instellingen') toonInstellingen();
   else if (boekId) toonBoek(Number(boekId[1]));
-  else toonLijst();
+  else if (location.hash === '#/zoek') {
+    // Zoeken = de lijst met de cursor in het zoekveld.
+    await toonLijst();
+    document.getElementById('lijst-zoek')?.focus();
+  } else toonLijst();
 }
 
 window.addEventListener('hashchange', route);

@@ -115,6 +115,8 @@ export async function zoekBoeken(tekst) {
   return resultaten.slice(0, 15);
 }
 
+export class TijdelijkeFout extends Error {}
+
 // Zoekt de gegevens bij een boek waarvan titel en auteur bekend zijn (bijvoorbeeld uit
 // de Excel-lijst). Alleen een resultaat dat echt hetzelfde boek is, telt; Nederlandse
 // uitgaven eerst. Geeft null als niets past, en een fout als geen bron bereikbaar is.
@@ -124,9 +126,14 @@ export async function zoekBijpassend(boek) {
     zoekOpenLibrary({ titel: boek.titel, auteur }, 5),
     zoekGoogleBooks(`intitle:${boek.titel}${auteur ? ` inauthor:${auteur}` : ''}`, false, 5),
   ]);
-  if (pogingen.every((p) => p.status === 'rejected')) throw new Error('Geen verbinding');
+  if (pogingen.every((p) => p.status === 'rejected')) throw new TijdelijkeFout('Geen verbinding');
   const passend = pogingen.flatMap((p) => p.value ?? []).filter((k) => vindDubbel(boek, [k]));
   passend.sort((a, b) => (b.taal === 'nl') - (a.taal === 'nl') || Boolean(b.coverUrl) - Boolean(a.coverUrl));
+  // Weigerde een bron (bijvoorbeeld Google bij de daglimiet) en hebben we nog geen
+  // cover, dan later opnieuw proberen in plaats van 'niets gevonden' te concluderen.
+  if (pogingen.some((p) => p.status === 'rejected') && !passend.some((k) => k.coverUrl)) {
+    throw new TijdelijkeFout('Bron tijdelijk niet beschikbaar');
+  }
   const beste = passend[0];
   if (!beste) return null;
   // Ontbrekende gegevens aanvullen uit de andere passende resultaten.
@@ -180,12 +187,13 @@ async function googleCoverUrl(zoekvraag) {
 
 // Zoekt een cover in een vaste volgorde: het gevonden plaatje, Open Library via ISBN,
 // Google Books via ISBN, en tot slot Google Books via titel en auteur.
-export async function zoekCover(boek) {
+// 'opTitel: false' slaat de laatste stap over, als daar net al op gezocht is.
+export async function zoekCover(boek, { opTitel = true } = {}) {
   const kandidaten = [
     () => boek.coverUrl,
     () => boek.isbn && `https://covers.openlibrary.org/b/isbn/${boek.isbn}-M.jpg?default=false`,
     () => boek.isbn && googleCoverUrl(`isbn:${boek.isbn}`),
-    () => googleCoverUrl(`intitle:${boek.titel}${boek.auteurs?.[0] ? ` inauthor:${boek.auteurs[0]}` : ''}`),
+    () => opTitel && googleCoverUrl(`intitle:${boek.titel}${boek.auteurs?.[0] ? ` inauthor:${boek.auteurs[0]}` : ''}`),
   ];
   let reserve = '';
   for (const kandidaat of kandidaten) {
