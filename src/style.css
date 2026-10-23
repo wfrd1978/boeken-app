@@ -431,3 +431,9 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .over-app details:last-child { border-bottom: 1px solid var(--lijn); }
 .over-app summary { cursor: pointer; font-weight: 600; color: var(--tekst); }
 .over-app details p { color: var(--zacht); margin: 10px 0 0; line-height: 1.5; }
+
+/* Hulp bij de recensie */
+.recensie-regel { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.recensie-regel .link-knop { padding: 10px 0; }
+#hulp-laag .hoofdknop, #hulp-laag .tweede-knop { margin-top: 18px; width: 100%; }
+#hulp-laag .veld { margin-top: 16px; }
