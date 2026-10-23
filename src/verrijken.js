@@ -4,7 +4,29 @@ import { db } from './db.js';
 import { zoekBijpassend, zoekCover, zoekWerk, zoekSynopsis, TijdelijkeFout } from './zoeken.js';
 
 const AANVULLEN = ['isbn', 'werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal', 'synopsis'];
-const PAUZE = 400;
+// Rustig tempo: Google heeft naast een daglimiet ook een limiet per minuut.
+const PAUZE = 1500;
+// Weigert een bron, dan steeds langer wachten (20 s, 40 s, 80 s, 160 s) en het
+// hetzelfde boek opnieuw proberen; pas daarna pauzeren tot de volgende keer.
+const WACHTTIJDEN = [20000, 40000, 80000, 160000];
+
+// Probeert 'taak' opnieuw bij een tijdelijke weigering. Geeft null terug als het
+// na alle wachttijden nog niet lukt (dan pauzeren).
+async function metGeduld(taak, soort, stand) {
+  for (let poging = 0; ; poging += 1) {
+    try {
+      return { uitkomst: await taak() };
+    } catch (fout) {
+      if (!(fout instanceof TijdelijkeFout) || poging >= WACHTTIJDEN.length) {
+        stand.laatsteFout = fout.status ?? 0;
+        return null;
+      }
+      stand.laatsteFout = fout.status ?? 0;
+      luisteraar({ soort, ...stand, wacht: WACHTTIJDEN[poging] / 1000 });
+      await wacht(WACHTTIJDEN[poging]);
+    }
+  }
+}
 
 let bezig = false;
 let nogEenRonde = false;
@@ -28,33 +50,26 @@ export async function verrijkAlles() {
   let klaar = 0;
   let totaal = 0;
   let gestopt = false;
+  let laatsteFout = 0;
   try {
     do {
       nogEenRonde = false;
       const open = await db.boeken.filter((b) => b.verrijkt === false && !geprobeerd.has(b.id)).toArray();
       totaal += open.length;
-      let foutenOpRij = 0;
       for (const boek of open) {
         geprobeerd.add(boek.id);
         if (!navigator.onLine) {
           gestopt = true;
           break;
         }
-        let gevonden;
-        try {
-          gevonden = await zoekBijpassend(boek);
-          foutenOpRij = 0;
-        } catch (fout) {
-          // Een bron weigert even: dit boek later opnieuw. Gebeurt het steeds,
-          // dan pauzeren (bijvoorbeeld daglimiet van Google) en de volgende keer verder.
-          foutenOpRij += 1;
-          if (!(fout instanceof TijdelijkeFout) || foutenOpRij >= 3) {
-            gestopt = true;
-            break;
-          }
-          await wacht(PAUZE * 3);
-          continue;
+        const stand = { klaar, totaal };
+        const poging = await metGeduld(() => zoekBijpassend(boek), 'covers', stand);
+        if (!poging) {
+          gestopt = true;
+          laatsteFout = stand.laatsteFout;
+          break;
         }
+        const gevonden = poging.uitkomst;
         const actueel = await db.boeken.get(boek.id);
         if (!actueel) continue;
         // Alleen lege velden aanvullen; wat al is ingevuld blijft staan.
@@ -75,7 +90,7 @@ export async function verrijkAlles() {
         await wacht(PAUZE);
       }
     } while (nogEenRonde && !gestopt);
-    luisteraar({ klaar, totaal, gestopt: gestopt || klaar < totaal });
+    luisteraar({ klaar, totaal, gestopt: gestopt || klaar < totaal, laatsteFout });
   } finally {
     bezig = false;
   }
@@ -94,34 +109,29 @@ export async function vulSynopsisAan() {
   synopsisBezig = true;
   try {
     const zonder = await db.boeken.filter((b) => b.synopsis === undefined).toArray();
-    let foutenOpRij = 0;
     let klaar = 0;
     let gestopt = false;
+    let laatsteFout = 0;
     for (const boek of zonder) {
       if (!navigator.onLine) {
         gestopt = true;
         break;
       }
-      let synopsis;
-      try {
-        synopsis = await zoekSynopsis(boek);
-        foutenOpRij = 0;
-      } catch {
-        foutenOpRij += 1;
-        if (foutenOpRij >= 3) {
-          gestopt = true;
-          break;
-        }
-        await wacht(PAUZE * 3);
-        continue;
+      const stand = { klaar, totaal: zonder.length };
+      const poging = await metGeduld(() => zoekSynopsis(boek), 'synopsis', stand);
+      if (!poging) {
+        gestopt = true;
+        laatsteFout = stand.laatsteFout;
+        break;
       }
+      const synopsis = poging.uitkomst;
       const actueel = await db.boeken.get(boek.id);
       if (actueel && actueel.synopsis === undefined) await db.boeken.update(boek.id, { synopsis });
       klaar += 1;
       luisteraar({ soort: 'synopsis', klaar, totaal: zonder.length });
       await wacht(PAUZE);
     }
-    if (zonder.length) luisteraar({ soort: 'synopsis', klaar, totaal: zonder.length, gestopt: gestopt || klaar < zonder.length });
+    if (zonder.length) luisteraar({ soort: 'synopsis', klaar, totaal: zonder.length, gestopt: gestopt || klaar < zonder.length, laatsteFout });
   } finally {
     synopsisBezig = false;
   }
