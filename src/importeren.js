@@ -1,6 +1,7 @@
 // Een Excel-lijst inlezen en klaarzetten voor import.
 import { kaal, vindDubbel } from './dubbel.js';
 import { STATUSSEN } from './db.js';
+import { leesKoboOpmerking } from './kobo.js';
 
 const MAANDEN = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
 
@@ -80,6 +81,8 @@ export async function leesExcel(bestand) {
     if (!titel) continue;
     const auteur = String(kolom(rij, 'auteur')).trim();
     const leesdatum = leesLeesdatum(kolom(rij, 'gelezen'));
+    const opmerking = String(kolom(rij, 'opmerking')).trim();
+    const kobo = leesKoboOpmerking(opmerking);
     boeken.push({
       titel,
       auteurs: auteur ? auteur.split(/\s*&\s*/).filter(Boolean) : [],
@@ -87,7 +90,8 @@ export async function leesExcel(bestand) {
       status: leesStatus(kolom(rij, 'status')),
       sterren: leesSterren(kolom(rij, 'sterren')),
       leesdata: leesdatum ? [leesdatum] : [],
-      opmerking: String(kolom(rij, 'opmerking')).trim(),
+      opmerking: kobo ? kobo.opmerking : opmerking,
+      koboWacht: kobo?.koboWacht ?? false,
       bron: 'excel',
     });
   }

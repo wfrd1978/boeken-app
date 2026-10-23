@@ -29,6 +29,7 @@ https://wfrd1978.github.io/boeken-app/
 | Sterren | 1 t/m 5, alleen hele sterren | nee |
 | Leesdata | Eén of meer datums waarop het boek uit was; herlezen voegt een datum toe. Is alleen de maand bekend, dan bewaren we alleen maand en jaar (geen verzonnen dag) | nee |
 | Recensie | Vrije tekst | nee |
+| Wacht op Kobo Plus | Aan/uit: boek staat op de verlanglijst maar zit nog niet in Kobo Plus. Zichtbaar als label naast de status | nee |
 | Opmerking | Korte toevoeging uit de Excel-lijst, bijvoorbeeld de serie ("Amos Decker 1") | nee |
 | Toegevoegd op | Automatisch | ja |
 | Bron | Hoe het boek erin kwam: getypt, scan, foto, Excel-import | ja |
@@ -37,7 +38,7 @@ https://wfrd1978.github.io/boeken-app/
 
 1. **Lijst** — alle boeken met cover, titel, auteur, status en sterren. Naar links vegen toont een rode knop Verwijder (zoals Apple Mail); daarna kan het 5 seconden ongedaan worden gemaakt. Bovenin een zoekveld. Sorteren op: laatst toegevoegd (standaard), titel, auteur, laatste leesdatum, sterren.
 2. **Toevoegen** — drie manieren: titel typen, ISBN scannen, foto van de kaft. Altijd eerst een voorstel tonen ("Bedoel je dit boek?") voordat het wordt opgeslagen.
-3. **Boek** — alle gegevens; sterren, status, leesdata en recensie aanpassen; een leesdatum toevoegen bij herlezen; verwijderen (met bevestiging).
+3. **Boek** — alle gegevens; label Wacht op Kobo Plus aan/uit en een knop Zoek bij Kobo (opent kobo.com met titel en auteur ingevuld); sterren, status, leesdata en recensie aanpassen; een leesdatum toevoegen bij herlezen; verwijderen (met bevestiging).
 4. **Instellingen** — backup maken, backup terugzetten, Excel importeren, covers opnieuw zoeken, Excel-export.
 
 ## Gedrag
@@ -88,3 +89,4 @@ Synopsis, informatie over de schrijver, verfilmingen, boekentips (Fase 2). Delen
 | 2026-10-23 | Verwijderen ook door naar links te vegen in de lijst, met 'Ongedaan maken' in plaats van een bevestigingsvraag |
 | 2026-10-23 | Ontwerp: donkergroen, rijtje, tabjes per status, zwevende balk onderin |
 | 2026-10-23 | Weigert een bron tijdelijk (daglimiet Google), dan wordt het boek later opnieuw geprobeerd; knop in Instellingen om ontbrekende covers opnieuw te zoeken |
+| 2026-10-23 | Geen automatische koppeling met Kobo (geen openbare API, niet gratis te bouwen); wel label 'Wacht op Kobo Plus' bij het boek en een knop 'Zoek bij Kobo' |
