@@ -125,6 +125,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die de gebruiker zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van de gebruiker: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Getest en klaar: tips op de Toevoegen-pagina, Deel-knop, zuinig met Google, covers bewaren, tips leren van keuzes, profielfoto en de uitleg in Instellingen |
 | 2026-10-24 | Profielfoto, apart bewaard in het vakje instellingen en mee in de backup (backup blijft versie 2; een backup zonder foto laat de huidige foto staan) |
 | 2026-10-24 | Tips: 16 per week, 8 tegelijk zichtbaar, geordend op de eerdere keuzes |
 | 2026-10-24 | Google-daglimiet (1.000) was om 0:10 al op door het achtergrondwerk: budget van 600 voor de achtergrond, stoppen bij de daglimiet, covers bewaard door de service worker |
