@@ -36,6 +36,7 @@ https://wfrd1978.github.io/boeken-app/
 
 ## Schermen
 
+0. **Startscherm** (boven de lijst) — groet met datum; groot het boek dat je nu leest, met de wazige cover als achtergrond (meerdere: veeg opzij); rijen covers *Onlangs gelezen* (laatste leesdatum eerst) en *Wil ik lezen* (laatst toegevoegd eerst), elk met *Alles ›* naar die tab in de lijst. Daaronder *Al je boeken*.
 1. **Lijst** — alle boeken met cover, titel, auteur, status en sterren. Naar links vegen toont een rode knop Verwijder (zoals Apple Mail); daarna kan het 5 seconden ongedaan worden gemaakt. Bovenin een zoekveld. Sorteren op: laatst toegevoegd (standaard), titel, auteur, laatste leesdatum, sterren.
 2. **Toevoegen** — twee manieren: titel of ISBN typen, streepjescode scannen met de camera (ZXing, alleen geldige ISBN's met controlecijfer). Altijd eerst een voorstel tonen ("Bedoel je dit boek?") voordat het wordt opgeslagen.
 3. **Boek** — alle gegevens; label Wacht op Kobo Plus aan/uit en een knop Zoek bij Kobo (opent kobo.com met titel en auteur ingevuld); sterren, status, leesdata en recensie aanpassen; een leesdatum toevoegen bij herlezen; verwijderen (met bevestiging).
