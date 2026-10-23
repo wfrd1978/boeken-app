@@ -1,25 +1,41 @@
 // Een boek delen via het deelmenu (WhatsApp, Berichten, LinkedIn, mail).
 
-function eersteZin(tekst, max = 200) {
+import { koboZoekUrl } from './kobo.js';
+
+export const OPENING = 'Hé, hier een leuke boekentip voor je:';
+
+// Korter maken tot hele zinnen, zodat een lange tekst niet midden in een zin stopt.
+function inkorten(tekst, max) {
   const schoon = (tekst || '').replace(/\s+/g, ' ').trim();
-  if (!schoon) return '';
-  const zin = schoon.match(/^.+?[.!?](?=\s|$)/)?.[0] ?? schoon;
-  return zin.length > max ? `${zin.slice(0, max - 1).trimEnd()}…` : zin;
+  if (schoon.length <= max) return schoon;
+  const stuk = schoon.slice(0, max);
+  const einde = Math.max(stuk.lastIndexOf('. '), stuk.lastIndexOf('! '), stuk.lastIndexOf('? '));
+  return einde > max / 2 ? stuk.slice(0, einde + 1) : `${stuk.trimEnd()}…`;
 }
 
-// De tekst hangt af van de status: een gelezen boek krijgt sterren en een zin uit de recensie.
+export function bolZoekUrl(boek) {
+  const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
+  const zoek = boek.isbn || `${boek.titel} ${auteur}`.trim();
+  return `https://www.bol.com/nl/nl/s/?searchtext=${encodeURIComponent(zoek)}`;
+}
+
+// Opening, titel en auteur, categorie en oordeel, je recensie, waar het over gaat en waar je het koopt.
 export function deelTekst(boek, recensie = boek.recensie) {
   const auteurs = (boek.auteurs ?? []).join(' & ');
-  const wat = auteurs ? `${boek.titel} van ${auteurs}` : boek.titel;
-  const regels = [];
-  if (boek.status === 'Gelezen') regels.push(`Gelezen: ${wat}`);
-  else if (boek.status === 'Bezig') regels.push(`Ik lees nu: ${wat}`);
-  else if (boek.status === 'Wil ik lezen') regels.push(`Op mijn leeslijst: ${wat}`);
-  else regels.push(wat);
-  if (boek.status === 'Gelezen' && boek.sterren) regels.push('★'.repeat(boek.sterren) + '☆'.repeat(5 - boek.sterren));
-  const zin = boek.status === 'Gelezen' ? eersteZin(recensie) : '';
-  if (zin) regels.push(`"${zin}"`);
-  return regels.join('\n');
+  const blokken = [OPENING, auteurs ? `${boek.titel}, van ${auteurs}` : boek.titel];
+
+  const sterren = boek.status === 'Gelezen' && boek.sterren ? '★'.repeat(boek.sterren) + '☆'.repeat(5 - boek.sterren) : '';
+  const regel = [boek.categorie, sterren].filter(Boolean).join(' · ');
+  if (regel) blokken[1] += `\n${regel}`;
+  if (boek.status === 'Bezig') blokken.push('Ik ben het nu zelf aan het lezen.');
+  if (boek.status === 'Wil ik lezen') blokken.push('Het staat op mijn leeslijst.');
+
+  const mijn = boek.status === 'Gelezen' ? inkorten(recensie, 600) : '';
+  if (mijn) blokken.push(`Wat ik ervan vond:\n"${mijn}"`);
+  const synopsis = inkorten(boek.synopsis, 350);
+  if (synopsis) blokken.push(`Waar het over gaat:\n${synopsis}`);
+  blokken.push(`Kobo: ${koboZoekUrl(boek)}\nBol.com: ${bolZoekUrl(boek)}`);
+  return blokken.join('\n\n');
 }
 
 // Geeft 'gedeeld', 'gekopieerd' of 'geannuleerd'.
