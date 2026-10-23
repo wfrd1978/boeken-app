@@ -19,14 +19,48 @@ export async function tipReacties() {
 
 export async function zetTipReactie(tip, reactie) {
   const reacties = await tipReacties();
-  // Titel en auteur mee, zodat Claude later ziet wat wel en niet aansloeg.
-  reacties[tip.id] = { reactie, titel: tip.titel, auteurs: tip.auteurs, op: new Date().toISOString().slice(0, 10) };
+  // Titel, auteur, categorie en soort mee: zo leert de app wat wel en niet aanslaat,
+  // en kan Claude het later ook zien (via een backup).
+  reacties[tip.id] = {
+    reactie,
+    titel: tip.titel,
+    auteurs: tip.auteurs,
+    categorie: tip.categorie ?? '',
+    soort: tip.soort ?? '',
+    op: new Date().toISOString().slice(0, 10),
+  };
   await db.instellingen.put({ sleutel: 'tipReacties', waarde: reacties });
 }
 
 // Alle tips die de app ooit kreeg, bewaard op het toestel. Zo blijven tips waar Wilfred
 // nog niet op reageerde staan als er een nieuwe ronde komt; nieuwe tips komen vooraan.
-const MAX_ZICHTBAAR = 12;
+const MAX_ZICHTBAAR = 8;
+
+// Wat slaat aan? Wil ik lezen telt het zwaarst, Niet voor mij telt negatief.
+// Je vijfsterrenboeken tellen een beetje mee voor hun categorie.
+const GEWICHT = { wil: 2, gelezen: 1, nee: -2 };
+
+export function smaak(reacties, boeken = []) {
+  const score = {};
+  const tel = (sleutel, punten) => {
+    if (sleutel) score[sleutel] = (score[sleutel] ?? 0) + punten;
+  };
+  for (const r of Object.values(reacties)) {
+    tel(r.categorie && `c:${r.categorie}`, GEWICHT[r.reactie] ?? 0);
+    tel(r.soort && `s:${r.soort}`, (GEWICHT[r.reactie] ?? 0) / 2);
+  }
+  for (const b of boeken) if (b.sterren === 5) tel(b.categorie && `c:${b.categorie}`, 0.3);
+  return score;
+}
+
+// Tips met de hoogste score eerst; bij gelijke stand blijft de volgorde (nieuwste eerst).
+export function ordenTips(tips, score) {
+  const punten = (t) => (score[`c:${t.categorie}`] ?? 0) + (score[`s:${t.soort}`] ?? 0);
+  return tips
+    .map((t, i) => ({ t, i, p: punten(t) }))
+    .sort((a, b) => b.p - a.p || a.i - b.i)
+    .map(({ t }) => t);
+}
 
 async function bewaarArchief(nieuw) {
   const archief = (await db.instellingen.get('tipArchief'))?.waarde ?? [];
@@ -41,7 +75,8 @@ async function bewaarArchief(nieuw) {
 // uit wat het toestel al heeft: direct beschikbaar, zonder te wachten op internet.
 export async function tipsUitArchief(boeken) {
   const [archief, reacties] = await Promise.all([db.instellingen.get('tipArchief'), tipReacties()]);
-  return (archief?.waarde ?? []).filter((t) => !reacties[t.id] && !vindDubbel(t, boeken)).slice(0, MAX_ZICHTBAAR);
+  const open = (archief?.waarde ?? []).filter((t) => !reacties[t.id] && !vindDubbel(t, boeken));
+  return ordenTips(open, smaak(reacties, boeken)).slice(0, MAX_ZICHTBAAR);
 }
 
 // Haalt de nieuwste ronde op en bewaart nieuwe tips. Geeft het aantal nieuwe tips terug.
