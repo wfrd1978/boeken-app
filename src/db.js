@@ -68,3 +68,8 @@ export function boekBijwerken(id, wijzigingen) {
 export function boekVerwijderen(id) {
   return db.boeken.delete(id);
 }
+
+// Voor 'Ongedaan maken': zet een verwijderd boek precies terug, met hetzelfde id.
+export function boekTerugzetten(boek) {
+  return db.boeken.put(boek);
+}
