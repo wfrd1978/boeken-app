@@ -16,6 +16,7 @@ import {
 } from './db.js';
 import { zoekBoeken, zoekCover, verkleinFoto, zoekWerk, zoekOpIsbn, testBronnen, GoogleWeigert } from './zoeken.js';
 import { startScanner, geldigIsbn13 } from './scanner.js';
+import { leesKaft } from './kaft.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import {
@@ -713,6 +714,11 @@ function toonToevoegen() {
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h2v14H3zM7 5h1v14H7zM10 5h2v14h-2zM14 5h1v14h-1zM17 5h1v14h-1zM20 5h1v14h-1z" /></svg>
       Scan streepjescode
     </button>
+    <label class="tweede-knop scan-knop bestand-knop">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h6l1.5 2H20a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h3.5zm3 4a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zm0 2a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" /></svg>
+      Foto van de kaft
+      <input type="file" id="kaft-foto" accept="image/*" capture="environment" hidden />
+    </label>
     <p class="of">of zoek op titel, auteur of ISBN</p>
     <form class="zoekbalk" id="zoekform">
       <input id="zoekveld" type="search" enterkeyhint="search" placeholder="Titel, auteur of ISBN" value="${veilig(laatsteZoekterm)}" autocomplete="off" />
@@ -721,6 +727,31 @@ function toonToevoegen() {
     <div id="resultaten"></div>
   `;
   document.getElementById('scan').addEventListener('click', toonScanner);
+  document.getElementById('kaft-foto').addEventListener('change', async (e) => {
+    const foto = e.target.files?.[0];
+    e.target.value = '';
+    if (!foto) return;
+    const vak = document.getElementById('resultaten');
+    vak.innerHTML = '<p class="bezig">Foto bekijken…</p>';
+    let gelezen = '';
+    try {
+      gelezen = await leesKaft(foto, (tekst) => {
+        const p = vak.querySelector('.bezig');
+        if (p) p.textContent = tekst;
+      });
+    } catch {
+      vak.innerHTML = '<p class="leeg">Tekstherkenning lukte niet. Controleer je internet (de eerste keer is dat nodig) of typ de titel.</p>';
+      return;
+    }
+    if (!gelezen) {
+      vak.innerHTML = '<p class="leeg">Ik kon geen tekst lezen op deze foto. Probeer het met meer licht, recht van voren, of typ de titel.</p>';
+      return;
+    }
+    // Wat de app las, staat in het zoekveld: aan te passen als het niet klopt.
+    document.getElementById('zoekveld').value = gelezen;
+    await zoek(gelezen, 'foto');
+    vak.insertAdjacentHTML('afterbegin', `<p class="zacht gelezen">Gelezen op de kaft: "${veilig(gelezen)}". Klopt het niet? Pas het zoekveld aan.</p>`);
+  });
   const veld = document.getElementById('zoekveld');
   document.getElementById('zoekform').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -784,7 +815,10 @@ async function zoekGescandBoek(isbn, bron) {
   else toonBevestigen({ titel: '', auteurs: [], isbn, handmatig: true, bron, reden });
 }
 
-async function zoek(tekst) {
+let zoekBron = 'getypt';
+
+async function zoek(tekst, bron = 'getypt') {
+  zoekBron = bron;
   if (!tekst) return;
   // Een getypt ISBN direct opzoeken.
   const cijfers = tekst.replace(/[\s-]/g, '');
@@ -798,7 +832,7 @@ async function zoek(tekst) {
   vak.innerHTML = `<p class="bezig">Zoeken…</p>`;
   try {
     laatsteResultaten = await zoekBoeken(tekst);
-    toonResultaten(laatsteResultaten);
+    await toonResultaten(laatsteResultaten);
   } catch {
     vak.innerHTML = `
       <p class="leeg">Zoeken lukt nu niet. Controleer je internetverbinding.</p>
@@ -841,7 +875,7 @@ async function toonResultaten(resultaten) {
     ${zelfInvullenKnop()}
   `;
   vak.querySelectorAll('.resultaat').forEach((knop) =>
-    knop.addEventListener('click', () => toonBevestigen(resultaten[Number(knop.dataset.i)]))
+    knop.addEventListener('click', () => toonBevestigen({ ...resultaten[Number(knop.dataset.i)], bron: zoekBron }))
   );
   koppelZelfInvullen();
 }
