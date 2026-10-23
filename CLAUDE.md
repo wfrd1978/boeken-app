@@ -8,11 +8,11 @@ De gebruiker bouwt een persoonlijke mobiele webapp om zijn boeken bij te houden.
 
 ## Fases
 
-1. **Kern** — toevoegen via ISBN-scan, foto van de kaft of getypte titel; cover en gegevens automatisch ophalen; sterren, leesdatum, recensie; zoeken; dubbel-waarschuwing; Excel-export; backup/terugzetten; import van de bestaande Excel-lijst.
+1. **Kern** — toevoegen via ISBN-scan of getypte titel; cover en gegevens automatisch ophalen; sterren, leesdatum, recensie; zoeken; dubbel-waarschuwing; Excel-export; backup/terugzetten; import van de bestaande Excel-lijst.
 2. **Verrijking** — startscherm, synopsis, boekentips op basis van het leesprofiel; later informatie over de schrijver en verfilmingen.
 3. **Delen** — delen met anderen en een wekelijkse tip uit nieuwe titels.
 
-Werk alleen aan de fase die actief is. Nu actief: **Fase 1**.
+Werk alleen aan de fase die actief is. Nu actief: **Fase 2** (fase 1 is afgerond).
 
 ## Gekozen techniek (en waarom, in gewoon Nederlands)
 
@@ -24,7 +24,6 @@ Werk alleen aan de fase die actief is. Nu actief: **Fase 1**.
 | Backup | JSON-bestand via het deelmenu naar iCloud Drive / Mac | Gratis, data blijft van de gebruiker |
 | Boekgegevens | Open Library + Google Books (gratis) | Geen kosten; samen de beste dekking |
 | ISBN-scan | ZXing (barcodescanner in de browser) | Werkt ook op iPhone/Safari |
-| Kaftfoto | Tesseract.js (tekstherkenning op het toestel) | Gratis, geen AI-dienst nodig |
 | Excel | SheetJS | Maakt een echt .xlsx-bestand |
 | Online zetten | GitHub Pages, automatisch bij elke push | Gratis; camera vraagt een https-adres, dat levert Pages |
 
@@ -55,7 +54,7 @@ Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository:
 | 6 | Bestaande Excel-lijst importeren |
 | 7 | ISBN-scan met de camera |
 | 8 | Excel-export |
-| 9 | Toevoegen via foto van de kaft |
+| 9 | ~~Toevoegen via foto van de kaft~~ — geschrapt: werkte op echte kaften te slecht |
 
 ## Stappenplan Fase 2 (na stap 9, volgorde van de gebruiker)
 
