@@ -62,8 +62,8 @@ https://wfrd1978.github.io/boeken-app/
 
 - **Wat:** elke week 8 tips; ongeveer tweederde recent verschenen (afgelopen jaar), eenderde oudere parels. Kwaliteit boven spreiding over thema's. Nederlandse uitgaven die in Nederland te krijgen zijn.
 - **Vermijden:** heel dikke boeken, literaire romans, Engelstalige boeken. Nooit een boek dat al in de lijst staat (ook niet als vertaling) of eerder met *Niet voor mij* is weggetikt.
-- **Op het startscherm:** rij *Tips voor jou* met cover, titel, auteur en één zin waarom. Tik: synopsis en knoppen *Wil ik lezen*, *Al gelezen* (met sterren) en *Niet voor mij*. Reacties gaan mee in de backup.
-- **Hoe:** de app haalt `tips.json` op van de eigen site. Een wekelijkse geplande taak van Claude zet daar nieuwe tips neer; de gebruiker hoeft niets te doen. De uitleg bij een tip is algemeen ("voor wie houdt van …") en noemt zijn eigen boeken niet. Eens per maand of zo stuurt de gebruiker een backup, zodat de smaak wordt bijgesteld.
+- **Op het startscherm:** rij *Tips voor jou* met cover, titel, auteur en één zin waarom. Tik: synopsis en knoppen *Wil ik lezen*, *Al gelezen* (met sterren) en *Niet voor mij*. Reacties gaan mee in de backup. Tips zonder reactie blijven staan als er een nieuwe ronde komt (nieuwe vooraan, hooguit 12 tegelijk); de app bewaart ze op het toestel.
+- **Hoe:** de app haalt `tips.json` op van de eigen site. Een wekelijkse geplande taak van Claude (Routine 'Wekelijkse boekentips', zaterdag 06:38) zet daar nieuwe tips neer; de gebruiker hoeft niets te doen. De uitleg bij een tip is algemeen ("voor wie houdt van …") en noemt zijn eigen boeken niet. Eens per maand of zo stuurt de gebruiker een backup, zodat de smaak wordt bijgesteld.
 
 ## Vormgeving
 
@@ -81,7 +81,7 @@ Gekozen: accentkleur donkergroen (#1F4D3F), de lijst als rijtje (kleine cover li
 
 ## Nog te doen en buiten beeld
 
-Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips en statistieken volgen (stap 13–14; zie CLAUDE.md). Daarna eventueel informatie over de schrijver en verfilmingen. Delen met anderen en wekelijkse tips (Fase 3). Geen accounts, geen synchronisatie tussen apparaten, geen betaalde diensten.
+Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (stap 13), daarna categorieën (stap 14) en statistieken (stap 15); zie CLAUDE.md. Daarna eventueel informatie over de schrijver en verfilmingen. Delen met anderen en wekelijkse tips (Fase 3). Geen accounts, geen synchronisatie tussen apparaten, geen betaalde diensten.
 
 ## Besluiten
 
@@ -110,3 +110,5 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips e
 | 2026-10-23 | Profielpagina met lezersprofiel; opslag krijgt een tweede vakje (instellingen), backup versie 2 |
 | 2026-10-23 | Nieuw logo: witte schreef-B met gouden streep op donkergroen (optie 1) |
 | 2026-10-23 | Tips: 8 per week, automatisch via een wekelijkse taak en `tips.json` (openbaar, met algemene uitleg); vermijden: dikke boeken, literaire romans, Engelstalig. Haalt de wekelijkse tip uit fase 3 naar voren |
+| 2026-10-23 | Terug naar het startscherm: verder waar je was; onderin op Boeken tikken gaat naar boven |
+| 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
