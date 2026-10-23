@@ -197,3 +197,14 @@ export async function haalProfiel() {
 export async function bewaarProfiel(profiel) {
   await db.instellingen.put({ sleutel: 'profiel', waarde: profiel });
 }
+
+// Profielfoto apart bewaard (een plaatje), zodat het profiel zelf gewone tekst blijft.
+export async function haalProfielFoto() {
+  const foto = (await db.instellingen.get('profielFoto'))?.waarde;
+  return foto instanceof Blob ? foto : null;
+}
+
+export async function bewaarProfielFoto(foto) {
+  if (foto) await db.instellingen.put({ sleutel: 'profielFoto', waarde: foto });
+  else await db.instellingen.delete('profielFoto');
+}

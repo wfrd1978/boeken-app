@@ -16,6 +16,8 @@ import {
   statusNaam,
   haalProfiel,
   bewaarProfiel,
+  haalProfielFoto,
+  bewaarProfielFoto,
 } from './db.js';
 import {
   zoekBoeken,
@@ -29,6 +31,7 @@ import {
   bewaarbareCover,
   googleStand,
   googleWeerOm,
+  vierkanteFoto,
 } from './zoeken.js';
 import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
@@ -462,14 +465,18 @@ function startHtml(boeken, naam) {
 async function toonLijst() {
   const nr = schermNr;
   ruimCoversOp();
-  const [boeken, profiel] = await Promise.all([alleBoeken(), haalProfiel()]);
+  const [boeken, profiel, foto] = await Promise.all([alleBoeken(), haalProfiel(), profielFotoAdres()]);
   // Intussen naar een ander scherm gegaan? Dan dit scherm niet meer tekenen.
   if (nr !== schermNr) return;
   app.innerHTML = `
     <header class="woordmerk">
       <h1>Boeken</h1>
-      <a class="profiel-icoon" href="#/profiel" aria-label="Mijn profiel">${
-        profiel.naam ? veilig(profiel.naam.charAt(0).toUpperCase()) : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5z" /></svg>'
+      <a class="profiel-icoon${foto ? ' met-foto' : ''}" href="#/profiel" aria-label="Mijn profiel">${
+        foto
+          ? `<img src="${veilig(foto)}" alt="" />`
+          : profiel.naam
+            ? veilig(profiel.naam.charAt(0).toUpperCase())
+            : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5z" /></svg>'
       }</a>
     </header>
     ${boeken.length ? startHtml(boeken, profiel.naam) : ''}
@@ -1212,6 +1219,25 @@ function synopsisHtml(tekst) {
 
 // --- Profiel ---
 
+// Eén adres voor de profielfoto, hergebruikt op elk scherm; nieuw bij een andere foto.
+let fotoAdres = null;
+let fotoVan = null;
+async function profielFotoAdres() {
+  const foto = await haalProfielFoto();
+  if (foto !== fotoVan || (foto && !fotoAdres)) {
+    if (fotoAdres) URL.revokeObjectURL(fotoAdres);
+    fotoAdres = foto ? URL.createObjectURL(foto) : null;
+    fotoVan = foto;
+  }
+  return fotoAdres;
+}
+
+// Rondje met foto, of anders de eerste letter van de naam (of een poppetje).
+function avatarHtml(klasse, profiel, foto, reserve) {
+  if (foto) return `<img class="${klasse} met-foto" src="${veilig(foto)}" alt="" />`;
+  return `<div class="${klasse}">${profiel.naam ? veilig(profiel.naam.charAt(0).toUpperCase()) : reserve}</div>`;
+}
+
 // Een rij staafjes: label, staaf naar verhouding, aantal. De grootste staaf is vol.
 function stavenHtml(rijen) {
   const max = Math.max(...rijen.map((r) => r.aantal));
@@ -1282,7 +1308,7 @@ function statistiekenHtml(st, vanaf) {
 async function toonProfiel() {
   const nr = schermNr;
   ruimCoversOp();
-  const [profiel, boeken] = await Promise.all([haalProfiel(), alleBoeken()]);
+  const [profiel, boeken, foto] = await Promise.all([haalProfiel(), alleBoeken(), profielFotoAdres()]);
   if (nr !== schermNr) return;
   // De statistieken tellen vanaf de maand waarin Wilfred begon met bijhouden.
   // Nog niet gekozen: deze maand, en die keuze wordt bewaard zodat hij niet elke maand verschuift.
@@ -1300,13 +1326,20 @@ async function toonProfiel() {
     </header>
     <section class="profiel">
       <div class="profiel-kop">
-        <div class="profiel-groot">${profiel.naam ? veilig(profiel.naam.charAt(0).toUpperCase()) : '?'}</div>
+        <label class="profiel-foto-kiezen" aria-label="Kies een profielfoto">
+          <span id="avatar">${avatarHtml('profiel-groot', profiel, foto, '?')}</span>
+          <input type="file" accept="image/*" id="p-foto" hidden />
+        </label>
         <div>
           <h1 id="profiel-naam-kop">${veilig(profiel.naam || 'Mijn profiel')}</h1>
           <p class="zacht">${(() => {
             const n = boeken.filter((b) => b.status === 'Gelezen').length;
             return `${n === 1 ? '1 boek' : `${n} boeken`} gelezen · ${top.length} met vijf sterren`;
           })()}</p>
+          <div class="foto-knoppen">
+            <label class="link-knop" for="p-foto">${foto ? 'Andere foto' : 'Foto toevoegen'}</label>
+            ${foto ? '<button class="link-knop zacht" id="p-foto-weg">Weghalen</button>' : ''}
+          </div>
         </div>
       </div>
 
@@ -1334,7 +1367,8 @@ async function toonProfiel() {
     Object.assign(profiel, nieuw);
     await bewaarProfiel(profiel);
     document.getElementById('profiel-naam-kop').textContent = profiel.naam || 'Mijn profiel';
-    document.querySelector('.profiel-groot').textContent = profiel.naam ? profiel.naam.charAt(0).toUpperCase() : '?';
+    const letter = document.querySelector('div.profiel-groot');
+    if (letter) letter.textContent = profiel.naam ? profiel.naam.charAt(0).toUpperCase() : '?';
     opgeslagen.textContent = 'Opgeslagen';
   };
   for (const id of Object.values(velden)) {
@@ -1347,6 +1381,25 @@ async function toonProfiel() {
     veld.addEventListener('blur', bewaar);
   }
   toonBoek.bewaarOpenstaand = bewaar;
+
+  document.getElementById('p-foto').addEventListener('change', async (e) => {
+    const bestand = e.target.files?.[0];
+    if (!bestand) return;
+    try {
+      await bewaarProfielFoto(await vierkanteFoto(bestand));
+    } catch {
+      melding('Deze foto kan ik niet lezen. Kies een andere.');
+      return;
+    }
+    await bewaar();
+    melding('Profielfoto bewaard');
+    toonProfiel();
+  });
+  document.getElementById('p-foto-weg')?.addEventListener('click', async () => {
+    await bewaarProfielFoto(null);
+    await bewaar();
+    toonProfiel();
+  });
 
   // Andere startmaand: bewaren en de cijfers opnieuw tekenen.
   const koppelVanaf = () =>

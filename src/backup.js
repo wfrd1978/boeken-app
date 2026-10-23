@@ -23,6 +23,11 @@ async function tekstNaarBlob(dataUrl) {
   return new Blob([Uint8Array.from(bytes, (c) => c.charCodeAt(0))], { type });
 }
 
+async function fotoAlsTekst() {
+  const foto = (await db.instellingen.get('profielFoto'))?.waarde;
+  return foto instanceof Blob ? blobNaarTekst(foto) : null;
+}
+
 export async function maakBackupBestand() {
   const boeken = await db.boeken.toArray();
   const metCovers = await Promise.all(
@@ -38,6 +43,7 @@ export async function maakBackupBestand() {
     boeken: metCovers,
     profiel: (await db.instellingen.get('profiel'))?.waarde ?? null,
     tipReacties: (await db.instellingen.get('tipReacties'))?.waarde ?? null,
+    profielFoto: await fotoAlsTekst(),
   };
   const datum = nu.toISOString().slice(0, 10);
   return new File([JSON.stringify(inhoud)], `boeken-backup-${datum}.json`, { type: 'application/json' });
@@ -158,6 +164,8 @@ export async function zetBackupTerug(inhoud) {
   );
   const profiel = schoonProfiel(inhoud.profiel);
   const reacties = schoneReacties(inhoud.tipReacties);
+  const foto =
+    typeof inhoud.profielFoto === 'string' && inhoud.profielFoto.startsWith('data:image/') ? await tekstNaarBlob(inhoud.profielFoto) : null;
   // Werk op de achtergrond (covers, synopsis) eerst stoppen: dat hoort bij de oude lijst.
   stopAchtergrond();
   await db.transaction('rw', db.boeken, db.instellingen, async () => {
@@ -166,6 +174,8 @@ export async function zetBackupTerug(inhoud) {
     // Een oudere backup zonder profiel laat het huidige profiel staan.
     if (profiel) await db.instellingen.put({ sleutel: 'profiel', waarde: profiel });
     if (reacties) await db.instellingen.put({ sleutel: 'tipReacties', waarde: reacties });
+    // Een backup zonder foto laat de huidige foto staan.
+    if (foto) await db.instellingen.put({ sleutel: 'profielFoto', waarde: foto });
   });
   return boeken.length;
 }

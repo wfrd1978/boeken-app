@@ -466,3 +466,23 @@ export async function verkleinFoto(bestand) {
   canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   return new Promise((klaar) => canvas.toBlob(klaar, 'image/jpeg', 0.85));
 }
+
+// Een profielfoto: vierkant uit het midden, 400 bij 400 pixels. Via een gewoon plaatje
+// ingelezen, zodat een foto die rechtop is gemaakt ook rechtop blijft.
+export async function vierkanteFoto(bestand, maat = 400) {
+  const url = URL.createObjectURL(bestand);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const kant = Math.min(img.naturalWidth, img.naturalHeight);
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = Math.min(maat, kant);
+    canvas
+      .getContext('2d')
+      .drawImage(img, (img.naturalWidth - kant) / 2, (img.naturalHeight - kant) / 2, kant, kant, 0, 0, canvas.width, canvas.height);
+    return await new Promise((klaar) => canvas.toBlob(klaar, 'image/jpeg', 0.85));
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
