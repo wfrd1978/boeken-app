@@ -79,6 +79,74 @@ function melding(tekst) {
 
 // --- Lijst ---
 
+const SORTERINGEN = {
+  toegevoegd: 'Laatst toegevoegd',
+  titel: 'Titel',
+  auteur: 'Auteur',
+  gelezen: 'Laatst gelezen',
+  sterren: 'Sterren',
+};
+
+// Zoekterm en sortering blijven bewaard als je een boek opent en terugkomt.
+let zoekterm = '';
+let sortering = 'toegevoegd';
+try {
+  sortering = localStorage.getItem('sortering') || sortering;
+} catch {
+  // Zonder opslag gewoon de standaard.
+}
+
+function kaal(tekst) {
+  return (tekst || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+// Achternaam = laatste woord van de eerste auteur ("Michel van Egmond" -> "egmond").
+function achternaam(boek) {
+  const naam = (boek.auteurs?.[0] || '').split('&')[0].trim();
+  return kaal(naam.split(/\s+/).pop());
+}
+
+function laatsteLeesdatum(boek) {
+  return boek.leesdata?.length ? boek.leesdata[boek.leesdata.length - 1] : '';
+}
+
+function sorteer(boeken) {
+  const opTitel = (a, b) => kaal(a.titel).localeCompare(kaal(b.titel), 'nl');
+  const regels = {
+    toegevoegd: (a, b) => b.toegevoegdOp.localeCompare(a.toegevoegdOp),
+    titel: opTitel,
+    auteur: (a, b) => achternaam(a).localeCompare(achternaam(b), 'nl') || opTitel(a, b),
+    // Boeken zonder datum of sterren achteraan.
+    gelezen: (a, b) => laatsteLeesdatum(b).localeCompare(laatsteLeesdatum(a)) || opTitel(a, b),
+    sterren: (a, b) => (b.sterren || 0) - (a.sterren || 0) || opTitel(a, b),
+  };
+  return [...boeken].sort(regels[sortering] || regels.toegevoegd);
+}
+
+function filter(boeken) {
+  const woorden = kaal(zoekterm).split(/\s+/).filter(Boolean);
+  if (!woorden.length) return boeken;
+  return boeken.filter((b) => {
+    const tekst = kaal(`${b.titel} ${(b.auteurs || []).join(' ')} ${b.isbn}`);
+    return woorden.every((w) => tekst.includes(w));
+  });
+}
+
+function boekRegel(b) {
+  return `
+    <li><a class="boek" href="#/boek/${b.id}">
+      ${coverHtml(b, 'cover-klein')}
+      <div class="boek-tekst">
+        <strong>${veilig(b.titel)}</strong>
+        <span>${veilig(auteurTekst(b))}</span>
+        <span class="regel">
+          <span class="status status-${STATUSSEN.indexOf(b.status)}">${veilig(b.status)}</span>
+          ${b.sterren ? `<span class="sterren-klein" aria-label="${b.sterren} sterren">${sterrenTekst(b.sterren)}</span>` : ''}
+        </span>
+      </div>
+    </a></li>`;
+}
+
 async function toonLijst() {
   ruimCoversOp();
   const boeken = await alleBoeken();
@@ -89,26 +157,48 @@ async function toonLijst() {
     </header>
     ${
       boeken.length
-        ? `<ul class="lijst">${boeken
-            .map(
-              (b) => `
-          <li><a class="boek" href="#/boek/${b.id}">
-            ${coverHtml(b, 'cover-klein')}
-            <div class="boek-tekst">
-              <strong>${veilig(b.titel)}</strong>
-              <span>${veilig(auteurTekst(b))}</span>
-              <span class="regel">
-                <span class="status status-${STATUSSEN.indexOf(b.status)}">${veilig(b.status)}</span>
-                ${b.sterren ? `<span class="sterren-klein" aria-label="${b.sterren} sterren">${sterrenTekst(b.sterren)}</span>` : ''}
-              </span>
-            </div>
-          </a></li>`
-            )
-            .join('')}</ul>`
+        ? `<div class="lijst-bediening">
+             <input id="lijst-zoek" type="search" placeholder="Zoek op titel, auteur of ISBN" value="${veilig(zoekterm)}" autocomplete="off" enterkeyhint="search" />
+             <label class="sorteer">Sorteer
+               <select id="sorteer">
+                 ${Object.entries(SORTERINGEN)
+                   .map(([k, v]) => `<option value="${k}"${k === sortering ? ' selected' : ''}>${v}</option>`)
+                   .join('')}
+               </select>
+             </label>
+           </div>
+           <ul class="lijst" id="lijst"></ul>`
         : `<p class="leeg">Nog geen boeken.<br />Tik op <b>+</b> om je eerste boek toe te voegen.</p>`
     }
     <a class="plus" href="#/toevoegen" aria-label="Boek toevoegen">+</a>
   `;
+  if (!boeken.length) return;
+
+  const teken = () => {
+    ruimCoversOp();
+    const zichtbaar = sorteer(filter(boeken));
+    document.getElementById('lijst').innerHTML = zichtbaar.length
+      ? zichtbaar.map(boekRegel).join('')
+      : `<li class="leeg">Geen boek gevonden voor "${veilig(zoekterm)}".</li>`;
+  };
+  teken();
+
+  document.getElementById('lijst-zoek').addEventListener('input', (e) => {
+    zoekterm = e.target.value;
+    teken();
+  });
+  document.getElementById('lijst-zoek').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') e.target.blur();
+  });
+  document.getElementById('sorteer').addEventListener('change', (e) => {
+    sortering = e.target.value;
+    try {
+      localStorage.setItem('sortering', sortering);
+    } catch {
+      // Niet erg; dan geldt de keuze alleen nu.
+    }
+    teken();
+  });
 }
 
 // --- Toevoegen ---
