@@ -10,6 +10,14 @@ db.version(1).stores({
 
 export const STATUSSEN = ['Wil ik lezen', 'Bezig', 'Gelezen', 'Gestopt'];
 
+// Zo heet een status in beeld. In de opslag blijft de oorspronkelijke naam staan,
+// zodat bestaande boeken en backups gewoon blijven werken.
+const STATUS_IN_BEELD = { Bezig: 'Aan het lezen' };
+
+export function statusNaam(status) {
+  return STATUS_IN_BEELD[status] ?? status;
+}
+
 // Vraag de browser om de opslag niet zomaar op te ruimen.
 export async function vraagBlijvendeOpslag() {
   try {

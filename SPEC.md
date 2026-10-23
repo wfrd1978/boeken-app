@@ -25,7 +25,7 @@ https://wfrd1978.github.io/boeken-app/
 | ISBN | 13 cijfers, of 10 bij oudere boeken | nee |
 | Cover | Afbeelding, opgeslagen op het toestel zodat hij offline zichtbaar is | nee |
 | Uitgever, jaar, aantal pagina's, taal | Automatisch opgehaald waar mogelijk | nee |
-| Status | *Wil ik lezen*, *Bezig*, *Gelezen*, *Gestopt* | ja, standaard *Wil ik lezen* |
+| Status | *Wil ik lezen*, *Aan het lezen*, *Gelezen*, *Gestopt* (in de opslag heet *Aan het lezen* nog 'Bezig') | ja, standaard *Wil ik lezen* |
 | Sterren | 1 t/m 5, alleen hele sterren | nee |
 | Leesdata | Eén of meer datums waarop het boek uit was; herlezen voegt een datum toe. Is alleen de maand bekend, dan bewaren we alleen maand en jaar (geen verzonnen dag) | nee |
 | Recensie | Vrije tekst | nee |
@@ -64,7 +64,7 @@ Inspiratie: de apps van de Volkskrant, Trouw en NOS. Simpel en strak, zoals een 
 3. **Letters met karakter.** Titels in een stevige schreefletter (zoals de Volkskrant); de rest in een eenvoudige, schreefloze letter.
 4. **Eén accentkleur.** Zoals rood bij NOS en blauw bij Trouw. Gebruikt voor kleine labels (status, zoals "ANALYSE" bij de Volkskrant) en de actieve knop.
 5. **Woordmerk in het midden.** "Boeken" als titel bovenaan in het midden.
-6. **Tabjes bovenaan** met een streep onder de actieve: Alles · Bezig · Gelezen · Wil ik lezen.
+6. **Tabjes bovenaan** met een streep onder de actieve: Alles · Aan het lezen · Gelezen · Wil ik lezen.
 7. **Zwevende balk onderin** met de belangrijkste plekken: Boeken, Toevoegen, Zoek, Instellingen.
 
 Gekozen: accentkleur donkergroen (#1F4D3F), de lijst als rijtje (kleine cover links). Titels in de schreefletter van de iPhone (New York), de rest in de systeemletter. De lijst heeft tabjes per status; de balk onderin vervangt de losse +-knop en de link naar Instellingen.
@@ -90,3 +90,4 @@ Synopsis, informatie over de schrijver, verfilmingen, boekentips (Fase 2). Delen
 | 2026-10-23 | Ontwerp: donkergroen, rijtje, tabjes per status, zwevende balk onderin |
 | 2026-10-23 | Weigert een bron tijdelijk (daglimiet Google), dan wordt het boek later opnieuw geprobeerd; knop in Instellingen om ontbrekende covers opnieuw te zoeken |
 | 2026-10-23 | Geen automatische koppeling met Kobo (geen openbare API, niet gratis te bouwen); wel label 'Wacht op Kobo Plus' bij het boek en een knop 'Zoek bij Kobo' |
+| 2026-10-23 | Status 'Bezig' heet in beeld 'Aan het lezen' |

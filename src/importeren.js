@@ -50,6 +50,7 @@ function leesSterren(waarde) {
 
 function leesStatus(waarde) {
   const tekst = kaal(String(waarde || '')).trim();
+  if (tekst === 'aan het lezen') return 'Bezig';
   return STATUSSEN.find((s) => kaal(s) === tekst) || 'Gelezen';
 }
 
