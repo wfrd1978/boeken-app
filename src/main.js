@@ -64,21 +64,22 @@ zetKoboOm()
   .then(verrijkAlles);
 
 // Voortgang van het ophalen van covers tonen waar dat kan.
-opVoortgang(({ klaar, totaal, gestopt }) => {
+opVoortgang(({ soort = 'covers', klaar, totaal, gestopt }) => {
+  const naam = soort === 'synopsis' ? 'Synopsis' : 'Covers en gegevens';
   const el = document.getElementById('verrijk-status');
   if (el) {
     el.textContent =
       klaar < totaal
         ? gestopt
-          ? `Covers ophalen gepauzeerd (${klaar} van ${totaal}): een bron weigert even, bijvoorbeeld door de daglimiet van Google. Het gaat later vanzelf verder.`
-          : `Covers en gegevens ophalen: ${klaar} van ${totaal}…`
+          ? `${naam} ophalen gepauzeerd (${klaar} van ${totaal}): een bron weigert even, bijvoorbeeld door de daglimiet van Google. Het gaat later vanzelf verder.`
+          : `${naam} ophalen: ${klaar} van ${totaal}…${soort === 'covers' ? ' Daarna volgt de synopsis.' : ''}`
         : '';
     el.hidden = !el.textContent;
   }
   if (klaar === totaal && totaal > 0) {
-    melding('Alle covers zijn opgehaald');
+    melding(soort === 'synopsis' ? 'Synopsis ophalen is klaar' : 'Covers zoeken is klaar');
     // Lijst bijwerken als die open staat en er niet getypt wordt.
-    if (location.hash === '' || location.hash === '#/') {
+    if (soort === 'covers' && (location.hash === '' || location.hash === '#/')) {
       if (document.activeElement?.id !== 'lijst-zoek') {
         const y = window.scrollY;
         toonLijst().then(() => window.scrollTo(0, y));
@@ -665,7 +666,9 @@ async function toonInstellingen() {
     : 'Nog geen boeken.';
   const syn = await synopsisTelling();
   document.getElementById('synopsis-telling').textContent = syn.totaal
-    ? `${syn.met} van de ${syn.totaal} boeken hebben een synopsis${syn.open ? ` (nog ${syn.open} te zoeken)` : ''}.`
+    ? `${syn.met} van de ${syn.totaal} boeken hebben een synopsis${
+        syn.open ? ` (nog ${syn.open} te zoeken${(await aantalTeVerrijken()) ? '; begint zodra de covers klaar zijn' : ''})` : ''
+      }.`
     : '';
   const opnieuw = document.getElementById('covers-opnieuw');
   opnieuw.hidden = !zonder;
