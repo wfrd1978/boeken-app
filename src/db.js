@@ -1,4 +1,5 @@
 import Dexie from 'dexie';
+import { leesKoboOpmerking } from './kobo.js';
 
 // Alle boeken staan in IndexedDB op het toestel zelf.
 export const db = new Dexie('boeken');
@@ -43,6 +44,7 @@ function nieuwBoek(boek, toegevoegdOp = new Date().toISOString()) {
     leesdata: boek.leesdata ?? [],
     recensie: boek.recensie ?? '',
     opmerking: boek.opmerking ?? '',
+    koboWacht: boek.koboWacht ?? false,
     toegevoegdOp,
     bron: boek.bron ?? 'getypt',
     // false = cover en gegevens moeten nog op de achtergrond worden opgehaald.
@@ -72,6 +74,16 @@ export async function vulWerkenAan(zoekWerk) {
   for (const boek of zonder) {
     const werk = boek.isbn ? await zoekWerk(boek.isbn) : '';
     await db.boeken.update(boek.id, { werk });
+  }
+}
+
+// Boeken die al geïmporteerd waren met "Kobo Plus: ja/nee" in de opmerking krijgen
+// het label 'Wacht op Kobo Plus'; die tekst verdwijnt dan uit de opmerking.
+export async function zetKoboOm() {
+  const kandidaten = await db.boeken.filter((b) => /kobo plus:/i.test(b.opmerking || '')).toArray();
+  for (const boek of kandidaten) {
+    const kobo = leesKoboOpmerking(boek.opmerking);
+    if (kobo) await db.boeken.update(boek.id, kobo);
   }
 }
 

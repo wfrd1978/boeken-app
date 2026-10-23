@@ -123,6 +123,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   color: var(--zacht) !important;
 }
 .status-1, .status-2 { color: var(--accent) !important; }
+.status.kobo { color: var(--zacht) !important; }
 .sterren-klein { color: var(--ster) !important; letter-spacing: 1px; font-size: 0.8rem !important; }
 
 .leeg, .bezig { color: var(--zacht); text-align: center; margin: 48px 0; list-style: none; }
@@ -250,3 +251,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 #melding.zichtbaar { opacity: 1; transform: translate(-50%, 0); }
 #melding.met-knop { pointer-events: auto; display: flex; align-items: center; gap: 14px; white-space: nowrap; }
 #melding button { border: 0; background: none; color: var(--bg); font-weight: 700; padding: 0; text-decoration: underline; }
+
+.kobo-regel { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.kobo-regel .link-knop { padding: 4px 0; }

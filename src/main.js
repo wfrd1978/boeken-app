@@ -9,10 +9,12 @@ import {
   boekenImporteren,
   vraagBlijvendeOpslag,
   vulWerkenAan,
+  zetKoboOm,
   STATUSSEN,
 } from './db.js';
 import { zoekBoeken, zoekCover, verkleinFoto, zoekWerk } from './zoeken.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
+import { koboZoekUrl } from './kobo.js';
 import {
   maakBackupBestand,
   bewaarBackup,
@@ -36,7 +38,9 @@ if ('serviceWorker' in navigator) {
 }
 
 vraagBlijvendeOpslag();
-vulWerkenAan(zoekWerk).then(verrijkAlles);
+zetKoboOm()
+  .then(() => vulWerkenAan(zoekWerk))
+  .then(verrijkAlles);
 
 // Voortgang van het ophalen van covers tonen waar dat kan.
 opVoortgang(({ klaar, totaal, gestopt }) => {
@@ -189,6 +193,7 @@ function boekRegel(b) {
       <div class="boek-tekst">
         <span class="regel">
           <span class="status status-${STATUSSEN.indexOf(b.status)}">${veilig(b.status)}</span>
+          ${b.koboWacht ? '<span class="status kobo">· Wacht op Kobo Plus</span>' : ''}
           ${b.sterren ? `<span class="sterren-klein" aria-label="${b.sterren} sterren">${sterrenTekst(b.sterren)}</span>` : ''}
         </span>
         <strong>${veilig(b.titel)}</strong>
@@ -839,6 +844,12 @@ async function toonBoek(id) {
         ${STATUSSEN.map((s) => `<button class="keuze" data-s="${s}">${s}</button>`).join('')}
       </div>
 
+      <p class="label">Kobo</p>
+      <div class="kobo-regel">
+        <button class="keuze${boek.koboWacht ? ' actief' : ''}" id="kobo-wacht">Wacht op Kobo Plus</button>
+        <a class="link-knop" href="${koboZoekUrl(boek)}" target="_blank" rel="noopener">Zoek bij Kobo ↗</a>
+      </div>
+
       <p class="label">Gelezen op</p>
       <ul class="leesdata" id="leesdata"></ul>
       <div class="datum-toevoegen">
@@ -909,6 +920,12 @@ async function toonBoek(id) {
     if (!knop) return;
     await bewaar({ status: knop.dataset.s });
     tekenStatus();
+  });
+
+  const koboKnop = document.getElementById('kobo-wacht');
+  koboKnop.addEventListener('click', async () => {
+    await bewaar({ koboWacht: !boek.koboWacht });
+    koboKnop.classList.toggle('actief', boek.koboWacht);
   });
 
   const tekenLeesdata = () => {
