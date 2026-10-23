@@ -29,6 +29,7 @@ import {
   zetBackupTerug,
 } from './backup.js';
 import { leesExcel, planImport } from './importeren.js';
+import { maakExcel, deelBestand } from './exporteren.js';
 import { verrijkAlles, opVoortgang, aantalTeVerrijken, zonderCoverOpnieuw, coverTelling } from './verrijken.js';
 
 const app = document.getElementById('app');
@@ -494,6 +495,12 @@ async function toonInstellingen() {
     </section>
 
     <section class="blok">
+      <h2>Excel-export</h2>
+      <p>Je hele lijst als Excel-bestand, met sterren, leesdata en recensies. Handig om te bewaren, te delen of op je laptop te bekijken.</p>
+      <button class="tweede-knop" id="export"${aantal ? '' : ' disabled'}>Maak Excel-bestand</button>
+    </section>
+
+    <section class="blok">
       <h2>Covers</h2>
       <p id="cover-telling" class="zacht">&nbsp;</p>
       <p class="verrijk-status" id="verrijk-status" hidden></p>
@@ -545,6 +552,33 @@ async function toonInstellingen() {
     const el = document.getElementById('verrijk-status');
     el.textContent = `Bezig met ${n} boeken…`;
     el.hidden = false;
+  });
+
+  // Net als bij de backup: eerst klaarmaken, dan delen (iOS opent het deelmenu alleen direct na een tik).
+  const exportKnop = document.getElementById('export');
+  let excel = null;
+  exportKnop.addEventListener('click', async () => {
+    if (!excel) {
+      exportKnop.disabled = true;
+      exportKnop.textContent = 'Excel-bestand maken…';
+      try {
+        excel = await maakExcel();
+      } catch {
+        exportKnop.disabled = false;
+        exportKnop.textContent = 'Maak Excel-bestand';
+        melding('Excel-bestand maken lukte niet. Probeer het nog eens.');
+        return;
+      }
+      exportKnop.disabled = false;
+      exportKnop.className = 'hoofdknop';
+      exportKnop.textContent = `Deel Excel-bestand (${excel.aantal} boeken)`;
+      return;
+    }
+    try {
+      await deelBestand(excel.bestand);
+    } catch {
+      melding('Delen lukte niet. Probeer het nog eens.');
+    }
   });
 
   document.getElementById('bronnen-test').addEventListener('click', async () => {

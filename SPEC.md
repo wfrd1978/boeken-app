@@ -53,7 +53,7 @@ https://wfrd1978.github.io/boeken-app/
 
 **Excel-import.** Wilfreds bestaande boekenlijst (.xlsx) inlezen. Welke kolom wat betekent (titel, auteur, sterren, datum, status …) stellen we vast aan de hand van zijn eigen bestand; bij twijfel vraagt de app het. Covers en ontbrekende gegevens (ISBN, jaar, uitgever) worden daarna op de achtergrond opgehaald, zolang de app open is en er internet is; het gaat de volgende keer vanzelf verder. Titel en auteur uit de lijst blijven altijd zoals Wilfred ze schreef. Importeren kan pas als er die dag of de dag ervoor een backup is gemaakt. Staat een boek er al en heeft het nog geen sterren, dan vult de import de sterren uit het bestand aan (vooraf getoond); sterren die Wilfred zelf gaf, blijven staan. Vooraf een backup; dubbele boeken worden overgeslagen en gemeld, en vooraf toont de app hoeveel boeken er worden toegevoegd. Indeling van het (verbeterde) bestand: kolommen Auteur, Titel, Gelezen (maand), Sterren, Opmerking; alle boeken krijgen status *Gelezen*. Het bestand zelf komt niet in de repository (die is openbaar).
 
-**Excel-export.** Eén .xlsx-bestand met één regel per boek en de velden hierboven als kolommen (zonder cover). Bij herlezen staan alle leesdata in één cel.
+**Excel-export.** Eén .xlsx-bestand met één regel per boek, gesorteerd op achternaam van de auteur, met de velden hierboven als kolommen (zonder cover) en een filter op de kop. Bij herlezen staan alle leesdata in één cel, gescheiden door een puntkomma. Delen via het deelmenu (twee tikken: klaarmaken, dan delen).
 
 ## Vormgeving
 
