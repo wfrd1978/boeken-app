@@ -11,6 +11,16 @@ import {
 } from './db.js';
 import { zoekBoeken, zoekCover, verkleinFoto, zoekWerk } from './zoeken.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
+import {
+  maakBackupBestand,
+  bewaarBackup,
+  laatsteBackup,
+  dagenSindsBackup,
+  moetHerinneren,
+  herinnerLater,
+  leesBackup,
+  zetBackupTerug,
+} from './backup.js';
 
 const app = document.getElementById('app');
 
@@ -147,7 +157,9 @@ async function toonLijst() {
     <header class="kop">
       <h1>Boeken</h1>
       <span class="aantal">${boeken.length === 1 ? '1 boek' : `${boeken.length} boeken`}</span>
+      <a class="instellingen-link" href="#/instellingen">Instellingen</a>
     </header>
+    ${boeken.length && moetHerinneren() ? herinneringHtml() : ''}
     ${
       boeken.length
         ? `<div class="lijst-bediening">
@@ -163,10 +175,14 @@ async function toonLijst() {
            <ul class="lijst" id="lijst"></ul>`
         : `<p class="leeg">Nog geen boeken.<br />Tik op <b>+</b> om je eerste boek toe te voegen.</p>`
     }
-    <p class="versie">Versie van ${__VERSIE__}</p>
     <a class="plus" href="#/toevoegen" aria-label="Boek toevoegen">+</a>
   `;
   if (!boeken.length) return;
+
+  document.getElementById('later')?.addEventListener('click', () => {
+    herinnerLater();
+    document.querySelector('.herinnering').remove();
+  });
 
   const teken = () => {
     ruimCoversOp();
@@ -192,6 +208,116 @@ async function toonLijst() {
       // Niet erg; dan geldt de keuze alleen nu.
     }
     teken();
+  });
+}
+
+function herinneringHtml() {
+  const dagen = dagenSindsBackup();
+  const tekst =
+    dagen === null
+      ? 'Je hebt nog geen backup van je boeken.'
+      : `Je laatste backup is ${dagen} dagen oud.`;
+  return `
+    <div class="herinnering">
+      <p>${tekst}</p>
+      <div class="herinnering-knoppen">
+        <a href="#/instellingen">Backup maken</a>
+        <button class="link-knop" id="later">Later</button>
+      </div>
+    </div>`;
+}
+
+// --- Instellingen ---
+
+function backupTekst() {
+  const laatste = laatsteBackup();
+  if (!laatste) return 'Nog geen backup gemaakt.';
+  const dagen = dagenSindsBackup();
+  const wanneer = dagen === 0 ? 'vandaag' : dagen === 1 ? 'gisteren' : `${dagen} dagen geleden`;
+  return `Laatste backup: ${laatste.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })} (${wanneer}).`;
+}
+
+async function toonInstellingen() {
+  ruimCoversOp();
+  const aantal = (await alleBoeken()).length;
+  app.innerHTML = `
+    <header class="kop">
+      <a class="terug" href="#/">‹ Boeken</a>
+      <h1>Instellingen</h1>
+    </header>
+
+    <section class="blok">
+      <h2>Backup</h2>
+      <p>Je boeken staan alleen op deze telefoon. Bewaar regelmatig een backup in iCloud Drive: kies in het deelmenu <b>Bewaar in Bestanden</b>.</p>
+      <p class="zacht" id="backup-status">${backupTekst()}</p>
+      <button class="hoofdknop" id="backup-maken"${aantal ? '' : ' disabled'}>Backup maken</button>
+      <label class="tweede-knop bestand-knop">Backup terugzetten
+        <input type="file" id="backup-bestand" accept="application/json,.json" hidden />
+      </label>
+      <div id="terugzet-vak"></div>
+    </section>
+
+    <p class="versie">Versie van ${__VERSIE__}</p>
+  `;
+
+  // Stap 1: bestand klaarmaken. Stap 2: bewaren. iOS wil dat het deelmenu
+  // direct na een tik opent, daarom twee tikken in plaats van één.
+  const maakKnop = document.getElementById('backup-maken');
+  let bestand = null;
+  maakKnop.addEventListener('click', async () => {
+    if (!bestand) {
+      maakKnop.disabled = true;
+      maakKnop.textContent = 'Backup klaarmaken…';
+      bestand = await maakBackupBestand();
+      maakKnop.disabled = false;
+      maakKnop.textContent = `Bewaar backup (${aantal} ${aantal === 1 ? 'boek' : 'boeken'})`;
+      return;
+    }
+    try {
+      if (await bewaarBackup(bestand)) {
+        // Volgende keer weer een verse backup maken.
+        bestand = null;
+        maakKnop.textContent = 'Backup maken';
+        document.getElementById('backup-status').textContent = backupTekst();
+        melding('Backup bewaard');
+      }
+    } catch {
+      melding('Bewaren lukte niet. Probeer het nog eens.');
+    }
+  });
+
+  document.getElementById('backup-bestand').addEventListener('change', async (e) => {
+    const gekozen = e.target.files?.[0];
+    e.target.value = '';
+    if (!gekozen) return;
+    const vak = document.getElementById('terugzet-vak');
+    let inhoud;
+    try {
+      inhoud = await leesBackup(gekozen);
+    } catch (fout) {
+      vak.innerHTML = `<div class="waarschuwing"><p>${veilig(fout.message)}</p></div>`;
+      return;
+    }
+    const gemaakt = new Date(inhoud.gemaakt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+    vak.innerHTML = `
+      <div class="waarschuwing">
+        <p><strong>Backup van ${gemaakt} met ${inhoud.boeken.length} boeken</strong><br />
+        ${aantal ? `Je huidige lijst van ${aantal === 1 ? '1 boek' : `${aantal} boeken`} wordt hierdoor <b>vervangen</b>. Maak eerst een backup als je twijfelt.` : 'Je lijst is nu leeg.'}</p>
+        <button class="gevaar-knop" id="terugzetten">${aantal ? 'Ja, vervang mijn lijst' : 'Terugzetten'}</button>
+        <button class="link-knop" id="annuleer">Annuleren</button>
+      </div>`;
+    document.getElementById('annuleer').addEventListener('click', () => (vak.innerHTML = ''));
+    document.getElementById('terugzetten').addEventListener('click', async (k) => {
+      k.currentTarget.disabled = true;
+      k.currentTarget.textContent = 'Bezig met terugzetten…';
+      try {
+        const n = await zetBackupTerug(inhoud);
+        location.hash = '#/';
+        melding(`${n} boeken teruggezet`);
+      } catch {
+        vak.innerHTML = '<div class="waarschuwing"><p>Terugzetten is mislukt. Je lijst is niet veranderd.</p></div>';
+      }
+    });
   });
 }
 
@@ -555,6 +681,7 @@ async function route() {
   window.scrollTo(0, 0);
   const boekId = location.hash.match(/^#\/boek\/(\d+)$/);
   if (location.hash === '#/toevoegen') toonToevoegen();
+  else if (location.hash === '#/instellingen') toonInstellingen();
   else if (boekId) toonBoek(Number(boekId[1]));
   else toonLijst();
 }
