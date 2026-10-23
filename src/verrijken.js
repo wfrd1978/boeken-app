@@ -95,22 +95,33 @@ export async function vulSynopsisAan() {
   try {
     const zonder = await db.boeken.filter((b) => b.synopsis === undefined).toArray();
     let foutenOpRij = 0;
+    let klaar = 0;
+    let gestopt = false;
     for (const boek of zonder) {
-      if (!navigator.onLine) break;
+      if (!navigator.onLine) {
+        gestopt = true;
+        break;
+      }
       let synopsis;
       try {
         synopsis = await zoekSynopsis(boek);
         foutenOpRij = 0;
       } catch {
         foutenOpRij += 1;
-        if (foutenOpRij >= 3) break;
+        if (foutenOpRij >= 3) {
+          gestopt = true;
+          break;
+        }
         await wacht(PAUZE * 3);
         continue;
       }
       const actueel = await db.boeken.get(boek.id);
       if (actueel && actueel.synopsis === undefined) await db.boeken.update(boek.id, { synopsis });
+      klaar += 1;
+      luisteraar({ soort: 'synopsis', klaar, totaal: zonder.length });
       await wacht(PAUZE);
     }
+    if (zonder.length) luisteraar({ soort: 'synopsis', klaar, totaal: zonder.length, gestopt: gestopt || klaar < zonder.length });
   } finally {
     synopsisBezig = false;
   }
