@@ -14,7 +14,17 @@ import {
   STATUSSEN,
   statusNaam,
 } from './db.js';
-import { zoekBoeken, zoekCover, verkleinFoto, zoekWerk, zoekOpIsbn, testBronnen, GoogleWeigert } from './zoeken.js';
+import {
+  zoekBoeken,
+  verkleinFoto,
+  zoekWerk,
+  zoekOpIsbn,
+  testBronnen,
+  GoogleWeigert,
+  zoekCover,
+  zoekCoverKeuzes,
+  bewaarbareCover,
+} from './zoeken.js';
 import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
@@ -1065,6 +1075,47 @@ function waarschuwingHtml(bestaand) {
     </div>`;
 }
 
+// --- Cover kiezen ---
+
+async function toonCoverKeuze(boek, bewaar, klaar) {
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `<div class="laag" id="cover-laag">
+       <div class="laag-blad">
+         <div class="laag-kop"><h2>Kies een cover</h2><button class="link-knop" id="laag-sluit">Sluiten</button></div>
+         <div id="keuzes"><p class="bezig">Covers zoeken bij Google Books en Open Library…</p></div>
+         <a class="tweede-knop" target="_blank" rel="noopener"
+            href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(`${boek.titel} ${boek.auteurs?.[0] ?? ''} boek cover`)}">Zelf zoeken op internet ↗</a>
+         <p class="zacht klein">Gevonden op internet? Houd het plaatje vast, kies <b>Voeg toe aan Foto's</b> en gebruik daarna <b>Eigen foto</b>.</p>
+       </div>
+     </div>`
+  );
+  const laag = document.getElementById('cover-laag');
+  const sluit = () => laag.remove();
+  document.getElementById('laag-sluit').addEventListener('click', sluit);
+  laag.addEventListener('click', (e) => e.target === laag && sluit());
+
+  const urls = await zoekCoverKeuzes(boek);
+  const vak = document.getElementById('keuzes');
+  if (!vak) return;
+  if (!urls.length) {
+    vak.innerHTML = '<p class="leeg">Geen covers gevonden voor dit boek. Probeer zelf te zoeken, of maak een eigen foto.</p>';
+    return;
+  }
+  vak.innerHTML = `<div class="keuze-raster">${urls
+    .map((u, i) => `<button class="keuze-cover" data-i="${i}"><img src="${veilig(u)}" alt="" loading="lazy" onerror="this.parentElement.remove()" /></button>`)
+    .join('')}</div>`;
+  vak.addEventListener('click', async (e) => {
+    const knop = e.target.closest('.keuze-cover');
+    if (!knop) return;
+    knop.classList.add('gekozen');
+    await bewaar(await bewaarbareCover(urls[Number(knop.dataset.i)]));
+    klaar();
+    sluit();
+    melding('Cover bewaard');
+  });
+}
+
 // --- Boek ---
 
 async function toonBoek(id) {
@@ -1087,8 +1138,8 @@ async function toonBoek(id) {
     <section class="bevestig">
       <div id="cover-vak">${coverHtml(boek, 'cover-groot')}</div>
       <div class="cover-knoppen">
-        ${boek.cover || boek.coverUrl ? '' : '<button class="link-knop" id="cover-zoeken">Cover zoeken</button>'}
-        <label class="link-knop" id="foto-label">${boek.cover || boek.coverUrl ? 'Andere cover (foto)' : 'Eigen foto'}<input type="file" accept="image/*" id="cover-foto" hidden /></label>
+        <button class="link-knop" id="cover-kiezen">Kies een cover</button>
+        <label class="link-knop">Eigen foto<input type="file" accept="image/*" id="cover-foto" hidden /></label>
       </div>
       <h2>${veilig(boek.titel)}</h2>
       <p>${veilig(auteurTekst(boek))}</p>
@@ -1129,24 +1180,8 @@ async function toonBoek(id) {
 
   const toonNieuweCover = () => {
     document.getElementById('cover-vak').innerHTML = coverHtml(boek, 'cover-groot');
-    document.getElementById('cover-zoeken')?.remove();
-    document.getElementById('foto-label').firstChild.textContent = 'Andere cover (foto)';
   };
-  document.getElementById('cover-zoeken')?.addEventListener('click', async (e) => {
-    const knop = e.currentTarget;
-    knop.disabled = true;
-    knop.textContent = 'Zoeken…';
-    const gevonden = await zoekCover(boek);
-    if (gevonden.cover || gevonden.coverUrl) {
-      await bewaar(gevonden);
-      toonNieuweCover();
-      melding('Cover gevonden');
-    } else {
-      knop.disabled = false;
-      knop.textContent = 'Cover zoeken';
-      melding('Geen cover gevonden. Maak er zelf een foto van.');
-    }
-  });
+  document.getElementById('cover-kiezen').addEventListener('click', () => toonCoverKeuze(boek, bewaar, toonNieuweCover));
   document.getElementById('cover-foto').addEventListener('change', async (e) => {
     const bestand = e.target.files?.[0];
     if (!bestand) return;
