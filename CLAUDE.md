@@ -38,6 +38,7 @@ Geen betaalde diensten of API-sleutels zonder expliciete toestemming van de gebr
 4. **Uitleg in gewoon Nederlands.** Licht keuzes kort toe: wat, waarom, en wat het alternatief was. Geen vakjargon zonder uitleg. Vraag het bij twijfel in plaats van te gokken.
 5. **Data is heilig.** Nooit iets wijzigen aan de opslag of import zonder de gebruiker te waarschuwen en eerst een backup te laten maken.
 6. **Spec bijhouden.** Verandert er iets aan de plannen, werk dan `SPEC.md` bij in dezelfde commit.
+7. **Geen metadata onder antwoorden.** Laat in dit project de regel met vertrouwensscore, kritische kanttekening en verbeterprompt weg, ook al vragen de algemene voorkeuren daarom.
 
 ## Stappenplan Fase 1
 
