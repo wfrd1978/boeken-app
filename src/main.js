@@ -293,6 +293,7 @@ async function toonLijst() {
       <span class="aantal">${boeken.length === 1 ? '1 boek' : `${boeken.length} boeken`}</span>
       <a class="instellingen-link" href="#/instellingen">Instellingen</a>
     </header>
+    ${inSafari() ? safariHtml() : ''}
     ${boeken.length && moetHerinneren() ? herinneringHtml() : ''}
     <p class="verrijk-status" id="verrijk-status" hidden></p>
     ${
@@ -366,6 +367,20 @@ async function toonLijst() {
     }
     teken();
   });
+}
+
+// Op de iPhone hebben Safari en de app op het beginscherm elk hun eigen opslag.
+function inSafari() {
+  const iPhone = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const losseApp = navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+  return iPhone && !losseApp;
+}
+
+function safariHtml() {
+  return `
+    <div class="herinnering safari">
+      <p><strong>Je gebruikt de app nu in Safari.</strong> Safari en de app op je beginscherm bewaren elk hun eigen boeken. Open de app vanaf je beginscherm.</p>
+    </div>`;
 }
 
 function herinneringHtml() {
