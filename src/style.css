@@ -1,17 +1,27 @@
 :root {
   --bg: #f6f3ee;
+  --vlak: #ffffff;
   --tekst: #1f2a27;
   --accent: #1f3a34;
+  --accent-tekst: #ffffff;
   --zacht: #6b746f;
+  --lijn: #e3ddd3;
+  --cover-leeg: #e9dcc4;
+  --s0: #e7e2d8; --s1: #f3e3bf; --s2: #d5eadf; --s3: #eadada;
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #141917;
+    --vlak: #1d2422;
     --tekst: #e9ece9;
     --accent: #8fc1b3;
+    --accent-tekst: #10201b;
     --zacht: #9aa39e;
+    --lijn: #2c3532;
+    --cover-leeg: #39433f;
+    --s0: #2c3532; --s1: #4a3f26; --s2: #24423a; --s3: #46302f;
   }
 }
 
@@ -23,22 +33,98 @@ body {
   background: var(--bg);
   color: var(--tekst);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  line-height: 1.5;
+  line-height: 1.4;
+  -webkit-tap-highlight-color: transparent;
 }
 
 main {
-  padding: calc(env(safe-area-inset-top) + 32px) 20px 32px;
+  padding: calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 96px);
   max-width: 640px;
   margin: 0 auto;
 }
 
-h1 {
-  margin: 0 0 8px;
-  font-size: 2rem;
-  color: var(--accent);
+button, input { font: inherit; color: inherit; }
+
+.kop { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.kop h1 { margin: 0; font-size: 1.9rem; color: var(--accent); flex: 1 1 auto; }
+.aantal { color: var(--zacht); }
+.terug { flex-basis: 100%; color: var(--accent); text-decoration: none; font-size: 1rem; }
+
+.lijst { list-style: none; margin: 0; padding: 0; }
+.boek {
+  display: flex; gap: 14px; align-items: center; width: 100%;
+  padding: 10px 0; border: 0; border-bottom: 1px solid var(--lijn);
+  background: none; text-align: left;
+}
+.resultaat { cursor: pointer; }
+.boek-tekst { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.boek-tekst strong { font-weight: 600; }
+.boek-tekst span { color: var(--zacht); font-size: 0.92rem; }
+
+.cover-klein, .cover-groot {
+  flex: none; object-fit: cover; border-radius: 4px; background: var(--cover-leeg);
+}
+.cover-klein { width: 48px; height: 72px; }
+.cover-groot { width: 140px; height: 210px; display: block; margin: 0 auto 16px; box-shadow: 0 4px 16px rgb(0 0 0 / 0.15); }
+.geen-cover {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--zacht); font-weight: 600; font-size: 1.4rem;
+}
+.cover-groot.geen-cover { font-size: 3rem; }
+
+.status {
+  align-self: flex-start; margin-top: 4px; padding: 1px 8px; border-radius: 999px;
+  font-size: 0.78rem !important; color: var(--tekst) !important;
+}
+.status-0 { background: var(--s0); }
+.status-1 { background: var(--s1); }
+.status-2 { background: var(--s2); }
+.status-3 { background: var(--s3); }
+
+.leeg, .bezig { color: var(--zacht); text-align: center; margin: 48px 0; }
+
+.plus {
+  position: fixed; right: 20px; bottom: calc(env(safe-area-inset-bottom) + 20px);
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--accent); color: var(--accent-tekst);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; text-decoration: none; box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
 }
 
-.versie {
-  color: var(--zacht);
-  font-size: 0.85rem;
+.zoekbalk { display: flex; gap: 8px; margin-bottom: 8px; }
+.zoekbalk input, .bevestig input {
+  flex: 1; min-width: 0; padding: 12px 14px; font-size: 16px;
+  border: 1px solid var(--lijn); border-radius: 10px; background: var(--vlak);
 }
+.zoekbalk button, .hoofdknop {
+  border: 0; border-radius: 10px; padding: 12px 18px;
+  background: var(--accent); color: var(--accent-tekst); font-weight: 600;
+}
+.hoofdknop { width: 100%; margin-top: 24px; padding: 14px; font-size: 1.05rem; }
+.hoofdknop:disabled { opacity: 0.6; }
+
+.link-knop {
+  background: none; border: 0; padding: 16px 0; color: var(--accent);
+  text-align: left; font-size: 1rem;
+}
+.kop .link-knop { padding: 0; }
+
+.bevestig h2 { margin: 0 0 4px; font-size: 1.3rem; text-align: center; }
+.bevestig > p { margin: 0; text-align: center; color: var(--zacht); }
+.bevestig .details { font-size: 0.85rem; margin-top: 6px; }
+.bevestig label { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; color: var(--zacht); font-size: 0.9rem; }
+.bevestig .label { text-align: left; margin-top: 24px; margin-bottom: 8px; font-size: 0.9rem; }
+
+.keuzes { display: flex; flex-wrap: wrap; gap: 8px; }
+.keuze {
+  padding: 8px 14px; border-radius: 999px; border: 1px solid var(--lijn); background: var(--vlak);
+}
+.keuze.actief { background: var(--accent); color: var(--accent-tekst); border-color: var(--accent); }
+
+#melding {
+  position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 96px);
+  transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+  background: var(--tekst); color: var(--bg); padding: 10px 18px; border-radius: 999px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+#melding.zichtbaar { opacity: 1; transform: translate(-50%, 0); }
