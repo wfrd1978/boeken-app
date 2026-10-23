@@ -44,6 +44,14 @@ export function opVoortgang(functie) {
 
 const wacht = (ms) => new Promise((klaar) => setTimeout(klaar, ms));
 
+function schud(lijst) {
+  for (let i = lijst.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [lijst[i], lijst[j]] = [lijst[j], lijst[i]];
+  }
+  return lijst;
+}
+
 // Werkt de wachtrij af. Komen er tijdens het werk nieuwe boeken bij (bijvoorbeeld via
 // 'Zoek opnieuw naar ontbrekende covers'), dan gaat hij daar meteen mee verder.
 export async function verrijkAlles() {
@@ -61,7 +69,7 @@ export async function verrijkAlles() {
   try {
     do {
       nogEenRonde = false;
-      const open = await db.boeken.filter((b) => b.verrijkt === false && !geprobeerd.has(b.id)).toArray();
+      const open = schud(await db.boeken.filter((b) => b.verrijkt === false && !geprobeerd.has(b.id)).toArray());
       totaal += open.length;
       for (const boek of open) {
         geprobeerd.add(boek.id);
@@ -120,7 +128,8 @@ export async function vulSynopsisAan() {
   if (synopsisBezig || bezig) return;
   synopsisBezig = true;
   try {
-    const zonder = await db.boeken.filter((b) => b.synopsis === undefined).toArray();
+    // Elke keer in een andere volgorde, zodat een paar lastige boeken de rest niet ophouden.
+    const zonder = schud(await db.boeken.filter((b) => b.synopsis === undefined).toArray());
     let totaal = zonder.length;
     let overgeslagen = 0;
     let klaar = 0;
