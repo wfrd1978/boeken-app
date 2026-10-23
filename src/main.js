@@ -201,8 +201,16 @@ function maakVeegbaar(lijst, onVerwijder) {
 
   const zet = (li, x, animeer) => {
     const a = li.querySelector('.boek');
+    li.classList.add('veegt');
     a.style.transition = animeer ? 'transform 0.32s cubic-bezier(0.22, 1, 0.36, 1)' : 'none';
     a.style.transform = x ? `translate3d(${x}px, 0, 0)` : '';
+    // Dicht geschoven: knop en extra laag weer weg zodra de beweging klaar is.
+    if (!x) {
+      clearTimeout(li.veegTimer);
+      li.veegTimer = setTimeout(() => {
+        if (!a.style.transform) li.classList.remove('veegt');
+      }, animeer ? 350 : 0);
+    }
   };
   const sluit = () => {
     if (open) zet(open, 0, true);
