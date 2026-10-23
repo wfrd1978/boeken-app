@@ -125,6 +125,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die Wilfred zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van Wilfred: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Getest en klaar: recensiehulp via Claude, covers kopiëren en plakken, uitgebreide deeltekst |
 | 2026-10-24 | Covers: automatisch de eerste hit van Google Afbeeldingen kan niet (Google's zoekkoppeling is dicht voor nieuwe gebruikers en stopt in januari 2027). Daarom kopiëren en plakken, met een nalooplijst |
 | 2026-10-24 | Recensiehulp via de Claude-app (gratis, met Wilfreds eigen account) in plaats van een AI-dienst met sleutel |
 | 2026-10-24 | Getest en klaar: tips op de Toevoegen-pagina, Deel-knop, zuinig met Google, covers bewaren, tips leren van keuzes, profielfoto en de uitleg in Instellingen |
