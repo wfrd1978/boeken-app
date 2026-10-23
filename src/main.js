@@ -38,6 +38,7 @@ import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
 import { deelTekst, deelBoek } from './delen.js';
+import { STEEKWOORDEN, recensieOpdracht, claudeAdres } from './recensie.js';
 import { berekenStatistieken, huidigeMaand, geldigeStartmaand } from './statistieken.js';
 import { veilig, veiligeUrl } from './veilig.js';
 import { tipsUitArchief, verversTips, zetTipReactie } from './tips.js';
@@ -673,6 +674,7 @@ function overDezeAppHtml() {
         <p>Bij zoeken en toevoegen vraagt de app gegevens op bij Open Library en Google Books: alleen de titel, auteur of ISBN waarnaar je zoekt. Je lijst, sterren en recensies gaan nooit mee.</p>
         <p>De boekentips komen uit een openbare lijst op de site van de app. Die wordt elke zaterdagochtend vernieuwd door een geplande taak van Claude. Wat je met een tip doet, blijft op je telefoon.</p>
         <p>Delen gaat alleen als jij op Deel tikt, en dan via het gewone deelmenu van je iPhone.</p>
+        <p>Hulp van Claude bij een recensie: pas als jij op Open Claude tikt, gaan de titel, je sterren, je steekwoorden en wat je zelf al schreef naar je eigen Claude-account. De app praat zelf met geen enkele AI-dienst.</p>
       </details>
       <details>
         <summary>Hoe werkt het ophalen van covers en synopsis?</summary>
@@ -1668,6 +1670,81 @@ async function toonToevoegTips(verversen = true) {
   }
 }
 
+// --- Hulp bij de recensie (via de Claude-app) ---
+
+function toonRecensieHulp(boek, plakTerug) {
+  const gekozen = new Set();
+  let lengte = 'kort';
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `<div class="laag" id="hulp-laag">
+       <div class="laag-blad">
+         <div class="laag-kop"><h2>Hulp bij je recensie</h2><button class="link-knop" id="laag-sluit">Sluiten</button></div>
+         <p class="zacht">Kies wat het boek voor je was en zeg er eventueel iets bij. Claude maakt er een recensie van; die plak je hier terug.</p>
+         <p class="label">Het boek was</p>
+         <div class="keuzes" id="steekwoorden">${STEEKWOORDEN.map((w) => `<button class="keuze" data-w="${veilig(w)}">${veilig(w)}</button>`).join('')}</div>
+         <label class="veld">Een paar woorden van jezelf<input id="hulp-eigen" placeholder="Bijvoorbeeld: in één weekend uitgelezen" /></label>
+         <p class="label">Lengte</p>
+         <div class="keuzes" id="hulp-lengte">
+           <button class="keuze actief" data-l="kort">Kort</button>
+           <button class="keuze" data-l="lang">Uitgebreider</button>
+         </div>
+         <button class="hoofdknop" id="hulp-open">Open Claude</button>
+         <p class="zacht klein" id="hulp-uitleg">De opdracht wordt ook gekopieerd. Staat hij niet vanzelf in Claude, plak hem daar dan zelf.</p>
+         <button class="tweede-knop" id="hulp-plak">Plak de recensie van Claude</button>
+         <p class="zacht klein">Kopieer in Claude de recensie, kom terug naar deze app en tik hierboven. Je kunt de tekst daarna gewoon nog aanpassen.</p>
+       </div>
+     </div>`
+  );
+  const laag = document.getElementById('hulp-laag');
+  const sluit = () => laag.remove();
+  document.getElementById('laag-sluit').addEventListener('click', sluit);
+  laag.addEventListener('click', (e) => {
+    if (e.target === laag) sluit();
+  });
+  document.getElementById('steekwoorden').addEventListener('click', (e) => {
+    const knop = e.target.closest('.keuze');
+    if (!knop) return;
+    const w = knop.dataset.w;
+    if (gekozen.has(w)) gekozen.delete(w);
+    else gekozen.add(w);
+    knop.classList.toggle('actief', gekozen.has(w));
+  });
+  document.getElementById('hulp-lengte').addEventListener('click', (e) => {
+    const knop = e.target.closest('.keuze');
+    if (!knop) return;
+    lengte = knop.dataset.l;
+    document.querySelectorAll('#hulp-lengte .keuze').forEach((k) => k.classList.toggle('actief', k === knop));
+  });
+  document.getElementById('hulp-open').addEventListener('click', () => {
+    const opdracht = recensieOpdracht({
+      boek,
+      woorden: STEEKWOORDEN.filter((w) => gekozen.has(w)),
+      eigen: document.getElementById('hulp-eigen').value,
+      lengte,
+    });
+    // Eerst openen (iOS wil dat direct na de tik), daarna kopiëren als reserve.
+    window.open(claudeAdres(opdracht), '_blank', 'noopener');
+    navigator.clipboard?.writeText(opdracht).catch(() => {});
+  });
+  document.getElementById('hulp-plak').addEventListener('click', async () => {
+    let tekst = '';
+    try {
+      tekst = (await navigator.clipboard.readText()).trim();
+    } catch {
+      // Geen toestemming of niet mogelijk: dan zelf plakken.
+    }
+    sluit();
+    if (!tekst) {
+      document.getElementById('recensie')?.focus();
+      melding('Plak de tekst zelf in het vak Recensie');
+      return;
+    }
+    await plakTerug(tekst);
+    melding('Recensie geplakt en bewaard');
+  });
+}
+
 // --- Cover kiezen ---
 
 async function toonCoverKeuze(boek, bewaar, klaar) {
@@ -1781,7 +1858,10 @@ async function toonBoek(id) {
 
       <p class="label">Recensie</p>
       <textarea id="recensie" rows="6" placeholder="Wat vond je ervan?">${veilig(boek.recensie)}</textarea>
-      <p class="opgeslagen" id="opgeslagen">&nbsp;</p>
+      <div class="recensie-regel">
+        <button class="link-knop" id="recensie-hulp">✎ Hulp van Claude</button>
+        <p class="opgeslagen" id="opgeslagen">&nbsp;</p>
+      </div>
 
       <button class="verwijder" id="verwijder">Boek verwijderen</button>
     </section>
@@ -1913,6 +1993,14 @@ async function toonBoek(id) {
   });
   recensie.addEventListener('blur', bewaarRecensie);
   toonBoek.bewaarOpenstaand = bewaarRecensie;
+
+  document.getElementById('recensie-hulp').addEventListener('click', async () => {
+    await bewaarRecensie();
+    toonRecensieHulp(boek, async (tekst) => {
+      recensie.value = tekst;
+      await bewaarRecensie();
+    });
+  });
 
   document.getElementById('verwijder').addEventListener('click', async () => {
     if (!confirm(`"${boek.titel}" verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;

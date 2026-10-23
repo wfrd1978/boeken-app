@@ -78,5 +78,5 @@ Volgorde en keuzes bepaalt Wilfred; bij elk idee eerst kort de opties en kosten 
 - **De app delen met anderen**: welkomstscherm, tips per persoon of uit, Kobo optioneel; eventueel via AI Startpunt voor EO-collega's.
 - **Lezen interactief maken met andere gebruikers** (samen lezen, elkaars tips, boekenclub). Vraagt om een gedeelde plek voor gegevens; eerst samen nadenken over privacy en kosten.
 - **Nieuws over boeken en schrijvers**, bijvoorbeeld wekelijks via dezelfde geplande taak als de tips (een nieuws.json).
-- **Hulp bij het schrijven van een recensie**: steekwoorden kiezen of een paar woorden typen, waarna een taalmodel er een mooie tekst van maakt. Opties: een AI-dienst met eigen sleutel (kleine kosten, toestemming nodig), of gratis via de Claude-app (tekst klaarzetten en terugplakken).
+- ~~**Hulp bij het schrijven van een recensie**~~ — gebouwd via de Claude-app (gratis; opdracht ingevuld, tekst terugplakken).
 - **Kleinere ideeën**: citaten bewaren, 'Leen bij de bibliotheek', een zacht leesdoel zonder druk.
