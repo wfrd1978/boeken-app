@@ -124,7 +124,9 @@ export async function leesBackup(bestand) {
 function schoonProfiel(p) {
   if (!p || typeof p !== 'object') return null;
   const tekst = (v) => (typeof v === 'string' ? v : '');
-  return { naam: tekst(p.naam), overMij: tekst(p.overMij), lezersprofiel: tekst(p.lezersprofiel) };
+  const profiel = { naam: tekst(p.naam), overMij: tekst(p.overMij), lezersprofiel: tekst(p.lezersprofiel) };
+  if (/^\d{4}-\d{2}$/.test(p.statsVanaf)) profiel.statsVanaf = p.statsVanaf;
+  return profiel;
 }
 
 function schoneReacties(r) {

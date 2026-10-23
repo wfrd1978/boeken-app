@@ -1,31 +1,42 @@
 import { describe, expect, it } from 'vitest';
 import { berekenStatistieken } from '../src/statistieken.js';
 
-describe('statistieken', () => {
+describe('statistieken vanaf een startmaand', () => {
   const boeken = [
-    { status: 'Gelezen', sterren: 5, leesdata: ['2025-10', '2026-03-01'], auteurs: ['Tess Gerritsen'], categorie: 'Thriller & spanning' },
-    { status: 'Gelezen', sterren: 4, leesdata: ['2026-05'], auteurs: ['Tess Gerritsen'], categorie: 'Thriller & spanning' },
-    { status: 'Gelezen', sterren: null, leesdata: [], auteurs: ['Hugo Borst'], categorie: '' },
-    { status: 'Wil ik lezen', sterren: null, leesdata: [], auteurs: ['Mick Herron'], categorie: 'Thriller & spanning' },
+    // Herlezen: de oude lezing telt niet, de nieuwe wel.
+    { status: 'Gelezen', sterren: 5, leesdata: ['2025-10', '2026-10-03'], auteurs: ['Tess Gerritsen'], categorie: 'Thriller & spanning' },
+    { status: 'Gelezen', sterren: 4, leesdata: ['2026-11'], auteurs: ['Tess Gerritsen'], categorie: 'Thriller & spanning' },
+    { status: 'Gelezen', sterren: null, leesdata: ['2026-11-20'], auteurs: ['Hugo Borst'], categorie: '' },
+    // Oude lijst zonder datum: telt niet mee, ook niet voor het gemiddelde.
+    { status: 'Gelezen', sterren: 5, leesdata: [], auteurs: ['Dan Brown'], categorie: 'Thriller & spanning' },
   ];
-  const st = berekenStatistieken(boeken, new Date('2026-10-24'));
+  const st = berekenStatistieken(boeken, '2026-10', new Date('2026-11-24'));
 
-  it('telt gelezen boeken, dit jaar en het gemiddelde', () => {
-    expect(st).toMatchObject({ gelezen: 3, ditJaar: 2, gemiddeld: 4.5, metSterren: 2, zonderDatum: 1 });
+  it('telt alleen lezingen vanaf de start', () => {
+    expect(st).toMatchObject({ gelezen: 3, dezeMaand: 2, gemiddeld: 4.5, metSterren: 2 });
   });
 
-  it('telt herlezen per jaar mee, nieuwste jaar eerst', () => {
-    expect(st.perJaar).toEqual([{ jaar: 2026, aantal: 2 }, { jaar: 2025, aantal: 1 }]);
+  it('geeft de maanden vanaf de start, nieuwste eerst', () => {
+    expect(st.perMaand).toEqual([
+      { maand: '2026-11', aantal: 2 },
+      { maand: '2026-10', aantal: 1 },
+    ]);
+    expect(st.perJaar).toEqual([{ jaar: 2026, aantal: 3 }]);
   });
 
-  it('deelt gelezen boeken in per categorie, zonder categorie onderaan', () => {
+  it('deelt in per categorie, zonder categorie onderaan', () => {
     expect(st.perCategorie).toEqual([
       { categorie: 'Thriller & spanning', aantal: 2, gemiddeld: 4.5 },
       { categorie: 'Nog geen categorie', aantal: 1, gemiddeld: null },
     ]);
+    expect(st.schrijvers).toEqual([{ naam: 'Tess Gerritsen', aantal: 2 }]);
   });
 
-  it('noemt alleen schrijvers met minstens twee gelezen boeken', () => {
-    expect(st.schrijvers).toEqual([{ naam: 'Tess Gerritsen', aantal: 2 }]);
+  it('toont hooguit twaalf maanden, ook over de jaarwisseling', () => {
+    const lang = berekenStatistieken([], '2020-01', new Date('2027-02-10'));
+    expect(lang.perMaand).toHaveLength(12);
+    expect(lang.perMaand[0].maand).toBe('2027-02');
+    expect(lang.perMaand[2].maand).toBe('2026-12');
+    expect(lang.gelezen).toBe(0);
   });
 });

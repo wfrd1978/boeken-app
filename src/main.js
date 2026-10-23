@@ -32,7 +32,7 @@ import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
-import { berekenStatistieken } from './statistieken.js';
+import { berekenStatistieken, huidigeMaand, geldigeStartmaand } from './statistieken.js';
 import { veilig, veiligeUrl } from './veilig.js';
 import { tipsUitArchief, verversTips, zetTipReactie } from './tips.js';
 import {
@@ -1214,31 +1214,47 @@ function stavenHtml(rijen) {
     .join('')}</ul>`;
 }
 
-function statistiekenHtml(st) {
+function maandTekst(maand, kort = false) {
+  const [j, m] = maand.split('-').map(Number);
+  return new Date(j, m - 1, 15).toLocaleDateString('nl-NL', { month: kort ? 'short' : 'long', year: 'numeric' });
+}
+
+function statistiekenHtml(st, vanaf) {
   const komma = (x) => x.toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const keuze = `
+    <label class="stat-vanaf">Telt vanaf
+      <input type="month" id="stat-vanaf" value="${vanaf}" max="${huidigeMaand()}" />
+    </label>`;
+  if (!st.gelezen) {
+    return `
+      <section class="statistieken" id="statistieken">
+        <h2 class="stat-kop">Je leesjaar</h2>
+        <p class="zacht">Vanaf ${maandTekst(vanaf)} houdt de app bij wat je leest. Lees je een boek uit en vul je bij dat boek de datum in, dan verschijnt hier je overzicht.</p>
+        ${keuze}
+      </section>`;
+  }
   return `
-    <section class="statistieken">
+    <section class="statistieken" id="statistieken">
+      <h2 class="stat-kop">Sinds ${maandTekst(vanaf)}</h2>
       <div class="tegels">
         <div class="tegel"><strong>${st.gelezen}</strong><span>gelezen</span></div>
-        <div class="tegel"><strong>${st.ditJaar}</strong><span>in ${new Date().getFullYear()}</span></div>
+        <div class="tegel"><strong>${st.dezeMaand}</strong><span>deze maand</span></div>
         <div class="tegel"><strong>${st.gemiddeld ? `${komma(st.gemiddeld)}<small>★</small>` : '–'}</strong><span>gemiddeld</span></div>
       </div>
       ${st.gemiddeld ? `<p class="zacht klein">Gemiddelde over ${st.metSterren} ${st.metSterren === 1 ? 'boek' : 'boeken'} met sterren.</p>` : ''}
 
+      <h2 class="stat-kop">Per maand</h2>
+      ${stavenHtml(st.perMaand.map((m) => ({ label: maandTekst(m.maand, true), aantal: m.aantal })))}
+
       ${
-        st.perCategorie.length
-          ? `<h2 class="stat-kop">Wat je leest</h2>
-             ${stavenHtml(st.perCategorie.map((c) => ({ label: c.categorie, aantal: c.aantal, extra: c.gemiddeld ? `${komma(c.gemiddeld)}★` : '' })))}`
+        st.perJaar.length > 1
+          ? `<h2 class="stat-kop">Per jaar</h2>
+             ${stavenHtml(st.perJaar.map((j) => ({ label: String(j.jaar), aantal: j.aantal })))}`
           : ''
       }
 
-      <h2 class="stat-kop">Gelezen per jaar</h2>
-      ${st.perJaar.length ? stavenHtml(st.perJaar.map((j) => ({ label: String(j.jaar), aantal: j.aantal }))) : ''}
-      ${
-        st.zonderDatum
-          ? `<p class="zacht klein">Bij ${st.zonderDatum} gelezen ${st.zonderDatum === 1 ? 'boek staat' : 'boeken staat'} nog geen leesdatum. Die tellen hier niet mee; voeg je een datum toe bij een boek, dan groeit dit overzicht vanzelf.</p>`
-          : ''
-      }
+      <h2 class="stat-kop">Wat je leest</h2>
+      ${stavenHtml(st.perCategorie.map((c) => ({ label: c.categorie, aantal: c.aantal, extra: c.gemiddeld ? `${komma(c.gemiddeld)}★` : '' })))}
 
       ${
         st.schrijvers.length
@@ -1246,6 +1262,7 @@ function statistiekenHtml(st) {
              ${stavenHtml(st.schrijvers.map((a) => ({ label: a.naam, aantal: a.aantal })))}`
           : ''
       }
+      ${keuze}
     </section>`;
 }
 
@@ -1254,6 +1271,13 @@ async function toonProfiel() {
   ruimCoversOp();
   const [profiel, boeken] = await Promise.all([haalProfiel(), alleBoeken()]);
   if (nr !== schermNr) return;
+  // De statistieken tellen vanaf de maand waarin de gebruiker begon met bijhouden.
+  // Nog niet gekozen: deze maand, en die keuze wordt bewaard zodat hij niet elke maand verschuift.
+  if (!geldigeStartmaand(profiel.statsVanaf)) {
+    profiel.statsVanaf = huidigeMaand();
+    await bewaarProfiel(profiel);
+    if (nr !== schermNr) return;
+  }
   const top = boeken
     .filter((b) => b.sterren === 5)
     .sort((a, b) => laatsteLeesdatum(b).localeCompare(laatsteLeesdatum(a)) || a.titel.localeCompare(b.titel, 'nl'));
@@ -1273,7 +1297,7 @@ async function toonProfiel() {
         </div>
       </div>
 
-      ${statistiekenHtml(berekenStatistieken(boeken))}
+      ${statistiekenHtml(berekenStatistieken(boeken, profiel.statsVanaf), profiel.statsVanaf)}
       <h2 class="stat-kop">Over jou</h2>
 
       <label class="veld">Naam<input id="p-naam" value="${veilig(profiel.naam)}" placeholder="Je voornaam" autocomplete="given-name" /></label>
@@ -1293,7 +1317,7 @@ async function toonProfiel() {
   const bewaar = async () => {
     clearTimeout(timer);
     const nieuw = Object.fromEntries(Object.entries(velden).map(([k, id]) => [k, document.getElementById(id).value.trim()]));
-    if (JSON.stringify(nieuw) === JSON.stringify(profiel)) return;
+    if (Object.keys(velden).every((k) => nieuw[k] === profiel[k])) return;
     Object.assign(profiel, nieuw);
     await bewaarProfiel(profiel);
     document.getElementById('profiel-naam-kop').textContent = profiel.naam || 'Mijn profiel';
@@ -1310,6 +1334,18 @@ async function toonProfiel() {
     veld.addEventListener('blur', bewaar);
   }
   toonBoek.bewaarOpenstaand = bewaar;
+
+  // Andere startmaand: bewaren en de cijfers opnieuw tekenen.
+  const koppelVanaf = () =>
+    document.getElementById('stat-vanaf').addEventListener('change', async (e) => {
+      const vanaf = geldigeStartmaand(e.target.value);
+      if (!vanaf || vanaf > huidigeMaand()) return;
+      profiel.statsVanaf = vanaf;
+      await bewaarProfiel(profiel);
+      document.getElementById('statistieken').outerHTML = statistiekenHtml(berekenStatistieken(boeken, vanaf), vanaf);
+      koppelVanaf();
+    });
+  koppelVanaf();
 }
 
 // --- Boekentips ---

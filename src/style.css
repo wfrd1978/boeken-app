@@ -401,3 +401,5 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .staaf { height: 8px; }
 .staaf span { display: block; height: 100%; background: var(--accent); border-radius: 0 4px 4px 0; }
 .staaf-aantal { font-variant-numeric: tabular-nums; text-align: right; min-width: 2ch; }
+.stat-vanaf { display: flex; align-items: center; gap: 10px; margin-top: 20px; color: var(--zacht); font-size: 0.9rem; }
+.stat-vanaf input { font-size: 16px; padding: 6px 10px; border: 1px solid var(--lijn); border-radius: 8px; background: var(--vlak); color: var(--tekst); }
