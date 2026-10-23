@@ -169,23 +169,26 @@ const VEEG_BREEDTE = 96;
 function maakVeegbaar(lijst, onVerwijder) {
   let open = null;
   let start = null;
+  let frame = 0;
 
   const zet = (li, x, animeer) => {
     const a = li.querySelector('.boek');
-    a.style.transition = animeer ? 'transform 0.2s ease' : 'none';
-    a.style.transform = x ? `translateX(${x}px)` : '';
+    a.style.transition = animeer ? 'transform 0.32s cubic-bezier(0.22, 1, 0.36, 1)' : 'none';
+    a.style.transform = x ? `translate3d(${x}px, 0, 0)` : '';
   };
   const sluit = () => {
     if (open) zet(open, 0, true);
     open = null;
   };
+  // Voorbij de knop gaat het zwaarder, zoals een elastiek.
+  const elastiek = (x) => (x >= -VEEG_BREEDTE ? x : -VEEG_BREEDTE + (x + VEEG_BREEDTE) * 0.3);
 
   lijst.addEventListener('touchstart', (e) => {
     const li = e.target.closest('.veeg');
     if (!li || e.target.closest('.veeg-actie')) return;
     if (open && open !== li) sluit();
     const t = e.touches[0];
-    start = { li, x: t.clientX, y: t.clientY, basis: open === li ? -VEEG_BREEDTE : 0, richting: null };
+    start = { li, x: t.clientX, y: t.clientY, basis: open === li ? -VEEG_BREEDTE : 0, richting: null, laatste: [] };
   }, { passive: true });
 
   lijst.addEventListener('touchmove', (e) => {
@@ -194,26 +197,33 @@ function maakVeegbaar(lijst, onVerwijder) {
     const dx = t.clientX - start.x;
     const dy = t.clientY - start.y;
     // Pas beslissen na een paar pixels: vegen opzij of gewoon scrollen.
-    if (!start.richting && Math.abs(dx) + Math.abs(dy) > 12) {
+    if (!start.richting) {
+      if (Math.abs(dx) + Math.abs(dy) < 10) return;
       start.richting = Math.abs(dx) > Math.abs(dy) ? 'opzij' : 'scroll';
+      // Vanaf hier meten, zodat de regel niet verspringt.
+      start.x = t.clientX;
     }
     if (start.richting !== 'opzij') return;
     e.preventDefault();
-    const x = Math.max(-VEEG_BREEDTE * 1.3, Math.min(0, start.basis + dx));
-    zet(start.li, x, false);
+    start.laatste.push({ x: t.clientX, t: e.timeStamp });
+    if (start.laatste.length > 5) start.laatste.shift();
+    const x = elastiek(Math.min(0, start.basis + t.clientX - start.x));
+    const li = start.li;
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => zet(li, x, false));
   }, { passive: false });
 
   lijst.addEventListener('touchend', (e) => {
     if (!start) return;
     if (start.richting === 'opzij') {
+      cancelAnimationFrame(frame);
       const x = start.basis + (e.changedTouches[0].clientX - start.x);
-      if (x < -VEEG_BREEDTE / 2) {
-        zet(start.li, -VEEG_BREEDTE, true);
-        open = start.li;
-      } else {
-        zet(start.li, 0, true);
-        if (open === start.li) open = null;
-      }
+      // Snelheid van de laatste beweging: een snelle veeg telt ook als hij kort is.
+      const p = start.laatste;
+      const snelheid = p.length > 1 ? (p[p.length - 1].x - p[0].x) / Math.max(1, p[p.length - 1].t - p[0].t) : 0;
+      const openen = snelheid < -0.4 || (snelheid <= 0.4 && x < -VEEG_BREEDTE / 2);
+      zet(start.li, openen ? -VEEG_BREEDTE : 0, true);
+      open = openen ? start.li : open === start.li ? null : open;
       // Na vegen geen boek openen.
       const li = start.li;
       li.dataset.geveegd = 'ja';
