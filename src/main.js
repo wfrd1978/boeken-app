@@ -32,6 +32,7 @@ import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
+import { berekenStatistieken } from './statistieken.js';
 import { veilig, veiligeUrl } from './veilig.js';
 import { tipsUitArchief, verversTips, zetTipReactie } from './tips.js';
 import {
@@ -1198,6 +1199,56 @@ function synopsisHtml(tekst) {
 
 // --- Profiel ---
 
+// Een rij staafjes: label, staaf naar verhouding, aantal. De grootste staaf is vol.
+function stavenHtml(rijen) {
+  const max = Math.max(...rijen.map((r) => r.aantal));
+  return `<ul class="staven">${rijen
+    .map(
+      (r) => `
+      <li>
+        <span class="staaf-label">${veilig(r.label)}</span>
+        <span class="staaf"><span style="width:${Math.max(2, Math.round((r.aantal / max) * 100))}%"></span></span>
+        <span class="staaf-aantal">${r.aantal}${r.extra ? ` <span class="zacht">${r.extra}</span>` : ''}</span>
+      </li>`
+    )
+    .join('')}</ul>`;
+}
+
+function statistiekenHtml(st) {
+  const komma = (x) => x.toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return `
+    <section class="statistieken">
+      <div class="tegels">
+        <div class="tegel"><strong>${st.gelezen}</strong><span>gelezen</span></div>
+        <div class="tegel"><strong>${st.ditJaar}</strong><span>in ${new Date().getFullYear()}</span></div>
+        <div class="tegel"><strong>${st.gemiddeld ? `${komma(st.gemiddeld)}<small>★</small>` : '–'}</strong><span>gemiddeld</span></div>
+      </div>
+      ${st.gemiddeld ? `<p class="zacht klein">Gemiddelde over ${st.metSterren} ${st.metSterren === 1 ? 'boek' : 'boeken'} met sterren.</p>` : ''}
+
+      ${
+        st.perCategorie.length
+          ? `<h2 class="stat-kop">Wat je leest</h2>
+             ${stavenHtml(st.perCategorie.map((c) => ({ label: c.categorie, aantal: c.aantal, extra: c.gemiddeld ? `${komma(c.gemiddeld)}★` : '' })))}`
+          : ''
+      }
+
+      <h2 class="stat-kop">Gelezen per jaar</h2>
+      ${st.perJaar.length ? stavenHtml(st.perJaar.map((j) => ({ label: String(j.jaar), aantal: j.aantal }))) : ''}
+      ${
+        st.zonderDatum
+          ? `<p class="zacht klein">Bij ${st.zonderDatum} gelezen ${st.zonderDatum === 1 ? 'boek staat' : 'boeken staat'} nog geen leesdatum. Die tellen hier niet mee; voeg je een datum toe bij een boek, dan groeit dit overzicht vanzelf.</p>`
+          : ''
+      }
+
+      ${
+        st.schrijvers.length
+          ? `<h2 class="stat-kop">Schrijvers die je het vaakst las</h2>
+             ${stavenHtml(st.schrijvers.map((a) => ({ label: a.naam, aantal: a.aantal })))}`
+          : ''
+      }
+    </section>`;
+}
+
 async function toonProfiel() {
   const nr = schermNr;
   ruimCoversOp();
@@ -1221,6 +1272,9 @@ async function toonProfiel() {
           })()}</p>
         </div>
       </div>
+
+      ${statistiekenHtml(berekenStatistieken(boeken))}
+      <h2 class="stat-kop">Over jou</h2>
 
       <label class="veld">Naam<input id="p-naam" value="${veilig(profiel.naam)}" placeholder="Je voornaam" autocomplete="given-name" /></label>
       <label class="veld">Over mij<textarea id="p-over" rows="3" placeholder="Bijvoorbeeld wat je doet, waar en wanneer je leest">${veilig(profiel.overMij)}</textarea></label>
