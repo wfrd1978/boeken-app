@@ -7,6 +7,7 @@ const AANVULLEN = ['isbn', 'werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 't
 const PAUZE = 400;
 
 let bezig = false;
+let nogEenRonde = false;
 let luisteraar = () => {};
 
 export function opVoortgang(functie) {
@@ -15,47 +16,66 @@ export function opVoortgang(functie) {
 
 const wacht = (ms) => new Promise((klaar) => setTimeout(klaar, ms));
 
+// Werkt de wachtrij af. Komen er tijdens het werk nieuwe boeken bij (bijvoorbeeld via
+// 'Zoek opnieuw naar ontbrekende covers'), dan gaat hij daar meteen mee verder.
 export async function verrijkAlles() {
-  if (bezig) return;
+  if (bezig) {
+    nogEenRonde = true;
+    return;
+  }
   bezig = true;
+  const geprobeerd = new Set();
+  let klaar = 0;
+  let totaal = 0;
+  let gestopt = false;
   try {
-    const open = await db.boeken.filter((b) => b.verrijkt === false).toArray();
-    let klaar = 0;
-    let foutenOpRij = 0;
-    for (const boek of open) {
-      if (!navigator.onLine) break;
-      let gevonden;
-      try {
-        gevonden = await zoekBijpassend(boek);
-        foutenOpRij = 0;
-      } catch (fout) {
-        // Een bron weigert even: dit boek later opnieuw. Gebeurt het steeds,
-        // dan pauzeren (bijvoorbeeld daglimiet van Google) en de volgende keer verder.
-        foutenOpRij += 1;
-        if (!(fout instanceof TijdelijkeFout) || foutenOpRij >= 3) break;
-        await wacht(PAUZE * 3);
-        continue;
+    do {
+      nogEenRonde = false;
+      const open = await db.boeken.filter((b) => b.verrijkt === false && !geprobeerd.has(b.id)).toArray();
+      totaal += open.length;
+      let foutenOpRij = 0;
+      for (const boek of open) {
+        geprobeerd.add(boek.id);
+        if (!navigator.onLine) {
+          gestopt = true;
+          break;
+        }
+        let gevonden;
+        try {
+          gevonden = await zoekBijpassend(boek);
+          foutenOpRij = 0;
+        } catch (fout) {
+          // Een bron weigert even: dit boek later opnieuw. Gebeurt het steeds,
+          // dan pauzeren (bijvoorbeeld daglimiet van Google) en de volgende keer verder.
+          foutenOpRij += 1;
+          if (!(fout instanceof TijdelijkeFout) || foutenOpRij >= 3) {
+            gestopt = true;
+            break;
+          }
+          await wacht(PAUZE * 3);
+          continue;
+        }
+        const actueel = await db.boeken.get(boek.id);
+        if (!actueel) continue;
+        // Alleen lege velden aanvullen; wat al is ingevuld blijft staan.
+        const aanvulling = {};
+        for (const veld of AANVULLEN) {
+          if (!actueel[veld] && gevonden?.[veld]) aanvulling[veld] = gevonden[veld];
+        }
+        if (!actueel.cover) {
+          const cover = await zoekCover({ ...actueel, ...aanvulling }, { opTitel: false });
+          if (cover.cover) aanvulling.cover = cover.cover;
+          if (cover.coverUrl) aanvulling.coverUrl = cover.coverUrl;
+        }
+        const isbn = aanvulling.isbn || actueel.isbn;
+        if (!actueel.werk && !aanvulling.werk && isbn) aanvulling.werk = await zoekWerk(isbn);
+        await db.boeken.update(boek.id, { ...aanvulling, werk: aanvulling.werk || actueel.werk || '', verrijkt: true });
+        klaar += 1;
+        luisteraar({ klaar, totaal });
+        await wacht(PAUZE);
       }
-      const actueel = await db.boeken.get(boek.id);
-      if (!actueel) continue;
-      // Alleen lege velden aanvullen; wat al is ingevuld blijft staan.
-      const aanvulling = {};
-      for (const veld of AANVULLEN) {
-        if (!actueel[veld] && gevonden?.[veld]) aanvulling[veld] = gevonden[veld];
-      }
-      if (!actueel.cover) {
-        const cover = await zoekCover({ ...actueel, ...aanvulling }, { opTitel: false });
-        if (cover.cover) aanvulling.cover = cover.cover;
-        if (cover.coverUrl) aanvulling.coverUrl = cover.coverUrl;
-      }
-      const isbn = aanvulling.isbn || actueel.isbn;
-      if (!actueel.werk && !aanvulling.werk && isbn) aanvulling.werk = await zoekWerk(isbn);
-      await db.boeken.update(boek.id, { ...aanvulling, werk: aanvulling.werk || actueel.werk || '', verrijkt: true });
-      klaar += 1;
-      luisteraar({ klaar, totaal: open.length });
-      await wacht(PAUZE);
-    }
-    luisteraar({ klaar, totaal: open.length, gestopt: klaar < open.length });
+    } while (nogEenRonde && !gestopt);
+    luisteraar({ klaar, totaal, gestopt: gestopt || klaar < totaal });
   } finally {
     bezig = false;
   }
