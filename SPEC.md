@@ -29,6 +29,7 @@ https://wfrd1978.github.io/boeken-app/
 | Sterren | 1 t/m 5, alleen hele sterren | nee |
 | Leesdata | Eén of meer datums waarop het boek uit was; herlezen voegt een datum toe. Is alleen de maand bekend, dan bewaren we alleen maand en jaar (geen verzonnen dag) | nee |
 | Recensie | Vrije tekst | nee |
+| Opmerking | Korte toevoeging uit de Excel-lijst, bijvoorbeeld de serie ("Amos Decker 1") | nee |
 | Toegevoegd op | Automatisch | ja |
 | Bron | Hoe het boek erin kwam: getypt, scan, foto, Excel-import | ja |
 
@@ -49,7 +50,7 @@ https://wfrd1978.github.io/boeken-app/
 
 **Backup.** Eén JSON-bestand met alle boeken én covers, te bewaren via het deelmenu (bijvoorbeeld in iCloud Drive). Terugzetten vervangt de huidige lijst pas na een duidelijke bevestiging. Is de laatste backup ouder dan 14 dagen, dan toont de app een rustige herinnering.
 
-**Excel-import.** Wilfreds bestaande boekenlijst (.xlsx) inlezen. Welke kolom wat betekent (titel, auteur, sterren, datum, status …) stellen we vast aan de hand van zijn eigen bestand; bij twijfel vraagt de app het. Covers en ontbrekende gegevens worden daarna op de achtergrond opgehaald. Vooraf een backup; dubbele boeken worden overgeslagen en gemeld, en vooraf toont de app hoeveel boeken er worden toegevoegd. Indeling van het (verbeterde) bestand: kolommen Auteur, Titel, Gelezen (maand), Sterren, Opmerking; alle boeken krijgen status *Gelezen*. Het bestand zelf komt niet in de repository (die is openbaar).
+**Excel-import.** Wilfreds bestaande boekenlijst (.xlsx) inlezen. Welke kolom wat betekent (titel, auteur, sterren, datum, status …) stellen we vast aan de hand van zijn eigen bestand; bij twijfel vraagt de app het. Covers en ontbrekende gegevens (ISBN, jaar, uitgever) worden daarna op de achtergrond opgehaald, zolang de app open is en er internet is; het gaat de volgende keer vanzelf verder. Titel en auteur uit de lijst blijven altijd zoals Wilfred ze schreef. Importeren kan pas als er die dag of de dag ervoor een backup is gemaakt. Vooraf een backup; dubbele boeken worden overgeslagen en gemeld, en vooraf toont de app hoeveel boeken er worden toegevoegd. Indeling van het (verbeterde) bestand: kolommen Auteur, Titel, Gelezen (maand), Sterren, Opmerking; alle boeken krijgen status *Gelezen*. Het bestand zelf komt niet in de repository (die is openbaar).
 
 **Excel-export.** Eén .xlsx-bestand met één regel per boek en de velden hierboven als kolommen (zonder cover). Bij herlezen staan alle leesdata in één cel.
 

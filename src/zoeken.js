@@ -1,3 +1,5 @@
+import { vindDubbel } from './dubbel.js';
+
 // Boekgegevens ophalen bij Open Library en Google Books (gratis, geen sleutel).
 
 const WACHTTIJD = 10000;
@@ -28,12 +30,17 @@ function kiesIsbn(isbns = []) {
 const TAAL = { dut: 'nl', eng: 'en', ger: 'de', fre: 'fr' };
 
 // Met lang=nl geeft Open Library waar mogelijk de Nederlandse uitgave mee.
-async function zoekOpenLibrary(tekst) {
+// 'zoekvraag' is vrije tekst, of los titel en auteur voor een preciezere zoekopdracht.
+async function zoekOpenLibrary(zoekvraag, limiet = 10) {
   const velden = [
     'key,title,author_name,isbn,cover_i,first_publish_year,number_of_pages_median,language',
     'editions,editions.title,editions.isbn,editions.cover_i,editions.language,editions.publisher',
   ].join(',');
-  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(tekst)}&lang=nl&limit=10&fields=${velden}`;
+  const vraag =
+    typeof zoekvraag === 'string'
+      ? `q=${encodeURIComponent(zoekvraag)}`
+      : `title=${encodeURIComponent(zoekvraag.titel)}${zoekvraag.auteur ? `&author=${encodeURIComponent(zoekvraag.auteur)}` : ''}`;
+  const url = `https://openlibrary.org/search.json?${vraag}&lang=nl&limit=${limiet}&fields=${velden}`;
   const data = await haalJson(url);
   return (data.docs ?? []).map((d) => {
     const uitgave = d.editions?.docs?.[0] ?? {};
@@ -53,9 +60,9 @@ async function zoekOpenLibrary(tekst) {
   });
 }
 
-async function zoekGoogleBooks(tekst, alleenNederlands = false) {
+async function zoekGoogleBooks(tekst, alleenNederlands = false, limiet = 10) {
   const taal = alleenNederlands ? '&langRestrict=nl' : '';
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(tekst)}&maxResults=10${taal}`;
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(tekst)}&maxResults=${limiet}${taal}`;
   const data = await haalJson(url);
   return (data.items ?? []).map(({ volumeInfo: v }) => {
     const ids = v.industryIdentifiers ?? [];
@@ -106,6 +113,29 @@ export async function zoekBoeken(tekst) {
   // Stabiele sortering: Nederlands eerst, verder de volgorde van de bronnen.
   resultaten.sort((a, b) => (b.taal === 'nl') - (a.taal === 'nl'));
   return resultaten.slice(0, 15);
+}
+
+// Zoekt de gegevens bij een boek waarvan titel en auteur bekend zijn (bijvoorbeeld uit
+// de Excel-lijst). Alleen een resultaat dat echt hetzelfde boek is, telt; Nederlandse
+// uitgaven eerst. Geeft null als niets past, en een fout als geen bron bereikbaar is.
+export async function zoekBijpassend(boek) {
+  const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
+  const pogingen = await Promise.allSettled([
+    zoekOpenLibrary({ titel: boek.titel, auteur }, 5),
+    zoekGoogleBooks(`intitle:${boek.titel}${auteur ? ` inauthor:${auteur}` : ''}`, false, 5),
+  ]);
+  if (pogingen.every((p) => p.status === 'rejected')) throw new Error('Geen verbinding');
+  const passend = pogingen.flatMap((p) => p.value ?? []).filter((k) => vindDubbel(boek, [k]));
+  passend.sort((a, b) => (b.taal === 'nl') - (a.taal === 'nl') || Boolean(b.coverUrl) - Boolean(a.coverUrl));
+  const beste = passend[0];
+  if (!beste) return null;
+  // Ontbrekende gegevens aanvullen uit de andere passende resultaten.
+  for (const ander of passend.slice(1)) {
+    for (const veld of ['isbn', 'werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal']) {
+      if (!beste[veld] && ander[veld]) beste[veld] = ander[veld];
+    }
+  }
+  return beste;
 }
 
 // Zoekt bij Open Library bij welk 'werk' een ISBN hoort. Alle vertalingen van
