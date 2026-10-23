@@ -25,10 +25,12 @@ export async function maakBackupBestand() {
   const nu = new Date();
   const inhoud = {
     app: 'boeken-app',
-    versie: 1,
+    // Versie 2 bevat ook het profiel. Backups van versie 1 blijven gewoon terug te zetten.
+    versie: 2,
     gemaakt: nu.toISOString(),
     aantal: boeken.length,
     boeken: metCovers,
+    profiel: (await db.instellingen.get('profiel'))?.waarde ?? null,
   };
   const datum = nu.toISOString().slice(0, 10);
   return new File([JSON.stringify(inhoud)], `boeken-backup-${datum}.json`, { type: 'application/json' });
@@ -104,7 +106,7 @@ export async function leesBackup(bestand) {
   if (inhoud?.app !== 'boeken-app' || !Array.isArray(inhoud.boeken)) {
     throw new Error('Dit bestand is geen backup van de boeken-app.');
   }
-  if (inhoud.versie > 1) {
+  if (inhoud.versie > 2) {
     throw new Error('Deze backup is gemaakt met een nieuwere versie van de app. Werk de app eerst bij.');
   }
   return inhoud;
@@ -115,9 +117,11 @@ export async function zetBackupTerug(inhoud) {
   const boeken = await Promise.all(
     inhoud.boeken.map(async (b) => ({ ...b, cover: b.cover ? await tekstNaarBlob(b.cover) : null }))
   );
-  await db.transaction('rw', db.boeken, async () => {
+  await db.transaction('rw', db.boeken, db.instellingen, async () => {
     await db.boeken.clear();
     await db.boeken.bulkAdd(boeken);
+    // Een oudere backup zonder profiel laat het huidige profiel staan.
+    if (inhoud.profiel) await db.instellingen.put({ sleutel: 'profiel', waarde: inhoud.profiel });
   });
   return boeken.length;
 }

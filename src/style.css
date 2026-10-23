@@ -348,3 +348,26 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .synopsis.kort { display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; }
 .synopsis.voorproef { -webkit-line-clamp: 4; margin-top: 14px; color: var(--zacht); font-size: 0.95rem; }
 .link-knop.meer { padding: 4px 0 0; }
+
+/* --- Profiel --- */
+.woordmerk { position: relative; }
+.profiel-icoon {
+  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+  width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--accent); color: var(--accent-tekst); text-decoration: none;
+  font-family: var(--schreef); font-weight: 700; font-size: 1.1rem;
+}
+.profiel-icoon svg { width: 22px; height: 22px; fill: currentColor; }
+.profiel-kop { display: flex; align-items: center; gap: 16px; margin: 4px 0 22px; }
+.profiel-kop h1 { margin: 0; font-family: var(--schreef); font-size: 1.8rem; }
+.profiel-kop p { margin: 2px 0 0; }
+.profiel-groot {
+  flex: none; width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--accent); color: var(--accent-tekst); font-family: var(--schreef); font-weight: 700; font-size: 2rem;
+}
+.veld { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; color: var(--zacht); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.veld input, .veld textarea {
+  width: 100%; padding: 11px 14px; font-size: 16px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--tekst);
+  border: 1px solid var(--lijn); border-radius: 10px; background: var(--vlak); font-family: var(--schreefloos);
+}
+.veld textarea { resize: vertical; font-family: var(--schreef); font-size: 17px; line-height: 1.5; }

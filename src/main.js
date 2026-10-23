@@ -13,6 +13,8 @@ import {
   zetKoboOm,
   STATUSSEN,
   statusNaam,
+  haalProfiel,
+  bewaarProfiel,
 } from './db.js';
 import {
   zoekBoeken,
@@ -347,9 +349,10 @@ function maakVeegbaar(lijst, onVerwijder) {
 
 // --- Startscherm: zoals de voorpagina van een nieuwsapp ---
 
-function groet() {
+function groet(naam) {
   const uur = new Date().getHours();
-  const deel = uur < 6 ? 'Goedenacht' : uur < 12 ? 'Goedemorgen' : uur < 18 ? 'Goedemiddag' : 'Goedenavond';
+  const tijd = uur < 6 ? 'Goedenacht' : uur < 12 ? 'Goedemorgen' : uur < 18 ? 'Goedemiddag' : 'Goedenavond';
+  const deel = naam ? `${tijd}, ${naam}` : tijd;
   const datum = new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
   return { deel, datum };
 }
@@ -392,8 +395,8 @@ function rijHtml(titel, boeken, naarTab) {
     </section>`;
 }
 
-function startHtml(boeken) {
-  const { deel, datum } = groet();
+function startHtml(boeken, naam) {
+  const { deel, datum } = groet(naam);
   const nu = boeken.filter((b) => b.status === 'Bezig');
   const gelezen = boeken
     .filter((b) => b.status === 'Gelezen')
@@ -405,7 +408,7 @@ function startHtml(boeken) {
     .slice(0, 12);
   return `
     <section class="start">
-      <p class="groet">${deel}<span>${datum}</span></p>
+      <p class="groet">${veilig(deel)}<span>${datum}</span></p>
       ${
         nu.length
           ? `<div class="helden${nu.length > 1 ? ' meer' : ''}">${nu.map(heldHtml).join('')}</div>`
@@ -424,10 +427,15 @@ function startHtml(boeken) {
 
 async function toonLijst() {
   ruimCoversOp();
-  const boeken = await alleBoeken();
+  const [boeken, profiel] = await Promise.all([alleBoeken(), haalProfiel()]);
   app.innerHTML = `
-    <header class="woordmerk"><h1>Boeken</h1></header>
-    ${boeken.length ? startHtml(boeken) : ''}
+    <header class="woordmerk">
+      <h1>Boeken</h1>
+      <a class="profiel-icoon" href="#/profiel" aria-label="Mijn profiel">${
+        profiel.naam ? veilig(profiel.naam.charAt(0).toUpperCase()) : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5z" /></svg>'
+      }</a>
+    </header>
+    ${boeken.length ? startHtml(boeken, profiel.naam) : ''}
     ${
       boeken.length
         ? `<h2 class="lijst-kop" id="lijst-kop">Al je boeken</h2>
@@ -1101,6 +1109,66 @@ function synopsisHtml(tekst) {
     .join('');
 }
 
+// --- Profiel ---
+
+async function toonProfiel() {
+  ruimCoversOp();
+  const [profiel, boeken] = await Promise.all([haalProfiel(), alleBoeken()]);
+  const top = boeken
+    .filter((b) => b.sterren === 5)
+    .sort((a, b) => laatsteLeesdatum(b).localeCompare(laatsteLeesdatum(a)) || a.titel.localeCompare(b.titel, 'nl'));
+  app.innerHTML = `
+    <header class="kop">
+      <a class="terug" href="#/">‹ Boeken</a>
+    </header>
+    <section class="profiel">
+      <div class="profiel-kop">
+        <div class="profiel-groot">${profiel.naam ? veilig(profiel.naam.charAt(0).toUpperCase()) : '?'}</div>
+        <div>
+          <h1 id="profiel-naam-kop">${veilig(profiel.naam || 'Mijn profiel')}</h1>
+          <p class="zacht">${(() => {
+            const n = boeken.filter((b) => b.status === 'Gelezen').length;
+            return `${n === 1 ? '1 boek' : `${n} boeken`} gelezen · ${top.length} met vijf sterren`;
+          })()}</p>
+        </div>
+      </div>
+
+      <label class="veld">Naam<input id="p-naam" value="${veilig(profiel.naam)}" placeholder="Je voornaam" autocomplete="given-name" /></label>
+      <label class="veld">Over mij<textarea id="p-over" rows="3" placeholder="Bijvoorbeeld wat je doet, waar en wanneer je leest">${veilig(profiel.overMij)}</textarea></label>
+      <label class="veld">Mijn lezersprofiel<textarea id="p-profiel" rows="12" placeholder="Wat lees je graag, en waarom? Welke schrijvers of thema's raken je?">${veilig(profiel.lezersprofiel)}</textarea></label>
+      <p class="opgeslagen" id="p-opgeslagen">&nbsp;</p>
+      <p class="zacht klein">Je profiel staat alleen op deze telefoon en gaat mee in je backup. Het wordt straks gebruikt voor je boekentips.</p>
+    </section>
+    ${rijHtml('Mijn vijfsterrenboeken', top, 'Gelezen')}
+  `;
+  document.querySelector('.rij-kop .link-knop')?.remove();
+
+  // Vanzelf bewaren, kort nadat je stopt met typen.
+  const velden = { naam: 'p-naam', overMij: 'p-over', lezersprofiel: 'p-profiel' };
+  const opgeslagen = document.getElementById('p-opgeslagen');
+  let timer;
+  const bewaar = async () => {
+    clearTimeout(timer);
+    const nieuw = Object.fromEntries(Object.entries(velden).map(([k, id]) => [k, document.getElementById(id).value.trim()]));
+    if (JSON.stringify(nieuw) === JSON.stringify(profiel)) return;
+    Object.assign(profiel, nieuw);
+    await bewaarProfiel(profiel);
+    document.getElementById('profiel-naam-kop').textContent = profiel.naam || 'Mijn profiel';
+    document.querySelector('.profiel-groot').textContent = profiel.naam ? profiel.naam.charAt(0).toUpperCase() : '?';
+    opgeslagen.textContent = 'Opgeslagen';
+  };
+  for (const id of Object.values(velden)) {
+    const veld = document.getElementById(id);
+    veld.addEventListener('input', () => {
+      opgeslagen.innerHTML = '&nbsp;';
+      clearTimeout(timer);
+      timer = setTimeout(bewaar, 800);
+    });
+    veld.addEventListener('blur', bewaar);
+  }
+  toonBoek.bewaarOpenstaand = bewaar;
+}
+
 // --- Cover kiezen ---
 
 async function toonCoverKeuze(boek, bewaar, klaar) {
@@ -1340,6 +1408,7 @@ async function route() {
   document.querySelectorAll('.balk a').forEach((a) => a.classList.toggle('actief', a.dataset.plek === plek));
   if (location.hash === '#/toevoegen') toonToevoegen();
   else if (location.hash === '#/instellingen') toonInstellingen();
+  else if (location.hash === '#/profiel') toonProfiel();
   else if (boekId) toonBoek(Number(boekId[1]));
   else if (location.hash === '#/zoek') {
     // Zoeken = de lijst met de cursor in het zoekveld.

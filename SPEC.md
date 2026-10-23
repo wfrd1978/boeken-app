@@ -41,7 +41,8 @@ https://wfrd1978.github.io/boeken-app/
 1. **Lijst** — alle boeken met cover, titel, auteur, status en sterren. Naar links vegen toont een rode knop Verwijder (zoals Apple Mail); daarna kan het 5 seconden ongedaan worden gemaakt. Bovenin een zoekveld. Sorteren op: laatst toegevoegd (standaard), titel, auteur, laatste leesdatum, sterren.
 2. **Toevoegen** — twee manieren: titel of ISBN typen, streepjescode scannen met de camera (ZXing, alleen geldige ISBN's met controlecijfer). Altijd eerst een voorstel tonen ("Bedoel je dit boek?") voordat het wordt opgeslagen.
 3. **Boek** — alle gegevens; synopsis onder 'Over het boek' (eerste regels, met Lees meer); cover kiezen uit alle uitgaven die Google Books en Open Library kennen (of zelf zoeken op internet) of een eigen foto; label Wacht op Kobo Plus aan/uit en een knop Zoek bij Kobo (opent kobo.com met titel en auteur ingevuld); sterren, status, leesdata en recensie aanpassen; een leesdatum toevoegen bij herlezen; verwijderen (met bevestiging).
-4. **Instellingen** — backup maken, backup terugzetten, Excel importeren, covers opnieuw zoeken, Excel-export.
+4. **Profiel** (rond icoon rechtsboven) — naam, over mij, lezersprofiel (vanzelf bewaard) en een rij met de vijfsterrenboeken. De naam komt in de groet op het startscherm. Bewaard in de app (vakje 'instellingen') en mee in de backup (backup-versie 2; versie 1 blijft terug te zetten).
+5. **Instellingen** — backup maken, backup terugzetten, Excel importeren, covers opnieuw zoeken, Excel-export.
 
 ## Gedrag
 
@@ -99,3 +100,4 @@ Startscherm met covers per status, synopsis en boekentips (Fase 2, stap 10–12;
 | 2026-10-23 | Fase 1 afgerond; Fase 2 actief |
 | 2026-10-23 | Eigen gratis Google-sleutel voor de Books API, met toestemming van de gebruiker |
 | 2026-10-23 | Synopsis: liefst de Nederlandse beschrijving van Google Books, anders die van Open Library; op de achtergrond, na de covers |
+| 2026-10-23 | Profielpagina met lezersprofiel; opslag krijgt een tweede vakje (instellingen), backup versie 2 |
