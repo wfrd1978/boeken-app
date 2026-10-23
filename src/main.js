@@ -688,7 +688,11 @@ async function toonInstellingen() {
     uitslag.textContent = 'Testen…';
     const { openLibrary, google } = await testBronnen();
     const regel = (naam, r) =>
-      r.ok ? `${naam}: werkt` : `${naam}: werkt niet${r.status === 429 ? ' (daglimiet bereikt)' : r.status ? ` (fout ${r.status})` : ' (geen verbinding)'}`;
+      r.ok
+        ? `${naam}: werkt`
+        : `${naam}: werkt niet${
+            r.status === 429 ? ' (daglimiet bereikt)' : r.status === 403 ? ' (sleutel geweigerd)' : r.status ? ` (fout ${r.status})` : ' (geen verbinding)'
+          }`;
     uitslag.textContent = `${regel('Open Library', openLibrary)}. ${regel('Google Books', google)}.`;
   });
 
