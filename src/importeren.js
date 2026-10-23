@@ -2,6 +2,7 @@
 import { kaal, vindDubbel } from './dubbel.js';
 import { STATUSSEN } from './db.js';
 import { leesKoboOpmerking } from './kobo.js';
+import { leesCategorie } from './categorie.js';
 
 const MAANDEN = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
 
@@ -14,6 +15,7 @@ const KOLOMMEN = {
   opmerking: ['opmerking', 'opmerkingen', 'notitie', 'serie'],
   status: ['status'],
   isbn: ['isbn'],
+  categorie: ['categorie', 'categorieen', 'genre'],
 };
 
 function kolomSoort(kop) {
@@ -97,24 +99,33 @@ export async function leesExcel(bestand) {
       leesdata: leesdatum ? [leesdatum] : [],
       opmerking: kobo ? kobo.opmerking : opmerking,
       koboWacht: kobo?.koboWacht ?? false,
+      categorie: leesCategorie(kolom(rij, 'categorie')),
       bron: 'excel',
     });
   }
-  return boeken;
+  // Alleen auteur, titel en categorie: dat is een lijst om bestaande boeken in te delen,
+  // geen lijst met nieuwe boeken. Dan wordt er niets toegevoegd.
+  const alleenIndelen = soorten.includes('categorie') && !['gelezen', 'sterren', 'status', 'opmerking'].some((s) => soorten.includes(s));
+  return Object.assign(boeken, { alleenIndelen });
 }
 
-// Splitst in: toevoegen, bijwerken en overslaan.
-// Bijwerken = het boek staat er al, heeft nog geen sterren en het bestand geeft er wel.
-// Sterren die Wilfred zelf al gaf, blijven altijd staan.
+// Splitst in: toevoegen, bijwerken, overslaan en (bij een indeellijst) niet gevonden.
+// Bijwerken = het boek staat er al en het bestand vult een leeg veld aan (sterren, categorie).
+// Wat Wilfred zelf al invulde, blijft altijd staan.
 export function planImport(nieuw, bestaand) {
   const toevoegen = [];
   const bijwerken = [];
   const overslaan = [];
+  const nietGevonden = [];
   for (const boek of nieuw) {
     const al = vindDubbel(boek, bestaand);
-    if (al && boek.sterren && !al.sterren && !bijwerken.some((b) => b.al === al)) bijwerken.push({ boek, al });
+    const wijzigingen = {};
+    if (al && boek.sterren && !al.sterren) wijzigingen.sterren = boek.sterren;
+    if (al && boek.categorie && !al.categorie) wijzigingen.categorie = boek.categorie;
+    if (Object.keys(wijzigingen).length && !bijwerken.some((b) => b.al === al)) bijwerken.push({ boek, al, wijzigingen });
     else if (al || vindDubbel(boek, toevoegen)) overslaan.push({ boek, al: al || vindDubbel(boek, toevoegen) });
+    else if (nieuw.alleenIndelen) nietGevonden.push(boek);
     else toevoegen.push(boek);
   }
-  return { toevoegen, bijwerken, overslaan };
+  return { toevoegen, bijwerken, overslaan, nietGevonden };
 }

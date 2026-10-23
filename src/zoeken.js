@@ -43,7 +43,7 @@ const TAAL = { dut: 'nl', eng: 'en', ger: 'de', fre: 'fr' };
 // 'zoekvraag' is vrije tekst, of los titel en auteur voor een preciezere zoekopdracht.
 async function zoekOpenLibrary(zoekvraag, limiet = 10) {
   const velden = [
-    'key,title,author_name,isbn,cover_i,first_publish_year,number_of_pages_median,language',
+    'key,title,author_name,isbn,cover_i,first_publish_year,number_of_pages_median,language,subject',
     'editions,editions.title,editions.isbn,editions.cover_i,editions.language,editions.publisher',
   ].join(',');
   const vraag =
@@ -68,6 +68,8 @@ async function zoekOpenLibrary(zoekvraag, limiet = 10) {
       jaar: d.first_publish_year ?? null,
       paginas: d.number_of_pages_median ?? null,
       taal: TAAL[talen[0]] ?? '',
+      // Alleen voor het categorievoorstel; wordt niet bewaard.
+      onderwerpen: (d.subject ?? []).slice(0, 15),
     };
   });
 }
@@ -90,6 +92,7 @@ async function zoekGoogleBooks(tekst, alleenNederlands = false, limiet = 10) {
       paginas: v.pageCount ?? null,
       taal: v.language ?? '',
       synopsis: schoneTekst(v.description),
+      onderwerpen: v.categories ?? [],
     };
   });
 }

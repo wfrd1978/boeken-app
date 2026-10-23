@@ -24,6 +24,18 @@ export function statusNaam(status) {
   return STATUS_IN_BEELD[status] ?? status;
 }
 
+// De indeling die Wilfred koos. Elk boek heeft er één (of nog geen).
+export const CATEGORIEEN = [
+  'Thriller & spanning',
+  'Oorlog & geschiedenis',
+  'Sport',
+  'Biografie & levensverhaal',
+  'Journalistiek & samenleving',
+  'Roman & humor',
+  'Geloof & zingeving',
+  'Overig',
+];
+
 // Vraag de browser om de opslag niet zomaar op te ruimen.
 export async function vraagBlijvendeOpslag() {
   try {
@@ -67,6 +79,7 @@ export function normaliseerBoek(b) {
     recensie: tekst(b.recensie),
     opmerking: tekst(b.opmerking),
     koboWacht: b.koboWacht === true,
+    categorie: CATEGORIEEN.includes(b.categorie) ? b.categorie : '',
     synopsis: typeof b.synopsis === 'string' ? b.synopsis : undefined,
     toegevoegdOp: typeof b.toegevoegdOp === 'string' && !isNaN(Date.parse(b.toegevoegdOp)) ? b.toegevoegdOp : new Date().toISOString(),
     bron: tekst(b.bron) || 'backup',
@@ -96,6 +109,7 @@ function nieuwBoek(boek, toegevoegdOp = new Date().toISOString()) {
     // Leeg laten (undefined) als we hem nog niet hebben, dan haalt de app hem later op.
     synopsis: boek.synopsis || undefined,
     koboWacht: boek.koboWacht ?? false,
+    categorie: boek.categorie ?? '',
     toegevoegdOp,
     bron: boek.bron ?? 'getypt',
     // false = cover en gegevens moeten nog op de achtergrond worden opgehaald.
@@ -116,10 +130,17 @@ export function boekenImporteren(boeken) {
   );
 }
 
-// Sterren aanvullen bij bestaande boeken, allemaal tegelijk: lukt het niet, dan verandert er niets.
-export function sterrenAanvullen(lijst) {
+// Sterren of categorie aanvullen bij bestaande boeken, allemaal tegelijk: lukt het niet,
+// dan verandert er niets. Alleen lege velden worden gevuld, ook als er intussen iets veranderde.
+export function boekenAanvullen(lijst) {
   return db.transaction('rw', db.boeken, () =>
-    Promise.all(lijst.map(({ id, sterren }) => db.boeken.update(id, { sterren })))
+    Promise.all(
+      lijst.map(({ id, wijzigingen }) =>
+        db.boeken.where('id').equals(id).modify((b) => {
+          for (const [veld, waarde] of Object.entries(wijzigingen)) if (!b[veld]) b[veld] = waarde;
+        })
+      )
+    )
   );
 }
 
