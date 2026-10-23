@@ -164,3 +164,15 @@ a.boek { color: inherit; text-decoration: none; }
 
 .cover-knoppen { display: flex; justify-content: center; gap: 20px; margin: -8px 0 12px; }
 .cover-knoppen .link-knop { padding: 4px 0; font-size: 0.9rem; cursor: pointer; text-align: center; }
+
+.lijst-bediening { display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px; }
+.lijst-bediening input {
+  width: 100%; padding: 11px 14px; font-size: 16px;
+  border: 1px solid var(--lijn); border-radius: 10px; background: var(--vlak);
+}
+.sorteer { display: flex; align-items: center; gap: 8px; color: var(--zacht); font-size: 0.9rem; }
+.sorteer select {
+  font: inherit; font-size: 16px; color: var(--tekst); background: none;
+  border: 0; padding: 4px 0; -webkit-appearance: none; appearance: none;
+  text-decoration: underline; text-underline-offset: 3px;
+}
