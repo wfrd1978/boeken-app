@@ -25,22 +25,36 @@ function kiesIsbn(isbns = []) {
   );
 }
 
+const TAAL = { dut: 'nl', eng: 'en', ger: 'de', fre: 'fr' };
+
+// Met lang=nl geeft Open Library waar mogelijk de Nederlandse uitgave mee.
 async function zoekOpenLibrary(tekst) {
-  const velden = 'key,title,author_name,isbn,cover_i,first_publish_year,number_of_pages_median';
-  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(tekst)}&limit=10&fields=${velden}`;
+  const velden = [
+    'key,title,author_name,isbn,cover_i,first_publish_year,number_of_pages_median,language',
+    'editions,editions.title,editions.isbn,editions.cover_i,editions.language,editions.publisher',
+  ].join(',');
+  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(tekst)}&lang=nl&limit=10&fields=${velden}`;
   const data = await haalJson(url);
-  return (data.docs ?? []).map((d) => ({
-    titel: d.title,
-    auteurs: d.author_name ?? [],
-    isbn: kiesIsbn(d.isbn),
-    coverUrl: d.cover_i ? `https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg` : '',
-    jaar: d.first_publish_year ?? null,
-    paginas: d.number_of_pages_median ?? null,
-  }));
+  return (data.docs ?? []).map((d) => {
+    const uitgave = d.editions?.docs?.[0] ?? {};
+    const cover = uitgave.cover_i || d.cover_i;
+    const talen = uitgave.language ?? (d.language?.length === 1 ? d.language : []);
+    return {
+      titel: uitgave.title || d.title,
+      auteurs: d.author_name ?? [],
+      isbn: kiesIsbn(uitgave.isbn ?? d.isbn),
+      coverUrl: cover ? `https://covers.openlibrary.org/b/id/${cover}-M.jpg` : '',
+      uitgever: uitgave.publisher?.[0] ?? '',
+      jaar: d.first_publish_year ?? null,
+      paginas: d.number_of_pages_median ?? null,
+      taal: TAAL[talen[0]] ?? '',
+    };
+  });
 }
 
-async function zoekGoogleBooks(tekst) {
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(tekst)}&maxResults=10`;
+async function zoekGoogleBooks(tekst, alleenNederlands = false) {
+  const taal = alleenNederlands ? '&langRestrict=nl' : '';
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(tekst)}&maxResults=10${taal}`;
   const data = await haalJson(url);
   return (data.items ?? []).map(({ volumeInfo: v }) => {
     const ids = v.industryIdentifiers ?? [];
@@ -64,21 +78,32 @@ function sleutel(boek) {
   return `${kort(boek.titel)}|${kort(boek.auteurs[0])}`;
 }
 
-// Zoekt bij beide bronnen tegelijk en voegt de resultaten samen zonder dubbelingen.
+// Zoekt bij beide bronnen tegelijk, voegt samen zonder dubbelingen en zet Nederlandse uitgaven bovenaan.
 export async function zoekBoeken(tekst) {
-  const [ol, gb] = await Promise.allSettled([zoekOpenLibrary(tekst), zoekGoogleBooks(tekst)]);
-  if (ol.status === 'rejected' && gb.status === 'rejected') {
+  const pogingen = await Promise.allSettled([
+    zoekGoogleBooks(tekst, true),
+    zoekOpenLibrary(tekst),
+    zoekGoogleBooks(tekst),
+  ]);
+  if (pogingen.every((p) => p.status === 'rejected')) {
     throw new Error('Geen verbinding met de boekenbronnen');
   }
-  const gezien = new Set();
-  const resultaten = [];
-  for (const boek of [...(ol.value ?? []), ...(gb.value ?? [])]) {
+  const alle = pogingen.flatMap((p) => p.value ?? []);
+  const gezien = new Map();
+  for (const boek of alle) {
     if (!boek.titel) continue;
     const k = sleutel(boek);
-    if (gezien.has(k)) continue;
-    gezien.add(k);
-    resultaten.push(boek);
+    const eerder = gezien.get(k);
+    if (!eerder) gezien.set(k, boek);
+    // Vul ontbrekende cover of ISBN aan uit de andere bron.
+    else {
+      if (!eerder.coverUrl && boek.coverUrl) eerder.coverUrl = boek.coverUrl;
+      if (!eerder.isbn && boek.isbn) eerder.isbn = boek.isbn;
+    }
   }
+  const resultaten = [...gezien.values()];
+  // Stabiele sortering: Nederlands eerst, verder de volgorde van de bronnen.
+  resultaten.sort((a, b) => (b.taal === 'nl') - (a.taal === 'nl'));
   return resultaten.slice(0, 15);
 }
 
