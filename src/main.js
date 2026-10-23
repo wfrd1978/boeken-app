@@ -6,9 +6,10 @@ import {
   boekBijwerken,
   boekVerwijderen,
   vraagBlijvendeOpslag,
+  vulWerkenAan,
   STATUSSEN,
 } from './db.js';
-import { zoekBoeken, zoekCover, verkleinFoto } from './zoeken.js';
+import { zoekBoeken, zoekCover, verkleinFoto, zoekWerk } from './zoeken.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 
 const app = document.getElementById('app');
@@ -21,6 +22,7 @@ if ('serviceWorker' in navigator) {
 }
 
 vraagBlijvendeOpslag();
+vulWerkenAan(zoekWerk);
 
 // --- Hulpjes ---
 
@@ -279,7 +281,8 @@ async function toonResultaten(resultaten) {
 async function toonBevestigen(boek) {
   ruimCoversOp();
   let status = 'Wil ik lezen';
-  const dubbel = boek.handmatig ? null : vindDubbel(boek, await alleBoeken());
+  const mijnBoeken = await alleBoeken();
+  const dubbel = boek.handmatig ? null : vindDubbel(boek, mijnBoeken);
   app.innerHTML = `
     <header class="kop">
       <button class="terug link-knop" id="anders">‹ Ander boek</button>
@@ -308,6 +311,21 @@ async function toonBevestigen(boek) {
   `;
 
   document.getElementById('anders').addEventListener('click', () => toonToevoegen());
+
+  // Resultaten van Google Books kennen hun werk niet; zoek het op via het ISBN.
+  // Blijkt het een vertaling van een boek dat je al hebt, dan alsnog waarschuwen.
+  if (!boek.handmatig && !boek.werk && boek.isbn) {
+    zoekWerk(boek.isbn).then((werk) => {
+      boek.werk = werk;
+      const knop = document.getElementById('opslaan');
+      if (dubbel || !werk || !knop || knop.disabled) return;
+      const vertaling = vindDubbel(boek, mijnBoeken);
+      if (!vertaling) return;
+      document.querySelector('.bevestig .label').insertAdjacentHTML('beforebegin', waarschuwingHtml(vertaling));
+      knop.textContent = 'Toch toevoegen';
+      knop.className = 'tweede-knop';
+    });
+  }
   document.querySelectorAll('#statussen .keuze').forEach((knop) =>
     knop.addEventListener('click', () => {
       status = knop.dataset.s;
@@ -339,6 +357,7 @@ async function toonBevestigen(boek) {
     knop.disabled = true;
     knop.textContent = 'Bezig met opslaan…';
     const cover = await zoekCover(gegevens);
+    if (!gegevens.werk && gegevens.isbn) gegevens.werk = await zoekWerk(gegevens.isbn);
     await boekToevoegen({ ...gegevens, ...cover, status, bron: 'getypt' });
     laatsteZoekterm = '';
     laatsteResultaten = [];

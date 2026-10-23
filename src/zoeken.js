@@ -40,6 +40,7 @@ async function zoekOpenLibrary(tekst) {
     const cover = uitgave.cover_i || d.cover_i;
     const talen = uitgave.language ?? (d.language?.length === 1 ? d.language : []);
     return {
+      werk: d.key,
       titel: uitgave.title || d.title,
       auteurs: d.author_name ?? [],
       isbn: kiesIsbn(uitgave.isbn ?? d.isbn),
@@ -105,6 +106,18 @@ export async function zoekBoeken(tekst) {
   // Stabiele sortering: Nederlands eerst, verder de volgorde van de bronnen.
   resultaten.sort((a, b) => (b.taal === 'nl') - (a.taal === 'nl'));
   return resultaten.slice(0, 15);
+}
+
+// Zoekt bij Open Library bij welk 'werk' een ISBN hoort. Alle vertalingen van
+// een boek hangen aan hetzelfde werk. Geeft '' als het niet gevonden wordt.
+export async function zoekWerk(isbn) {
+  if (!isbn) return '';
+  try {
+    const data = await haalJson(`https://openlibrary.org/search.json?isbn=${encodeURIComponent(isbn)}&fields=key&limit=1`);
+    return data.docs?.[0]?.key ?? '';
+  } catch {
+    return '';
+  }
 }
 
 // Haal een plaatje op als bestand, zodat het ook offline zichtbaar blijft.
