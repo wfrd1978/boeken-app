@@ -657,6 +657,47 @@ function backupTekst() {
   return `Laatste backup: ${laatste.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })} (${wanneer}).`;
 }
 
+// Uitleg in gewone taal: hoe de app werkt, waar je gegevens staan, wat wel en niet kan.
+function overDezeAppHtml() {
+  return `
+    <section class="blok over-app">
+      <h2>Over deze app</h2>
+      <details>
+        <summary>Waar staan mijn gegevens?</summary>
+        <p>Alles wat je invult staat alleen op deze telefoon, in de app op je beginscherm: je boeken, covers, sterren, recensies, je profiel en je foto. Er is geen account en geen server. Niemand anders kan erbij, ook Claude niet.</p>
+        <p>Safari en de app op je beginscherm bewaren elk hun eigen gegevens. Gebruik daarom altijd de app op je beginscherm.</p>
+        <p>Een backup is één bestand met alles erin. Jij bepaalt waar het staat, bijvoorbeeld in iCloud Drive. Verlies je je telefoon, dan zet je met dat bestand alles terug.</p>
+      </details>
+      <details>
+        <summary>Wat gaat er over internet?</summary>
+        <p>Bij zoeken en toevoegen vraagt de app gegevens op bij Open Library en Google Books: alleen de titel, auteur of ISBN waarnaar je zoekt. Je lijst, sterren en recensies gaan nooit mee.</p>
+        <p>De boekentips komen uit een openbare lijst op de site van de app. Die wordt elke zaterdagochtend vernieuwd door een geplande taak van Claude. Wat je met een tip doet, blijft op je telefoon.</p>
+        <p>Delen gaat alleen als jij op Deel tikt, en dan via het gewone deelmenu van je iPhone.</p>
+      </details>
+      <details>
+        <summary>Hoe werkt het ophalen van covers en synopsis?</summary>
+        <p>Na een import of bij nieuwe boeken zoekt de app op de achtergrond covers, gegevens en een korte synopsis. Dat gaat alleen door zolang de app open is.</p>
+        <p>Google Books beantwoordt 1.000 vragen per dag. Het werk op de achtergrond gebruikt er hooguit 600, zodat zoeken altijd blijft werken. Is het op, dan gaat het de volgende ochtend vanaf 9:00 of 10:00 verder.</p>
+        <p>Covers van Open Library worden als plaatje op je telefoon bewaard. Covers van Google bewaart de app zo goed als het gaat, zodat ze snel verschijnen.</p>
+      </details>
+      <details>
+        <summary>Hoe leren de tips?</summary>
+        <p>Elke week komen er 16 tips; je ziet er 8 tegelijk. Kies je Wil ik lezen of Al gelezen, dan komen tips uit die categorie hoger. Niet voor mij laat ze zakken. Je vijfsterrenboeken tellen een beetje mee.</p>
+        <p>Wil je dat de tips zelf beter worden, deel dan af en toe een backup met Claude in een sessie. Dan wordt je lezersprofiel voor de wekelijkse taak bijgewerkt.</p>
+      </details>
+      <details>
+        <summary>Wat kan de app niet?</summary>
+        <p>Er is geen koppeling met je Kobo of Kobo Plus: daar biedt Kobo geen mogelijkheid voor. Wel kun je een boek markeren als Wacht op Kobo Plus en het met één tik opzoeken bij Kobo.</p>
+        <p>Er is geen automatische backup naar de cloud: een backup maak je zelf. Na 14 dagen herinnert de app je eraan.</p>
+        <p>Je boeken staan niet op meerdere apparaten tegelijk. Op een nieuwe telefoon zet je een backup terug.</p>
+      </details>
+      <details>
+        <summary>Waarom is het zo gebouwd?</summary>
+        <p>De app is een webapp op je beginscherm: geen App Store en geen kosten. Hij werkt ook zonder internet. Je gegevens blijven van jou, en de app gebruikt alleen gratis bronnen.</p>
+      </details>
+    </section>`;
+}
+
 // Wie al boeken heeft, maakt eerst een backup (vandaag of gisteren) voor een import.
 function backupNodig(aantal) {
   const dagen = dagenSindsBackup();
@@ -713,6 +754,8 @@ async function toonInstellingen() {
       <button class="link-knop" id="bronnen-test">Test de verbinding met de boekenbronnen</button>
       <p class="zacht" id="bronnen-uitslag"></p>
     </section>
+
+    ${overDezeAppHtml()}
 
     <p class="versie">Versie van ${__VERSIE__}</p>
   `;
@@ -1350,7 +1393,6 @@ async function toonProfiel() {
       <label class="veld">Over mij<textarea id="p-over" rows="3" placeholder="Bijvoorbeeld wat je doet, waar en wanneer je leest">${veilig(profiel.overMij)}</textarea></label>
       <label class="veld">Mijn lezersprofiel<textarea id="p-profiel" rows="12" placeholder="Wat lees je graag, en waarom? Welke schrijvers of thema's raken je?">${veilig(profiel.lezersprofiel)}</textarea></label>
       <p class="opgeslagen" id="p-opgeslagen">&nbsp;</p>
-      <p class="zacht klein">Je profiel staat alleen op deze telefoon en gaat mee in je backup. Het wordt straks gebruikt voor je boekentips.</p>
     </section>
     ${rijHtml('Mijn vijfsterrenboeken', top, 'Gelezen')}
   `;
