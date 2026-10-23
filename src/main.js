@@ -49,8 +49,14 @@ function sterrenTekst(aantal) {
   return aantal ? '★'.repeat(aantal) + '☆'.repeat(5 - aantal) : '';
 }
 
+// Leesdata zijn 'jjjj-mm-dd', of 'jjjj-mm' als alleen de maand bekend is.
 function datumTekst(iso) {
-  return new Date(`${iso}T12:00:00`).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+  const alleenMaand = iso.length === 7;
+  return new Date(`${alleenMaand ? `${iso}-15` : iso}T12:00:00`).toLocaleDateString('nl-NL', {
+    ...(alleenMaand ? {} : { day: 'numeric' }),
+    month: 'long',
+    year: 'numeric',
+  });
 }
 
 function vandaag() {
