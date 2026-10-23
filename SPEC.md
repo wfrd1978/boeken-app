@@ -34,7 +34,7 @@ https://wfrd1978.github.io/boeken-app/
 
 ## Schermen
 
-1. **Lijst** — alle boeken met cover, titel, auteur, status en sterren. Bovenin een zoekveld. Sorteren op: laatst toegevoegd (standaard), titel, auteur, laatste leesdatum, sterren.
+1. **Lijst** — alle boeken met cover, titel, auteur, status en sterren. Naar links vegen toont een rode knop Verwijder (zoals Apple Mail); daarna kan het 5 seconden ongedaan worden gemaakt. Bovenin een zoekveld. Sorteren op: laatst toegevoegd (standaard), titel, auteur, laatste leesdatum, sterren.
 2. **Toevoegen** — drie manieren: titel typen, ISBN scannen, foto van de kaft. Altijd eerst een voorstel tonen ("Bedoel je dit boek?") voordat het wordt opgeslagen.
 3. **Boek** — alle gegevens; sterren, status, leesdata en recensie aanpassen; een leesdatum toevoegen bij herlezen; verwijderen (met bevestiging).
 4. **Instellingen** — backup maken, backup terugzetten, Excel importeren, Excel-export.
@@ -84,3 +84,4 @@ Synopsis, informatie over de schrijver, verfilmingen, boekentips (Fase 2). Delen
 | 2026-10-23 | Verzamelregels in de Excel-lijst (zoals een trilogie) worden losse boeken |
 | 2026-10-23 | Typefouten worden in de Excel-lijst zelf verbeterd, niet door de app |
 | 2026-10-23 | Vormgeving naar het voorbeeld van nieuwsapps (Volkskrant, Trouw, NOS); ontwerpronde na stap 6 |
+| 2026-10-23 | Verwijderen ook door naar links te vegen in de lijst, met 'Ongedaan maken' in plaats van een bevestigingsvraag |

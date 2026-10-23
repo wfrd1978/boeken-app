@@ -5,6 +5,7 @@ import {
   haalBoek,
   boekBijwerken,
   boekVerwijderen,
+  boekTerugzetten,
   vraagBlijvendeOpslag,
   vulWerkenAan,
   STATUSSEN,
@@ -82,12 +83,22 @@ function ruimCoversOp() {
   coverLinks.clear();
 }
 
-function melding(tekst) {
+// Korte melding onderin, eventueel met een knop (zoals 'Ongedaan maken').
+function melding(tekst, knop) {
   const el = document.getElementById('melding');
   el.textContent = tekst;
+  if (knop) {
+    const b = Object.assign(document.createElement('button'), { textContent: knop.tekst });
+    b.addEventListener('click', () => {
+      el.classList.remove('zichtbaar');
+      knop.actie();
+    });
+    el.append(b);
+  }
+  el.classList.toggle('met-knop', Boolean(knop));
   el.classList.add('zichtbaar');
   clearTimeout(melding.timer);
-  melding.timer = setTimeout(() => el.classList.remove('zichtbaar'), 2500);
+  melding.timer = setTimeout(() => el.classList.remove('zichtbaar'), knop ? 5000 : 2500);
 }
 
 // --- Lijst ---
@@ -137,7 +148,9 @@ function filter(boeken) {
 
 function boekRegel(b) {
   return `
-    <li><a class="boek" href="#/boek/${b.id}">
+    <li class="veeg" data-id="${b.id}">
+      <button class="veeg-actie" tabindex="-1">Verwijder</button>
+      <a class="boek" href="#/boek/${b.id}">
       ${coverHtml(b, 'cover-klein')}
       <div class="boek-tekst">
         <strong>${veilig(b.titel)}</strong>
@@ -148,6 +161,81 @@ function boekRegel(b) {
         </span>
       </div>
     </a></li>`;
+}
+
+// Naar links vegen toont een rode knop, zoals in Apple Mail.
+const VEEG_BREEDTE = 96;
+
+function maakVeegbaar(lijst, onVerwijder) {
+  let open = null;
+  let start = null;
+
+  const zet = (li, x, animeer) => {
+    const a = li.querySelector('.boek');
+    a.style.transition = animeer ? 'transform 0.2s ease' : 'none';
+    a.style.transform = x ? `translateX(${x}px)` : '';
+  };
+  const sluit = () => {
+    if (open) zet(open, 0, true);
+    open = null;
+  };
+
+  lijst.addEventListener('touchstart', (e) => {
+    const li = e.target.closest('.veeg');
+    if (!li || e.target.closest('.veeg-actie')) return;
+    if (open && open !== li) sluit();
+    const t = e.touches[0];
+    start = { li, x: t.clientX, y: t.clientY, basis: open === li ? -VEEG_BREEDTE : 0, richting: null };
+  }, { passive: true });
+
+  lijst.addEventListener('touchmove', (e) => {
+    if (!start) return;
+    const t = e.touches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    // Pas beslissen na een paar pixels: vegen opzij of gewoon scrollen.
+    if (!start.richting && Math.abs(dx) + Math.abs(dy) > 12) {
+      start.richting = Math.abs(dx) > Math.abs(dy) ? 'opzij' : 'scroll';
+    }
+    if (start.richting !== 'opzij') return;
+    e.preventDefault();
+    const x = Math.max(-VEEG_BREEDTE * 1.3, Math.min(0, start.basis + dx));
+    zet(start.li, x, false);
+  }, { passive: false });
+
+  lijst.addEventListener('touchend', (e) => {
+    if (!start) return;
+    if (start.richting === 'opzij') {
+      const x = start.basis + (e.changedTouches[0].clientX - start.x);
+      if (x < -VEEG_BREEDTE / 2) {
+        zet(start.li, -VEEG_BREEDTE, true);
+        open = start.li;
+      } else {
+        zet(start.li, 0, true);
+        if (open === start.li) open = null;
+      }
+      // Na vegen geen boek openen.
+      const li = start.li;
+      li.dataset.geveegd = 'ja';
+      setTimeout(() => delete li.dataset.geveegd, 400);
+    }
+    start = null;
+  });
+
+  lijst.addEventListener('click', (e) => {
+    const li = e.target.closest('.veeg');
+    if (!li) return;
+    if (e.target.closest('.veeg-actie')) {
+      open = null;
+      onVerwijder(li);
+      return;
+    }
+    // Tik op een open regel (of net geveegd): dichtschuiven in plaats van openen.
+    if (li.dataset.geveegd || open === li) {
+      e.preventDefault();
+      sluit();
+    }
+  });
 }
 
 async function toonLijst() {
@@ -192,6 +280,28 @@ async function toonLijst() {
       : `<li class="leeg">Geen boek gevonden voor "${veilig(zoekterm)}".</li>`;
   };
   teken();
+
+  const zetAantal = () => {
+    document.querySelector('.kop .aantal').textContent = boeken.length === 1 ? '1 boek' : `${boeken.length} boeken`;
+  };
+  maakVeegbaar(document.getElementById('lijst'), async (li) => {
+    const id = Number(li.dataset.id);
+    const boek = boeken.find((b) => b.id === id);
+    await boekVerwijderen(id);
+    boeken.splice(boeken.indexOf(boek), 1);
+    li.classList.add('weg');
+    setTimeout(() => li.remove(), 250);
+    zetAantal();
+    melding(`"${boek.titel}" verwijderd`, {
+      tekst: 'Ongedaan maken',
+      actie: async () => {
+        await boekTerugzetten(boek);
+        boeken.push(boek);
+        zetAantal();
+        teken();
+      },
+    });
+  });
 
   document.getElementById('lijst-zoek').addEventListener('input', (e) => {
     zoekterm = e.target.value;
