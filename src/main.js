@@ -64,15 +64,18 @@ zetKoboOm()
   .then(verrijkAlles);
 
 // Voortgang van het ophalen van covers tonen waar dat kan.
-opVoortgang(({ soort = 'covers', klaar, totaal, gestopt }) => {
+opVoortgang(({ soort = 'covers', klaar, totaal, gestopt, wacht, laatsteFout }) => {
   const naam = soort === 'synopsis' ? 'Synopsis' : 'Covers en gegevens';
+  const code = laatsteFout ? ` (Google: fout ${laatsteFout})` : '';
   const el = document.getElementById('verrijk-status');
   if (el) {
     el.textContent =
       klaar < totaal
         ? gestopt
-          ? `${naam} ophalen gepauzeerd (${klaar} van ${totaal}): een bron weigert even, bijvoorbeeld door de daglimiet van Google. Het gaat later vanzelf verder.`
-          : `${naam} ophalen: ${klaar} van ${totaal}…${soort === 'covers' ? ' Daarna volgt de synopsis.' : ''}`
+          ? `${naam} ophalen gepauzeerd (${klaar} van ${totaal})${code}: een bron weigert even. Het gaat later vanzelf verder.`
+          : wacht
+            ? `${naam} ophalen: ${klaar} van ${totaal}. Google vraagt om even te wachten${code}; over ${wacht} seconden verder…`
+            : `${naam} ophalen: ${klaar} van ${totaal}…${soort === 'covers' ? ' Daarna volgt de synopsis.' : ''}`
         : '';
     el.hidden = !el.textContent;
   }

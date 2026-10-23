@@ -121,7 +121,7 @@ export async function zoekSynopsis(boek) {
       google = google.concat(opTitel.filter((k) => vindDubbel(boek, [k])));
     }
   } catch (fout) {
-    if (fout.status === 429 || fout.status >= 500 || !fout.status) throw new TijdelijkeFout('Google weigert even');
+    if (tijdelijk(fout)) throw new TijdelijkeFout('Google weigert even', fout.status ?? 0);
   }
   // Liefst een Nederlandse beschrijving.
   const metTekst = google.filter((k) => k.synopsis);
@@ -173,7 +173,17 @@ export async function zoekBoeken(tekst) {
   return resultaten.slice(0, 15);
 }
 
-export class TijdelijkeFout extends Error {}
+function tijdelijk(fout) {
+  const status = fout?.status ?? 0;
+  return status === 429 || status >= 500 || status === 0;
+}
+
+export class TijdelijkeFout extends Error {
+  constructor(bericht, status = 0) {
+    super(bericht);
+    this.status = status;
+  }
+}
 
 // Een boek opzoeken met een gescand of getypt ISBN. Geeft null als geen bron het kent.
 // Google Books gaf geen antwoord (bijvoorbeeld de daglimiet) en Open Library kende het boek niet.
@@ -258,8 +268,10 @@ export async function zoekBijpassend(boek) {
   passend.sort((a, b) => (b.taal === 'nl') - (a.taal === 'nl') || Boolean(b.coverUrl) - Boolean(a.coverUrl));
   // Weigerde een bron (bijvoorbeeld Google bij de daglimiet) en hebben we nog geen
   // cover, dan later opnieuw proberen in plaats van 'niets gevonden' te concluderen.
-  if (pogingen.some((p) => p.status === 'rejected') && !passend.some((k) => k.coverUrl)) {
-    throw new TijdelijkeFout('Bron tijdelijk niet beschikbaar');
+  // Alleen echte weigeringen tellen: te druk (429), storing (5xx) of geen verbinding (0).
+  const weigering = pogingen.find((p) => p.status === 'rejected' && tijdelijk(p.reason))?.reason;
+  if (weigering && !passend.some((k) => k.coverUrl)) {
+    throw new TijdelijkeFout('Bron tijdelijk niet beschikbaar', weigering.status ?? 0);
   }
   const beste = passend[0];
   if (!beste) return null;
