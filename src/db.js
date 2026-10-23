@@ -24,8 +24,9 @@ export function alleBoeken() {
   return db.boeken.orderBy('toegevoegdOp').reverse().toArray();
 }
 
-export function boekToevoegen(boek) {
-  return db.boeken.add({
+// Een compleet boek met alle velden, zodat elk boek dezelfde vorm heeft.
+function nieuwBoek(boek, toegevoegdOp = new Date().toISOString()) {
+  return {
     titel: boek.titel,
     auteurs: boek.auteurs ?? [],
     isbn: boek.isbn ?? '',
@@ -38,19 +39,36 @@ export function boekToevoegen(boek) {
     paginas: boek.paginas ?? null,
     taal: boek.taal ?? '',
     status: boek.status ?? 'Wil ik lezen',
-    sterren: null,
-    leesdata: [],
-    recensie: '',
-    toegevoegdOp: new Date().toISOString(),
+    sterren: boek.sterren ?? null,
+    leesdata: boek.leesdata ?? [],
+    recensie: boek.recensie ?? '',
+    opmerking: boek.opmerking ?? '',
+    toegevoegdOp,
     bron: boek.bron ?? 'getypt',
-  });
+    // false = cover en gegevens moeten nog op de achtergrond worden opgehaald.
+    verrijkt: boek.verrijkt ?? true,
+  };
+}
+
+export function boekToevoegen(boek) {
+  return db.boeken.add(nieuwBoek(boek));
+}
+
+// Alle boeken uit een import in één keer: lukt het niet, dan wordt er niets toegevoegd.
+// Elk boek krijgt een eigen tijdstip, zodat de volgorde van het bestand bewaard blijft.
+export function boekenImporteren(boeken) {
+  const nu = Date.now();
+  return db.boeken.bulkAdd(
+    boeken.map((b, i) => nieuwBoek({ ...b, verrijkt: false }, new Date(nu - i).toISOString()))
+  );
 }
 
 // Oudere boeken krijgen op de achtergrond hun Open Library-werk erbij, zodat
 // de dubbel-waarschuwing ook vertalingen herkent. Alleen dit ene veld wordt
 // toegevoegd; de rest van het boek blijft onaangeroerd.
 export async function vulWerkenAan(zoekWerk) {
-  const zonder = await db.boeken.filter((b) => b.werk === undefined).toArray();
+  // Boeken die nog verrijkt worden, krijgen hun werk daar al.
+  const zonder = await db.boeken.filter((b) => b.werk === undefined && b.verrijkt !== false).toArray();
   for (const boek of zonder) {
     const werk = boek.isbn ? await zoekWerk(boek.isbn) : '';
     await db.boeken.update(boek.id, { werk });

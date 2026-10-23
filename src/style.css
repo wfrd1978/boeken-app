@@ -229,3 +229,11 @@ a.boek { color: inherit; text-decoration: none; }
 #melding button {
   border: 0; background: none; color: var(--bg); font-weight: 700; padding: 0; text-decoration: underline;
 }
+
+.verrijk-status { color: var(--zacht); font-size: 0.85rem; margin: 0 0 10px; }
+.waarschuwing details { margin: 0 0 12px; }
+.waarschuwing summary { cursor: pointer; color: var(--tekst); }
+.overslaan { margin: 8px 0 0; padding-left: 18px; font-size: 0.9rem; }
+#import-vak .link-knop { display: block; margin: 4px auto 0; text-align: center; }
+#import-vak .hoofdknop { margin-top: 4px; }
+.blok + .blok { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--lijn); }

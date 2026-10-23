@@ -6,6 +6,7 @@ import {
   boekBijwerken,
   boekVerwijderen,
   boekTerugzetten,
+  boekenImporteren,
   vraagBlijvendeOpslag,
   vulWerkenAan,
   STATUSSEN,
@@ -22,6 +23,8 @@ import {
   leesBackup,
   zetBackupTerug,
 } from './backup.js';
+import { leesExcel, planImport } from './importeren.js';
+import { verrijkAlles, opVoortgang, aantalTeVerrijken } from './verrijken.js';
 
 const app = document.getElementById('app');
 
@@ -33,7 +36,32 @@ if ('serviceWorker' in navigator) {
 }
 
 vraagBlijvendeOpslag();
-vulWerkenAan(zoekWerk);
+vulWerkenAan(zoekWerk).then(verrijkAlles);
+
+// Voortgang van het ophalen van covers tonen waar dat kan.
+opVoortgang(({ klaar, totaal, gestopt }) => {
+  const el = document.getElementById('verrijk-status');
+  if (el) {
+    el.textContent =
+      klaar < totaal
+        ? gestopt
+          ? `Covers ophalen gepauzeerd (${klaar} van ${totaal}). Gaat verder als je weer online bent.`
+          : `Covers en gegevens ophalen: ${klaar} van ${totaal}…`
+        : '';
+    el.hidden = !el.textContent;
+  }
+  if (klaar === totaal && totaal > 0) {
+    melding('Alle covers zijn opgehaald');
+    // Lijst bijwerken als die open staat en er niet getypt wordt.
+    if (location.hash === '' || location.hash === '#/') {
+      if (document.activeElement?.id !== 'lijst-zoek') {
+        const y = window.scrollY;
+        toonLijst().then(() => window.scrollTo(0, y));
+      }
+    }
+  }
+});
+window.addEventListener('online', verrijkAlles);
 
 // --- Hulpjes ---
 
@@ -258,6 +286,7 @@ async function toonLijst() {
       <a class="instellingen-link" href="#/instellingen">Instellingen</a>
     </header>
     ${boeken.length && moetHerinneren() ? herinneringHtml() : ''}
+    <p class="verrijk-status" id="verrijk-status" hidden></p>
     ${
       boeken.length
         ? `<div class="lijst-bediening">
@@ -357,6 +386,12 @@ function backupTekst() {
   return `Laatste backup: ${laatste.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })} (${wanneer}).`;
 }
 
+// Wie al boeken heeft, maakt eerst een backup (vandaag of gisteren) voor een import.
+function backupNodig(aantal) {
+  const dagen = dagenSindsBackup();
+  return aantal > 0 && (dagen === null || dagen > 1);
+}
+
 async function toonInstellingen() {
   ruimCoversOp();
   const aantal = (await alleBoeken()).length;
@@ -375,6 +410,20 @@ async function toonInstellingen() {
         <input type="file" id="backup-bestand" accept="application/json,.json" hidden />
       </label>
       <div id="terugzet-vak"></div>
+    </section>
+
+    <section class="blok">
+      <h2>Excel-lijst importeren</h2>
+      <p>Kies een Excel-bestand (.xlsx) met de kolommen Auteur en Titel, en eventueel Gelezen (maand), Sterren en Opmerking. Je ziet eerst wat er wordt toegevoegd.</p>
+      ${
+        backupNodig(aantal)
+          ? '<p class="zacht">Maak eerst hierboven een backup. Dan kun je na de import altijd terug.</p>'
+          : `<label class="tweede-knop bestand-knop">Kies Excel-bestand
+               <input type="file" id="excel-bestand" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
+             </label>`
+      }
+      <div id="import-vak"></div>
+      <p class="verrijk-status" id="verrijk-status" hidden></p>
     </section>
 
     <p class="versie">Versie van ${__VERSIE__}</p>
@@ -404,6 +453,61 @@ async function toonInstellingen() {
     } catch {
       melding('Bewaren lukte niet. Probeer het nog eens.');
     }
+  });
+
+  const verrijkOpen = await aantalTeVerrijken();
+  if (verrijkOpen) {
+    const el = document.getElementById('verrijk-status');
+    el.textContent = `Nog ${verrijkOpen} boeken zonder opgehaalde cover. Dit gaat vanzelf verder zolang de app open is.`;
+    el.hidden = false;
+  }
+
+  document.getElementById('excel-bestand')?.addEventListener('change', async (e) => {
+    const gekozen = e.target.files?.[0];
+    e.target.value = '';
+    if (!gekozen) return;
+    const vak = document.getElementById('import-vak');
+    vak.innerHTML = '<p class="bezig">Bestand lezen…</p>';
+    let plan;
+    try {
+      plan = planImport(await leesExcel(gekozen), await alleBoeken());
+    } catch (fout) {
+      vak.innerHTML = `<div class="waarschuwing"><p>${veilig(fout.message)}</p></div>`;
+      return;
+    }
+    const { toevoegen, overslaan } = plan;
+    const n = toevoegen.length;
+    vak.innerHTML = `
+      <div class="waarschuwing">
+        <p><strong>${n === 1 ? '1 boek' : `${n} boeken`} om toe te voegen</strong><br />
+        ${toevoegen.filter((b) => b.sterren).length} met sterren, ${toevoegen.filter((b) => b.leesdata.length).length} met leesdatum.
+        Covers en verdere gegevens worden daarna op de achtergrond opgehaald.</p>
+        ${
+          overslaan.length
+            ? `<details><summary>${overslaan.length} ${overslaan.length === 1 ? 'boek staat' : 'boeken staan'} al in je lijst en ${overslaan.length === 1 ? 'wordt' : 'worden'} overgeslagen</summary>
+                 <ul class="overslaan">${overslaan
+                   .map(({ boek, al }) => `<li>${veilig(boek.titel)} <span class="zacht">(al in je lijst als "${veilig(al.titel)}")</span></li>`)
+                   .join('')}</ul></details>`
+            : ''
+        }
+        ${n ? `<button class="hoofdknop" id="importeren">Importeer ${n === 1 ? '1 boek' : `${n} boeken`}</button>` : ''}
+        <button class="link-knop" id="import-annuleer">${n ? 'Annuleren' : 'Sluiten'}</button>
+      </div>`;
+    document.getElementById('import-annuleer').addEventListener('click', () => (vak.innerHTML = ''));
+    document.getElementById('importeren')?.addEventListener('click', async (k) => {
+      k.currentTarget.disabled = true;
+      k.currentTarget.textContent = 'Bezig met importeren…';
+      try {
+        await boekenImporteren(toevoegen);
+      } catch {
+        vak.innerHTML = '<div class="waarschuwing"><p>Importeren is mislukt. Er is niets toegevoegd.</p></div>';
+        return;
+      }
+      zoekterm = '';
+      location.hash = '#/';
+      melding(`${n} boeken toegevoegd`);
+      verrijkAlles();
+    });
   });
 
   document.getElementById('backup-bestand').addEventListener('change', async (e) => {
@@ -654,6 +758,7 @@ async function toonBoek(id) {
         .filter(Boolean)
         .map(veilig)
         .join(' · ')}</p>
+      ${boek.opmerking ? `<p class="details">${veilig(boek.opmerking)}</p>` : ''}
 
       <p class="label">Mijn oordeel</p>
       <div class="sterren" id="sterren" role="radiogroup" aria-label="Sterren"></div>
