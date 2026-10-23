@@ -1,9 +1,9 @@
 // Op de achtergrond covers en gegevens ophalen voor geïmporteerde boeken.
 // Titel en auteur uit de lijst blijven altijd zoals Wilfred ze schreef.
 import { db } from './db.js';
-import { zoekBijpassend, zoekCover, zoekWerk, TijdelijkeFout } from './zoeken.js';
+import { zoekBijpassend, zoekCover, zoekWerk, zoekSynopsis, TijdelijkeFout } from './zoeken.js';
 
-const AANVULLEN = ['isbn', 'werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal'];
+const AANVULLEN = ['isbn', 'werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal', 'synopsis'];
 const PAUZE = 400;
 
 let bezig = false;
@@ -79,6 +79,46 @@ export async function verrijkAlles() {
   } finally {
     bezig = false;
   }
+  // Daarna de synopsis bij boeken die er nog geen hebben.
+  vulSynopsisAan();
+}
+
+// --- Synopsis ---
+
+let synopsisBezig = false;
+
+// Boeken zonder synopsis-veld (undefined) krijgen er een, of '' als niemand er een heeft.
+// Een synopsis die al bestaat, wordt nooit overschreven.
+export async function vulSynopsisAan() {
+  if (synopsisBezig || bezig) return;
+  synopsisBezig = true;
+  try {
+    const zonder = await db.boeken.filter((b) => b.synopsis === undefined).toArray();
+    let foutenOpRij = 0;
+    for (const boek of zonder) {
+      if (!navigator.onLine) break;
+      let synopsis;
+      try {
+        synopsis = await zoekSynopsis(boek);
+        foutenOpRij = 0;
+      } catch {
+        foutenOpRij += 1;
+        if (foutenOpRij >= 3) break;
+        await wacht(PAUZE * 3);
+        continue;
+      }
+      const actueel = await db.boeken.get(boek.id);
+      if (actueel && actueel.synopsis === undefined) await db.boeken.update(boek.id, { synopsis });
+      await wacht(PAUZE);
+    }
+  } finally {
+    synopsisBezig = false;
+  }
+}
+
+export async function synopsisTelling() {
+  const alle = await db.boeken.toArray();
+  return { totaal: alle.length, met: alle.filter((b) => b.synopsis).length, open: alle.filter((b) => b.synopsis === undefined).length };
 }
 
 // Boeken zonder cover opnieuw in de wachtrij zetten (knop in Instellingen).

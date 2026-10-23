@@ -89,8 +89,54 @@ async function zoekGoogleBooks(tekst, alleenNederlands = false, limiet = 10) {
       jaar: v.publishedDate ? Number(v.publishedDate.slice(0, 4)) : null,
       paginas: v.pageCount ?? null,
       taal: v.language ?? '',
+      synopsis: schoneTekst(v.description),
     };
   });
+}
+
+// Google geeft beschrijvingen soms met HTML (<p>, <br>, <b>). Maak er gewone tekst van,
+// met witregels tussen alinea's.
+export function schoneTekst(html) {
+  if (!html) return '';
+  const metRegels = String(html)
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>\s*/gi, '\n\n');
+  const tekst = new DOMParser().parseFromString(metRegels, 'text/html').body.textContent || '';
+  return tekst
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s*\n\s*/g, '\n\n')
+    .trim();
+}
+
+// Synopsis zoeken: eerst Google Books (meestal de achterflaptekst van de Nederlandse
+// uitgave), anders de beschrijving van het werk bij Open Library.
+// Geeft '' als niemand er een heeft; een TijdelijkeFout als Google even weigert.
+export async function zoekSynopsis(boek) {
+  const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
+  let google = [];
+  try {
+    if (boek.isbn) google = await zoekGoogleBooks(`isbn:${boek.isbn}`, false, 3);
+    if (!google.some((k) => k.synopsis)) {
+      const opTitel = await zoekGoogleBooks(`intitle:${boek.titel}${auteur ? ` inauthor:${auteur}` : ''}`, false, 10);
+      google = google.concat(opTitel.filter((k) => vindDubbel(boek, [k])));
+    }
+  } catch (fout) {
+    if (fout.status === 429 || fout.status >= 500 || !fout.status) throw new TijdelijkeFout('Google weigert even');
+  }
+  // Liefst een Nederlandse beschrijving.
+  const metTekst = google.filter((k) => k.synopsis);
+  const nl = metTekst.find((k) => k.taal === 'nl');
+  if (nl || metTekst[0]) return (nl || metTekst[0]).synopsis;
+  if (boek.werk) {
+    try {
+      const werk = await haalJson(`https://openlibrary.org${boek.werk}.json`);
+      const d = werk.description;
+      return schoneTekst(typeof d === 'string' ? d : d?.value);
+    } catch {
+      return '';
+    }
+  }
+  return '';
 }
 
 function sleutel(boek) {
@@ -174,7 +220,7 @@ export async function zoekOpIsbn(isbn) {
     return null;
   }
   if (ander) {
-    for (const veld of ['werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal']) {
+    for (const veld of ['werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal', 'synopsis']) {
       if (!beste[veld] && ander[veld]) beste[veld] = ander[veld];
     }
   }
@@ -219,7 +265,7 @@ export async function zoekBijpassend(boek) {
   if (!beste) return null;
   // Ontbrekende gegevens aanvullen uit de andere passende resultaten.
   for (const ander of passend.slice(1)) {
-    for (const veld of ['isbn', 'werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal']) {
+    for (const veld of ['isbn', 'werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal', 'synopsis']) {
       if (!beste[veld] && ander[veld]) beste[veld] = ander[veld];
     }
   }

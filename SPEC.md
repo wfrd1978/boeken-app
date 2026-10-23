@@ -30,6 +30,7 @@ https://wfrd1978.github.io/boeken-app/
 | Leesdata | Eén of meer datums waarop het boek uit was; herlezen voegt een datum toe. Is alleen de maand bekend, dan bewaren we alleen maand en jaar (geen verzonnen dag) | nee |
 | Recensie | Vrije tekst | nee |
 | Wacht op Kobo Plus | Aan/uit: boek staat op de verlanglijst maar zit nog niet in Kobo Plus. Zichtbaar als label naast de status | nee |
+| Synopsis | Korte beschrijving (achterflaptekst), automatisch opgehaald bij Google Books of Open Library; een bestaande synopsis wordt nooit overschreven | nee |
 | Opmerking | Korte toevoeging uit de Excel-lijst, bijvoorbeeld de serie ("Amos Decker 1") | nee |
 | Toegevoegd op | Automatisch | ja |
 | Bron | Hoe het boek erin kwam: getypt, scan, foto, Excel-import | ja |
@@ -39,7 +40,7 @@ https://wfrd1978.github.io/boeken-app/
 0. **Startscherm** (boven de lijst) — groet met datum; groot het boek dat je nu leest, met de wazige cover als achtergrond (meerdere: veeg opzij); rijen covers *Onlangs gelezen* (laatste leesdatum eerst) en *Wil ik lezen* (laatst toegevoegd eerst), elk met *Alles ›* naar die tab in de lijst. Daaronder *Al je boeken*.
 1. **Lijst** — alle boeken met cover, titel, auteur, status en sterren. Naar links vegen toont een rode knop Verwijder (zoals Apple Mail); daarna kan het 5 seconden ongedaan worden gemaakt. Bovenin een zoekveld. Sorteren op: laatst toegevoegd (standaard), titel, auteur, laatste leesdatum, sterren.
 2. **Toevoegen** — twee manieren: titel of ISBN typen, streepjescode scannen met de camera (ZXing, alleen geldige ISBN's met controlecijfer). Altijd eerst een voorstel tonen ("Bedoel je dit boek?") voordat het wordt opgeslagen.
-3. **Boek** — alle gegevens; cover kiezen uit alle uitgaven die Google Books en Open Library kennen (of zelf zoeken op internet) of een eigen foto; label Wacht op Kobo Plus aan/uit en een knop Zoek bij Kobo (opent kobo.com met titel en auteur ingevuld); sterren, status, leesdata en recensie aanpassen; een leesdatum toevoegen bij herlezen; verwijderen (met bevestiging).
+3. **Boek** — alle gegevens; synopsis onder 'Over het boek' (eerste regels, met Lees meer); cover kiezen uit alle uitgaven die Google Books en Open Library kennen (of zelf zoeken op internet) of een eigen foto; label Wacht op Kobo Plus aan/uit en een knop Zoek bij Kobo (opent kobo.com met titel en auteur ingevuld); sterren, status, leesdata en recensie aanpassen; een leesdatum toevoegen bij herlezen; verwijderen (met bevestiging).
 4. **Instellingen** — backup maken, backup terugzetten, Excel importeren, covers opnieuw zoeken, Excel-export.
 
 ## Gedrag
@@ -97,3 +98,4 @@ Startscherm met covers per status, synopsis en boekentips (Fase 2, stap 10–12;
 | 2026-10-23 | Toevoegen via foto van de kaft (stap 9) geschrapt: herkenning op echte kaften te onbetrouwbaar. Scannen en typen blijven |
 | 2026-10-23 | Fase 1 afgerond; Fase 2 actief |
 | 2026-10-23 | Eigen gratis Google-sleutel voor de Books API, met toestemming van Wilfred |
+| 2026-10-23 | Synopsis: liefst de Nederlandse beschrijving van Google Books, anders die van Open Library; op de achtergrond, na de covers |

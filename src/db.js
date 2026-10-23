@@ -52,6 +52,8 @@ function nieuwBoek(boek, toegevoegdOp = new Date().toISOString()) {
     leesdata: boek.leesdata ?? [],
     recensie: boek.recensie ?? '',
     opmerking: boek.opmerking ?? '',
+    // Leeg laten (undefined) als we hem nog niet hebben, dan haalt de app hem later op.
+    synopsis: boek.synopsis || undefined,
     koboWacht: boek.koboWacht ?? false,
     toegevoegdOp,
     bron: boek.bron ?? 'getypt',
