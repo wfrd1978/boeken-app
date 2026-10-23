@@ -88,7 +88,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
   width: 100%; min-width: 0; padding: 11px 14px; font-size: 16px;
   border: 1px solid var(--lijn); border-radius: 10px; background: var(--vlak);
 }
-.lijst-regel { display: flex; justify-content: space-between; align-items: center; }
+.lijst-regel { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 18px; }
+.lijst-regel .aantal { margin-left: auto; }
 .sorteer { display: flex; align-items: center; gap: 8px; color: var(--zacht); font-size: 0.9rem; }
 .sorteer select {
   font-size: 16px; color: var(--tekst); background: none; border: 0; padding: 4px 0;

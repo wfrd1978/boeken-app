@@ -7,7 +7,8 @@ import {
   boekVerwijderen,
   boekTerugzetten,
   boekenImporteren,
-  sterrenAanvullen,
+  boekenAanvullen,
+  CATEGORIEEN,
   vraagBlijvendeOpslag,
   vulWerkenAan,
   zetKoboOm,
@@ -30,6 +31,7 @@ import {
 import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
+import { raadCategorie } from './categorie.js';
 import { veilig, veiligeUrl } from './veilig.js';
 import { tipsUitArchief, verversTips, zetTipReactie } from './tips.js';
 import {
@@ -210,12 +212,17 @@ const TABS = ['Alles', 'Bezig', 'Gelezen', 'Wil ik lezen'];
 let zoekterm = '';
 let sortering = 'toegevoegd';
 let tab = 'Alles';
+// '' = alles, anders een categorie of 'kobo' (Wacht op Kobo Plus).
+let toon = '';
 try {
   sortering = localStorage.getItem('sortering') || sortering;
   tab = localStorage.getItem('tab') || tab;
+  toon = localStorage.getItem('toon') || toon;
 } catch {
   // Zonder opslag gewoon de standaard.
 }
+// Een bewaarde keuze die niet meer bestaat, valt terug op alles.
+if (toon && !['geen', 'kobo', ...CATEGORIEEN].includes(toon)) toon = '';
 
 function laatsteLeesdatum(boek) {
   return boek.leesdata?.length ? boek.leesdata[boek.leesdata.length - 1] : '';
@@ -236,7 +243,11 @@ function sorteer(boeken) {
 
 function filter(boeken) {
   const woorden = kaal(zoekterm).split(/\s+/).filter(Boolean);
-  const inTab = tab === 'Alles' ? boeken : boeken.filter((b) => b.status === tab);
+  const inTab = boeken.filter(
+    (b) =>
+      (tab === 'Alles' || b.status === tab) &&
+      (!toon || (toon === 'kobo' ? b.koboWacht : toon === 'geen' ? !b.categorie : b.categorie === toon))
+  );
   if (!woorden.length) return inTab;
   return inTab.filter((b) => {
     const tekst = kaal(`${b.titel} ${(b.auteurs || []).join(' ')} ${b.isbn}`);
@@ -477,6 +488,14 @@ async function toonLijst() {
                      .join('')}
                  </select>
                </label>
+               <label class="sorteer">Toon
+                 <select id="toon">
+                   <option value="">Alles</option>
+                   ${CATEGORIEEN.map((c) => `<option value="${veilig(c)}"${c === toon ? ' selected' : ''}>${veilig(c)}</option>`).join('')}
+                   <option value="geen"${toon === 'geen' ? ' selected' : ''}>Nog geen categorie</option>
+                   <option value="kobo"${toon === 'kobo' ? ' selected' : ''}>Wacht op Kobo Plus</option>
+                 </select>
+               </label>
                <span class="aantal" id="aantal"></span>
              </div>
            </div>
@@ -496,7 +515,7 @@ async function toonLijst() {
     const zichtbaar = sorteer(filter(boeken));
     document.getElementById('lijst').innerHTML = zichtbaar.length
       ? zichtbaar.map(boekRegel).join('')
-      : `<li class="leeg">${zoekterm ? `Geen boek gevonden voor "${veilig(zoekterm)}".` : `Nog geen boeken bij ${veilig(statusNaam(tab))}.`}</li>`;
+      : `<li class="leeg">${zoekterm ? `Geen boek gevonden voor "${veilig(zoekterm)}".` : toon ? 'Geen boeken met deze keuze.' : `Nog geen boeken bij ${veilig(statusNaam(tab))}.`}</li>`;
     document.getElementById('aantal').textContent = zichtbaar.length === 1 ? '1 boek' : `${zichtbaar.length} boeken`;
   };
 
@@ -562,6 +581,15 @@ async function toonLijst() {
   });
   document.getElementById('lijst-zoek').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') e.target.blur();
+  });
+  document.getElementById('toon').addEventListener('change', (e) => {
+    toon = e.target.value;
+    try {
+      localStorage.setItem('toon', toon);
+    } catch {
+      // Niet erg; dan geldt de keuze alleen nu.
+    }
+    teken();
   });
   document.getElementById('sorteer').addEventListener('change', (e) => {
     sortering = e.target.value;
@@ -782,11 +810,17 @@ async function toonInstellingen() {
       vak.innerHTML = `<div class="waarschuwing"><p>${veilig(fout.message)}</p></div>`;
       return;
     }
-    const { toevoegen, bijwerken, overslaan } = plan;
+    const { toevoegen, bijwerken, overslaan, nietGevonden } = plan;
     const n = toevoegen.length;
     const m = bijwerken.length;
     const boekTekst = (x) => (x === 1 ? '1 boek' : `${x} boeken`);
-    const knopTekst = [n && `importeer ${boekTekst(n)}`, m && `vul sterren aan bij ${boekTekst(m)}`].filter(Boolean).join(' en ');
+    // Wat er bij bestaande boeken wordt aangevuld: sterren, categorie of allebei.
+    const velden = [
+      bijwerken.some((b) => b.wijzigingen.sterren) && 'sterren',
+      bijwerken.some((b) => b.wijzigingen.categorie) && 'categorie',
+    ].filter(Boolean).join(' en ');
+    const knopTekst = [n && `importeer ${boekTekst(n)}`, m && `vul ${velden} aan bij ${boekTekst(m)}`].filter(Boolean).join(' en ');
+    const aanvulling = ({ sterren, categorie }) => [sterren && sterrenTekst(sterren), categorie && veilig(categorie)].filter(Boolean).join(' · ');
     vak.innerHTML = `
       <div class="waarschuwing">
         ${
@@ -798,9 +832,9 @@ async function toonInstellingen() {
         }
         ${
           m
-            ? `<details${n ? '' : ' open'}><summary><strong>Bij ${boekTekst(m)} die je al hebt, worden de sterren aangevuld</strong></summary>
+            ? `<details${n ? '' : ' open'}><summary><strong>Bij ${boekTekst(m)} die je al hebt, wordt ${velden === 'sterren' ? 'het aantal sterren' : velden} aangevuld</strong></summary>
                  <ul class="overslaan">${bijwerken
-                   .map(({ boek, al }) => `<li>${veilig(al.titel)} <span class="zacht">→ ${sterrenTekst(boek.sterren)}</span></li>`)
+                   .map(({ al, wijzigingen }) => `<li>${veilig(al.titel)} <span class="zacht">→ ${aanvulling(wijzigingen)}</span></li>`)
                    .join('')}</ul></details>`
             : ''
         }
@@ -809,6 +843,14 @@ async function toonInstellingen() {
             ? `<details><summary>${overslaan.length} ${overslaan.length === 1 ? 'boek staat' : 'boeken staan'} al in je lijst en ${overslaan.length === 1 ? 'wordt' : 'worden'} overgeslagen</summary>
                  <ul class="overslaan">${overslaan
                    .map(({ boek, al }) => `<li>${veilig(boek.titel)} <span class="zacht">(al in je lijst als "${veilig(al.titel)}")</span></li>`)
+                   .join('')}</ul></details>`
+            : ''
+        }
+        ${
+          nietGevonden.length
+            ? `<details><summary>${boekTekst(nietGevonden.length)} niet gevonden in je lijst (${nietGevonden.length === 1 ? 'wordt' : 'worden'} niet toegevoegd)</summary>
+                 <ul class="overslaan">${nietGevonden
+                   .map((boek) => `<li>${veilig(boek.titel)} <span class="zacht">${veilig(auteurTekst(boek))}</span></li>`)
                    .join('')}</ul></details>`
             : ''
         }
@@ -822,14 +864,14 @@ async function toonInstellingen() {
       k.currentTarget.textContent = 'Bezig…';
       try {
         if (n) await boekenImporteren(toevoegen);
-        if (m) await sterrenAanvullen(bijwerken.map(({ boek, al }) => ({ id: al.id, sterren: boek.sterren })));
+        if (m) await boekenAanvullen(bijwerken.map(({ al, wijzigingen }) => ({ id: al.id, wijzigingen })));
       } catch {
         vak.innerHTML = '<div class="waarschuwing"><p>Importeren is mislukt. Maak zo nodig je backup terug.</p></div>';
         return;
       }
       zoekterm = '';
       location.hash = '#/';
-      melding([n && `${boekTekst(n)} toegevoegd`, m && `sterren bij ${boekTekst(m)}`].filter(Boolean).join(', '));
+      melding([n && `${boekTekst(n)} toegevoegd`, m && `${velden} bij ${boekTekst(m)}`].filter(Boolean).join(', '));
       if (n) verrijkAlles();
     });
   });
@@ -1025,6 +1067,8 @@ async function toonBevestigen(boek) {
   ruimCoversOp();
   let status = 'Wil ik lezen';
   const mijnBoeken = await alleBoeken();
+  // Een voorstel, op basis van je andere boeken van deze schrijver of de onderwerpen.
+  let categorie = raadCategorie(boek, mijnBoeken);
   const dubbel = boek.handmatig ? null : vindDubbel(boek, mijnBoeken);
   app.innerHTML = `
     <header class="kop">
@@ -1058,6 +1102,8 @@ async function toonBevestigen(boek) {
       <div class="keuzes" id="statussen">
         ${STATUSSEN.map((s) => `<button class="keuze${s === status ? ' actief' : ''}" data-s="${s}">${statusNaam(s)}</button>`).join('')}
       </div>
+      <p class="label">Categorie${categorie ? ' <span class="zacht">(voorstel)</span>' : ''}</p>
+      <div class="keuzes" id="categorieen">${categorieKnoppen(categorie)}</div>
       <button class="${dubbel ? 'tweede-knop' : 'hoofdknop'}" id="opslaan">${dubbel ? 'Toch toevoegen' : 'Toevoegen'}</button>
     </section>
   `;
@@ -1084,6 +1130,13 @@ async function toonBevestigen(boek) {
       document.querySelectorAll('#statussen .keuze').forEach((k) => k.classList.toggle('actief', k === knop));
     })
   );
+
+  document.getElementById('categorieen').addEventListener('click', (e) => {
+    const knop = e.target.closest('.keuze');
+    if (!knop) return;
+    categorie = categorie === knop.dataset.c ? '' : knop.dataset.c;
+    document.querySelectorAll('#categorieen .keuze').forEach((k) => k.classList.toggle('actief', k.dataset.c === categorie));
+  });
 
   document.getElementById('opslaan').addEventListener('click', async (e) => {
     const knop = e.currentTarget;
@@ -1112,13 +1165,17 @@ async function toonBevestigen(boek) {
     if (!gegevens.werk && gegevens.isbn) gegevens.werk = await zoekWerk(gegevens.isbn);
     // Zelf ingevuld zonder cover: later op de achtergrond nog eens zoeken.
     const verrijkt = !(boek.handmatig && !cover.cover && !cover.coverUrl);
-    await boekToevoegen({ ...gegevens, ...cover, status, bron: boek.bron ?? 'getypt', verrijkt });
+    await boekToevoegen({ ...gegevens, ...cover, status, categorie, bron: boek.bron ?? 'getypt', verrijkt });
     if (!verrijkt) verrijkAlles();
     laatsteZoekterm = '';
     laatsteResultaten = [];
     location.hash = '#/';
     melding('Toegevoegd');
   });
+}
+
+function categorieKnoppen(gekozen = '') {
+  return CATEGORIEEN.map((c) => `<button class="keuze${c === gekozen ? ' actief' : ''}" data-c="${veilig(c)}">${veilig(c)}</button>`).join('');
 }
 
 function waarschuwingHtml(bestaand) {
@@ -1430,6 +1487,9 @@ async function toonBoek(id) {
         ${STATUSSEN.map((s) => `<button class="keuze" data-s="${s}">${statusNaam(s)}</button>`).join('')}
       </div>
 
+      <p class="label">Categorie</p>
+      <div class="keuzes" id="categorieen">${categorieKnoppen()}</div>
+
       <p class="label">Kobo</p>
       <div class="kobo-regel">
         <button class="keuze${boek.koboWacht ? ' actief' : ''}" id="kobo-wacht">Wacht op Kobo Plus</button>
@@ -1502,6 +1562,17 @@ async function toonBoek(id) {
     if (!knop) return;
     await bewaar({ status: knop.dataset.s });
     tekenStatus();
+  });
+
+  const tekenCategorie = () =>
+    document.querySelectorAll('#categorieen .keuze').forEach((k) => k.classList.toggle('actief', k.dataset.c === boek.categorie));
+  tekenCategorie();
+  document.getElementById('categorieen').addEventListener('click', async (e) => {
+    const knop = e.target.closest('.keuze');
+    if (!knop) return;
+    // Nog een keer op dezelfde tikken haalt de categorie weg.
+    await bewaar({ categorie: boek.categorie === knop.dataset.c ? '' : knop.dataset.c });
+    tekenCategorie();
   });
 
   const koboKnop = document.getElementById('kobo-wacht');
