@@ -1,0 +1,88 @@
+{
+  "gemaakt": "2026-10-23",
+  "ronde": "2026-week-43",
+  "tips": [
+    {
+      "id": "2026w43-rode-erfenis",
+      "soort": "nieuw",
+      "titel": "De rode erfenis",
+      "auteurs": ["Almar Otten"],
+      "jaar": 2026,
+      "uitgever": "Luitingh-Sijthoff",
+      "reden": "Een politieke thriller waarin het terrorisme van de Rote Armee Fraktion terugkeert in het Nederland en Duitsland van nu. Voor wie houdt van spanning met historische lading.",
+      "synopsis": "Bomaanslagen in Amsterdam en Brussel lijken geïnspireerd door de Rote Armee Fraktion. Rechercheur David van Karsveld onderzoekt ze samen met Nederlandse en Duitse diensten, terwijl Lore op zoek gaat naar haar moeder, die een duister geheim met zich meedraagt. Beide verhaallijnen komen samen."
+    },
+    {
+      "id": "2026w43-narcostaat",
+      "soort": "nieuw",
+      "titel": "Narcostaat Nederland",
+      "auteurs": ["Johan van Kastel"],
+      "isbn": "9789021063256",
+      "jaar": 2026,
+      "reden": "Een oud-undercoveragent over de verborgen drugsoorlog in Nederland. Voor wie wil begrijpen hoe onderwereld en overheid met elkaar verweven raken.",
+      "synopsis": "Johan van Kastel werkte undercover en vertelt hoe hij een groot drugsschandaal blootlegde, en wat dat zegt over de strijd van de Nederlandse staat tegen de georganiseerde misdaad."
+    },
+    {
+      "id": "2026w43-bontebok",
+      "soort": "nieuw",
+      "titel": "Bontebok: Onderduik en verzet in het land van Abe Lenstra",
+      "auteurs": ["Jaap Visser"],
+      "jaar": 2026,
+      "uitgever": "Spectrum",
+      "reden": "Waargebeurde oorlogsverhalen uit Friesland, met voetbal op de achtergrond. Over gewone mensen die onder druk het verschil maakten.",
+      "synopsis": "Bontebok, vlak bij Heerenveen, telde zoveel Joodse onderduikers dat het dorp de bijnaam 'de Jordaan' kreeg. Journalist Jaap Visser vertelt over de Lemmerboot, die Joden redde en Amsterdamse voetballertjes als hongerevacués naar Heerenveen bracht, waar zij optrokken met Abe Lenstra."
+    },
+    {
+      "id": "2026w43-van-vleuten",
+      "soort": "nieuw",
+      "titel": "Annemiek van Vleuten: Vallen, opstaan en de drive om beter te worden",
+      "auteurs": ["Dennis Boxhoorn", "Annemiek van Vleuten"],
+      "isbn": "9789046834312",
+      "jaar": 2026,
+      "uitgever": "Nieuw Amsterdam",
+      "reden": "Een openhartig verhaal over topsport: twijfel, blessures, perfectionisme en de mentale kracht om steeds weer op te staan.",
+      "synopsis": "De carrière van een van de beste wielrensters ooit, met haar tegenslagen en blessures, en wat zij leerde over prestatiedruk, perfectionisme en het verlaten van je comfortzone."
+    },
+    {
+      "id": "2026w43-vuelta-smeets",
+      "soort": "nieuw",
+      "titel": "Vuelta a España: De grote rondes 2",
+      "auteurs": ["Mart Smeets"],
+      "isbn": "9789462973824",
+      "jaar": 2026,
+      "uitgever": "De Kring",
+      "reden": "Wielergeschiedenis verteld door Mart Smeets: de Ronde van Spanje van 1935 tot nu, met de Nederlanders die er hun stempel drukten.",
+      "synopsis": "Het tweede deel van Mart Smeets' reeks over de grote rondes. Over de winnaars van de Vuelta, de geschiedenis van de ronde in vogelvlucht en de Nederlandse renners in Spanje."
+    },
+    {
+      "id": "2026w43-trage-paarden",
+      "soort": "parel",
+      "titel": "Trage paarden",
+      "auteurs": ["Mick Herron"],
+      "isbn": "9789044635461",
+      "jaar": 2018,
+      "reden": "Een spionagethriller met vaart én droge humor, over afgeschreven Britse agenten. Het eerste deel van de reeks achter de tv-serie Slow Horses.",
+      "synopsis": "Na een blunder wordt River Cartwright naar Slough House gestuurd, het afvoerputje van de Britse inlichtingendienst onder leiding van de onuitstaanbare Jackson Lamb. Als er een jongeman wordt ontvoerd, zien de afgeschreven agenten hun kans."
+    },
+    {
+      "id": "2026w43-vaderland",
+      "soort": "parel",
+      "titel": "Vaderland",
+      "auteurs": ["Robert Harris"],
+      "jaar": 2012,
+      "uitgever": "Cargo",
+      "reden": "Wat als Hitler de oorlog had gewonnen? Een klassieke thriller die geschiedenis en spanning knap verweeft.",
+      "synopsis": "Berlijn, 1964. Duitsland heeft de oorlog gewonnen. Als er een lijk in een meer wordt gevonden, stuit rechercheur Xavier March op een geheim dat het regime koste wat kost verborgen wil houden."
+    },
+    {
+      "id": "2026w43-de-weg-volgen",
+      "soort": "parel",
+      "titel": "De weg volgen",
+      "auteurs": ["John Mark Comer"],
+      "jaar": 2024,
+      "uitgever": "Ark Media",
+      "reden": "Comer over discipelschap: hoe je in een drukke tijd leeft in het ritme van Jezus. Praktisch, toegankelijk en met diepgang.",
+      "synopsis": "In De weg volgen (Practicing the Way) laat John Mark Comer zien hoe je leerling van Jezus wordt in het gewone leven, met ritmes en gewoonten die ruimte maken voor God, rust en groei."
+    }
+  ]
+}
