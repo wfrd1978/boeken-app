@@ -37,7 +37,7 @@ https://wfrd1978.github.io/boeken-app/
 ## Schermen
 
 1. **Lijst** — alle boeken met cover, titel, auteur, status en sterren. Naar links vegen toont een rode knop Verwijder (zoals Apple Mail); daarna kan het 5 seconden ongedaan worden gemaakt. Bovenin een zoekveld. Sorteren op: laatst toegevoegd (standaard), titel, auteur, laatste leesdatum, sterren.
-2. **Toevoegen** — drie manieren: titel of ISBN typen, streepjescode scannen met de camera (ZXing, alleen geldige ISBN's met controlecijfer), foto van de kaft (Tesseract.js leest de tekst op het toestel; de grootste woorden, meestal titel en auteur, worden de zoekvraag en zijn aan te passen). Altijd eerst een voorstel tonen ("Bedoel je dit boek?") voordat het wordt opgeslagen.
+2. **Toevoegen** — twee manieren: titel of ISBN typen, streepjescode scannen met de camera (ZXing, alleen geldige ISBN's met controlecijfer). Altijd eerst een voorstel tonen ("Bedoel je dit boek?") voordat het wordt opgeslagen.
 3. **Boek** — alle gegevens; label Wacht op Kobo Plus aan/uit en een knop Zoek bij Kobo (opent kobo.com met titel en auteur ingevuld); sterren, status, leesdata en recensie aanpassen; een leesdatum toevoegen bij herlezen; verwijderen (met bevestiging).
 4. **Instellingen** — backup maken, backup terugzetten, Excel importeren, covers opnieuw zoeken, Excel-export.
 
@@ -93,3 +93,5 @@ Startscherm met covers per status, synopsis en boekentips (Fase 2, stap 10–12;
 | 2026-10-23 | Status 'Bezig' heet in beeld 'Aan het lezen' |
 | 2026-10-23 | Eerst fase 1 afmaken (stap 7–9), dan startscherm, synopsis en tips |
 | 2026-10-23 | Boekentips maakt Claude in een sessie (gratis), niet automatisch via een betaalde AI-dienst |
+| 2026-10-23 | Toevoegen via foto van de kaft (stap 9) geschrapt: herkenning op echte kaften te onbetrouwbaar. Scannen en typen blijven |
+| 2026-10-23 | Fase 1 afgerond; Fase 2 actief |
