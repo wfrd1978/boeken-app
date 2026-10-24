@@ -242,6 +242,7 @@ let toon = '';
 try {
   sortering = localStorage.getItem('sortering') || sortering;
   tab = localStorage.getItem('tab') || tab;
+  if (!TABS.includes(tab)) tab = 'Alles';
   toon = localStorage.getItem('toon') || toon;
 } catch {
   // Zonder opslag gewoon de standaard.
@@ -568,8 +569,9 @@ async function toonLijst() {
   document.querySelectorAll('[data-achtergrond]').forEach((el) => {
     el.style.backgroundImage = `url(${JSON.stringify(el.dataset.achtergrond)})`;
   });
-  await toonTipsRij(boeken);
-  toonNieuws(boeken);
+  // Tips en nieuws komen van buiten; gaat daar iets mis, dan blijft de lijst gewoon werken.
+  await toonTipsRij(boeken).catch(() => {});
+  toonNieuws(boeken).catch(() => {});
   if (nr !== schermNr) return;
   document.querySelector('.start')?.addEventListener('click', (e) => {
     const knop = e.target.closest('[data-naar-tab]');
@@ -1075,7 +1077,12 @@ function toonToevoegen() {
 
 let stopCamera = null;
 
+// Telt op bij elk openen en sluiten, zodat een camera die nog aan het opstarten was
+// meteen weer uitgaat als je intussen op Annuleren tikte.
+let scanBeurt = 0;
+
 function sluitScanner() {
+  scanBeurt += 1;
   stopCamera?.();
   stopCamera = null;
   document.getElementById('scanner')?.remove();
@@ -1094,12 +1101,15 @@ async function toonScanner() {
   );
   document.getElementById('scan-sluit').addEventListener('click', sluitScanner);
   const tekst = document.getElementById('scan-tekst');
+  const beurt = scanBeurt;
   try {
-    stopCamera = await startScanner(document.getElementById('scan-video'), async (isbn) => {
+    const stop = await startScanner(document.getElementById('scan-video'), async (isbn) => {
       tekst.textContent = `ISBN ${isbn} gevonden. Gegevens ophalen…`;
       await zoekGescandBoek(isbn, 'scan');
       sluitScanner();
     });
+    if (beurt !== scanBeurt) stop();
+    else stopCamera = stop;
   } catch (fout) {
     tekst.textContent =
       fout?.name === 'NotAllowedError'
@@ -1296,7 +1306,8 @@ async function toonBevestigen(boek) {
     if (!verrijkt) verrijkAlles();
     laatsteZoekterm = '';
     laatsteResultaten = [];
-    location.hash = '#/';
+    // Intussen ergens anders heen gegaan? Dan daar blijven.
+    if (knop.isConnected) location.hash = '#/';
     melding('Toegevoegd');
   });
 }
@@ -1365,7 +1376,7 @@ function avatarHtml(klasse, profiel, foto, reserve) {
 
 // Een rij staafjes: label, staaf naar verhouding, aantal. De grootste staaf is vol.
 function stavenHtml(rijen) {
-  const max = Math.max(...rijen.map((r) => r.aantal));
+  const max = Math.max(1, ...rijen.map((r) => r.aantal));
   return `<ul class="staven">${rijen
     .map(
       (r) => `
@@ -1900,8 +1911,9 @@ async function toonCoverKeuze(boek, bewaar, klaar) {
   });
 
   const urls = (await zoekCoverKeuzes(boek)).map(veiligeUrl).filter(Boolean);
-  const vak = document.getElementById('keuzes');
-  if (!vak) return;
+  // Intussen gesloten (of een nieuwe keuze geopend)? Dan niets meer doen.
+  if (!laag.isConnected) return;
+  const vak = laag.querySelector('#keuzes');
   if (!urls.length) {
     vak.innerHTML = '<p class="leeg">Geen covers gevonden voor dit boek. Probeer zelf te zoeken, of maak een eigen foto.</p>';
     return;

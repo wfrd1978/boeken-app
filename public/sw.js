@@ -1,5 +1,5 @@
 // Service worker: zorgt dat de app snel opent, ook met slecht of geen internet.
-const CACHE = 'boeken-v5';
+const CACHE = 'boeken-v6';
 // Covers van Google Books en Open Library apart bewaren, zodat ze na een herstart meteen
 // van de telefoon komen in plaats van opnieuw van internet.
 const COVERS = 'covers-v1';
@@ -19,11 +19,24 @@ self.addEventListener('activate', (event) => {
 });
 
 // Bestanden in assets/ hebben een unieke naam per versie: die veranderen nooit, dus eerst uit de opslag.
+// Bij elke nieuwe versie komen er nieuwe bestanden bij; de oudste ruimen we op,
+// zodat de opslag niet ongemerkt volloopt. Wat nog nodig is, wordt gewoon opnieuw gehaald.
+const MAX_BESTANDEN = 40;
+
+async function ruimOudeBestandenOp(cache) {
+  const bestanden = (await cache.keys()).filter((r) => new URL(r.url).pathname.includes('/assets/'));
+  for (const oud of bestanden.slice(0, Math.max(0, bestanden.length - MAX_BESTANDEN))) await cache.delete(oud);
+}
+
 async function opslagEerst(request) {
   const bewaard = await caches.match(request);
   if (bewaard) return bewaard;
   const antwoord = await fetch(request);
-  if (antwoord.ok) (await caches.open(CACHE)).put(request, antwoord.clone());
+  if (antwoord.ok) {
+    const cache = await caches.open(CACHE);
+    await cache.put(request, antwoord.clone());
+    ruimOudeBestandenOp(cache).catch(() => {});
+  }
   return antwoord;
 }
 

@@ -26,3 +26,18 @@ describe('tips ordenen naar smaak', () => {
     expect(ordenTips(tips, score)[0].id).toBe('c');
   });
 });
+
+import { normaliseerTip } from '../src/tips.js';
+
+describe('tips controleren', () => {
+  it('maakt een tip met verkeerde velden veilig, of laat hem weg', () => {
+    expect(normaliseerTip({ id: 'x', titel: 'Boek', auteurs: 'Jan Jansen', jaar: '2020' })).toMatchObject({
+      auteurs: ['Jan Jansen'],
+      jaar: undefined,
+      soort: 'nieuw',
+    });
+    expect(normaliseerTip({ id: 'x' })).toBeNull();
+    expect(normaliseerTip({ titel: 'Boek' })).toBeNull();
+    expect(normaliseerTip(null)).toBeNull();
+  });
+});

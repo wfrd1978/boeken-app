@@ -70,3 +70,12 @@ describe('indeellijst importeren', () => {
     expect(planImport(nieuw, bestaand).toevoegen[0].categorie).toBe('Thriller & spanning');
   });
 });
+
+describe('backup controleren', () => {
+  it('weigert een vreemd werk-adres en datums die niet bestaan', () => {
+    const b = normaliseerBoek({ titel: 'X', werk: '.evil.com/x', leesdata: ['2025-02-31', '2025-10', '2024-02-29'] });
+    expect(b.werk).toBeUndefined();
+    expect(b.leesdata).toEqual(['2025-10', '2024-02-29']);
+    expect(normaliseerBoek({ titel: 'X', werk: '/works/OL123W' }).werk).toBe('/works/OL123W');
+  });
+});

@@ -146,6 +146,11 @@ export async function verrijkAlles() {
     luisteraar({ klaar, totaal, gestopt: gestopt || klaar < totaal, laatsteFout, googleOp });
   } finally {
     bezig = false;
+    // Gestopt voor een teruggezette backup terwijl er al om een nieuwe ronde was gevraagd: nu alsnog.
+    if (mijnGeneratie !== generatie && nogEenRonde) {
+      nogEenRonde = false;
+      setTimeout(verrijkAlles, 0);
+    }
   }
   // Google is voor vandaag op: de synopsis kan ook wachten.
   if (googleOp) return;
