@@ -77,6 +77,7 @@ https://wfrd1978.github.io/boeken-app/
 - **Wat:** elke ochtend 1 of 2 berichten over boeken en schrijvers die bij de smaak passen: nieuwe boeken van zijn schrijvers, prijzen, verfilmingen, interviews. Elk bericht met een bron; niets verzonnen. Liever geen bericht dan een zwak bericht.
 - **In het Nederlands in de app:** tik op een bericht en je leest een samenvatting in eigen woorden (2 tot 4 alinea's, ook als de bron anderstalig is), met onderaan de knop *Lees het hele bericht bij [bron] ↗* naar de website.
 - **Op het startscherm:** de rij *Boekennieuws* met drie berichten uit het recente nieuws (berichten over een schrijver uit zijn lijst eerst, met het label *Schrijver die je leest*; dat bepaalt de telefoon zelf) en *Alle nieuws ›*.
+- **Gelezen of niet:** ongelezen berichten staan vetgedrukt; na openen niet meer vet en wat zachter, zoals in een nieuwsapp. De telefoon onthoudt welke berichten gelezen zijn (gaat mee in de backup).
 - **Nieuwspagina (`#/nieuws`):** alle berichten die de app ooit kreeg, per maand, nieuwste eerst. Het archief staat op de telefoon (vakje `nieuwsArchief`) en gaat mee in de backup.
 - **Hoe:** `nieuws.json` op de eigen site (velden id, titel, tekst, artikel, bron, url, datum, schrijvers; hooguit de 40 nieuwste), aangevuld door de dagelijkse taak 'Dagelijks boekennieuws' (elke dag 06:47, in de bouwsessie). Het bestand is openbaar en noemt de gebruiker, zijn profiel en zijn lijst niet.
 
@@ -175,3 +176,4 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-24 | Van de werklijst: tips op de Toevoegen-pagina en een boek delen (tekst via het deelmenu, nog geen deelkaart als afbeelding) |
 | 2026-10-24 | Stap 15 getest en klaar; daarmee is het stappenplan van fase 2 (10–16) af. Volgende werk komt van de werklijst, in de volgorde van de gebruiker |
 | 2026-10-24 | Stap 14 getest en klaar. Statistieken (stap 15) op de profielpagina, zonder grafiekbibliotheek: eenvoudige staafjes in de accentkleur |
+| 2026-10-25 | Boekennieuws: ongelezen berichten vet, gelezen niet meer |

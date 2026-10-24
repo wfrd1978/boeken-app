@@ -491,6 +491,9 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .nieuws-kop { color: var(--zacht); font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; }
 .nieuws-kop b { color: var(--accent); }
 .nieuws-bericht strong { font-family: var(--schreef); font-size: 1.05rem; line-height: 1.3; }
+/* Gelezen berichten: niet meer vet en wat zachter, zoals in een nieuwsapp. */
+.nieuws-lijst .gelezen strong { font-weight: 400; color: var(--zacht); }
+.nieuws-lijst .gelezen .nieuws-tekst { opacity: 0.75; }
 .nieuws-tekst { color: var(--zacht); font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .nieuws-meer summary { cursor: pointer; color: var(--accent); padding: 12px 0; }
 

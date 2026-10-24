@@ -1678,10 +1678,34 @@ function nieuwsKop(b, boeken) {
   return `${overMijnSchrijver(b, boeken) ? '<b>Schrijver die je leest</b> · ' : ''}${veilig(b.bron)}${b.datum ? ` · ${veilig(nieuwsDatum(b.datum))}` : ''}`;
 }
 
+// Welke berichten al gelezen zijn, zoals in een nieuwsapp: ongelezen vet, gelezen niet meer.
+// Alleen de id's, op de telefoon; gaat mee in de backup.
+const NIEUWS_GELEZEN_MAX = 500;
+
+function gelezenNieuws() {
+  try {
+    const lijst = JSON.parse(localStorage.getItem('nieuwsGelezen') || '[]');
+    return new Set(Array.isArray(lijst) ? lijst.filter((id) => typeof id === 'string') : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function markeerGelezen(id) {
+  const gelezen = gelezenNieuws();
+  if (gelezen.has(id)) return;
+  gelezen.add(id);
+  try {
+    localStorage.setItem('nieuwsGelezen', JSON.stringify([...gelezen].slice(-NIEUWS_GELEZEN_MAX)));
+  } catch {
+    // Geen opslag (privévenster): dan blijft het bericht vet, verder niets aan de hand.
+  }
+}
+
 // Tikken opent het bericht in de app; daar staat de knop naar de website.
-function nieuwsHtml(b, boeken) {
+function nieuwsHtml(b, boeken, gelezen = gelezenNieuws()) {
   return `
-    <li>
+    <li${gelezen.has(b.id) ? ' class="gelezen"' : ''}>
       <a class="nieuws-bericht" href="#/nieuws/${encodeURIComponent(b.id)}">
         <span class="nieuws-kop">${nieuwsKop(b, boeken)}</span>
         <strong>${veilig(b.titel)}</strong>
@@ -1697,10 +1721,11 @@ async function toonNieuws(boeken) {
   const alle = await haalNieuws();
   const berichten = ordenNieuws(alle.slice(0, 10), boeken).slice(0, NIEUWS_ZICHTBAAR);
   if (!berichten.length || !document.body.contains(vak)) return;
+  const gelezen = gelezenNieuws();
   vak.hidden = false;
   vak.innerHTML = `
     <div class="rij-kop"><h2>Boekennieuws</h2><a class="link-knop" href="#/nieuws">Alle nieuws ›</a></div>
-    <ul class="nieuws-lijst">${berichten.map((b) => nieuwsHtml(b, boeken)).join('')}</ul>`;
+    <ul class="nieuws-lijst">${berichten.map((b) => nieuwsHtml(b, boeken, gelezen)).join('')}</ul>`;
 }
 
 // De nieuwspagina: alle berichten die de app ooit kreeg, per maand.
@@ -1709,6 +1734,7 @@ async function toonNieuwsPagina() {
   ruimCoversOp();
   const [berichten, boeken] = await Promise.all([haalNieuws(), alleBoeken()]);
   if (nr !== schermNr) return;
+  const gelezen = gelezenNieuws();
   const perMaand = new Map();
   for (const b of berichten) {
     const tekst = b.datum ? maandTekst(b.datum.slice(0, 7)) : 'Eerder';
@@ -1727,7 +1753,7 @@ async function toonNieuwsPagina() {
             .map(
               ([maand, lijst]) => `
           <h2 class="stat-kop">${veilig(maand)}</h2>
-          <ul class="nieuws-lijst">${lijst.map((b) => nieuwsHtml(b, boeken)).join('')}</ul>`
+          <ul class="nieuws-lijst">${lijst.map((b) => nieuwsHtml(b, boeken, gelezen)).join('')}</ul>`
             )
             .join('')
         : '<p class="leeg">Nog geen nieuws. Elke ochtend komen er nieuwe berichten.</p>'
@@ -1745,6 +1771,7 @@ async function toonNieuwsBericht(id) {
     location.hash = '#/nieuws';
     return;
   }
+  markeerGelezen(b.id);
   const alineas = b.artikel.length ? b.artikel : [b.tekst];
   app.innerHTML = `
     <header class="kop">
