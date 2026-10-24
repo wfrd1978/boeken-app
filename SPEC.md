@@ -73,9 +73,11 @@ https://wfrd1978.github.io/boeken-app/
 
 ## Boekennieuws
 
-- **Wat:** elke week 4 tot 6 korte berichten over boeken en schrijvers die bij de smaak passen: nieuwe boeken van zijn schrijvers, prijzen, verfilmingen, interviews. Elk bericht met een bron en een link; niets verzonnen.
-- **Op het startscherm:** onder de tips de rij *Boekennieuws*: drie berichten zichtbaar, de rest onder *Meer nieuws*. Tik op een bericht: het artikel opent. Gaat een bericht over een schrijver uit zijn lijst, dan staat het bovenaan met het label *Schrijver die je leest*; dat bepaalt de app op de telefoon zelf.
-- **Hoe:** `nieuws.json` op de eigen site, gemaakt door dezelfde wekelijkse taak als de tips. Het bestand is openbaar en noemt de gebruiker, zijn profiel en zijn lijst niet; nieuws over zijn eigen schrijvers wordt afgewisseld met algemener boekennieuws.
+- **Wat:** elke ochtend 1 of 2 berichten over boeken en schrijvers die bij de smaak passen: nieuwe boeken van zijn schrijvers, prijzen, verfilmingen, interviews. Elk bericht met een bron; niets verzonnen. Liever geen bericht dan een zwak bericht.
+- **In het Nederlands in de app:** tik op een bericht en je leest een samenvatting in eigen woorden (2 tot 4 alinea's, ook als de bron anderstalig is), met onderaan de knop *Lees het hele bericht bij [bron] ↗* naar de website.
+- **Op het startscherm:** de rij *Boekennieuws* met drie berichten uit het recente nieuws (berichten over een schrijver uit zijn lijst eerst, met het label *Schrijver die je leest*; dat bepaalt de telefoon zelf) en *Alle nieuws ›*.
+- **Nieuwspagina (`#/nieuws`):** alle berichten die de app ooit kreeg, per maand, nieuwste eerst. Het archief staat op de telefoon (vakje `nieuwsArchief`) en gaat mee in de backup.
+- **Hoe:** `nieuws.json` op de eigen site (velden id, titel, tekst, artikel, bron, url, datum, schrijvers; hooguit de 40 nieuwste), aangevuld door de dagelijkse taak 'Dagelijks boekennieuws' (elke dag 06:47, in de bouwsessie). Het bestand is openbaar en noemt de gebruiker, zijn profiel en zijn lijst niet.
 
 ## Veiligheid en betrouwbaarheid
 
@@ -143,6 +145,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die de gebruiker zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van de gebruiker: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-25 | Boekennieuws in de app lezen (Nederlandse samenvatting, knop naar de bron), nieuwspagina met archief, elke ochtend 1 of 2 nieuwe berichten via een dagelijkse taak; de wekelijkse taak doet alleen nog de tips |
 | 2026-10-25 | Werkmailadres uit de openbare geschiedenis gehaald (alle versies herschreven met het anonieme GitHub-adres, oude logboeken van het online zetten verwijderd); commits voortaan anoniem |
 | 2026-10-24 | Algemene controle (met een tweede, onafhankelijke review): geen beveiligingslekken; negen kleinere fouten hersteld |
 | 2026-10-24 | Getest en klaar: Koninklijke Bibliotheek als bron, stoerdere vormgeving, donkere modus 's avonds en tipvlak van rand tot rand |
