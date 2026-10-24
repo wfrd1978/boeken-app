@@ -956,7 +956,7 @@ async function toonInstellingen() {
   const syn = await synopsisTelling();
   document.getElementById('synopsis-telling').textContent = syn.totaal
     ? `${syn.met} van de ${syn.totaal} boeken hebben een synopsis${
-        syn.open ? ` (nog ${syn.open} te zoeken${(await aantalTeVerrijken()) ? '; begint zodra de covers klaar zijn' : ''})` : ''
+        syn.open ? ` (nog ${syn.open} te zoeken${(await aantalTeVerrijken()) ? '; begint zodra de boekgegevens zijn aangevuld' : ''})` : ''
       }.`
     : '';
   const opnieuw = document.getElementById('covers-opnieuw');
@@ -1022,7 +1022,7 @@ async function toonInstellingen() {
   const verrijkOpen = await aantalTeVerrijken();
   if (verrijkOpen) {
     const el = document.getElementById('verrijk-status');
-    el.textContent = `Nog ${verrijkOpen} boeken zonder opgehaalde cover. Dit gaat vanzelf verder zolang de app open is.`;
+    el.textContent = `Bij ${verrijkOpen} ${verrijkOpen === 1 ? 'boek worden' : 'boeken worden'} de gegevens nog aangevuld (zoals ISBN, uitgever en jaar). Dit gaat vanzelf verder zolang de app open is.`;
     el.hidden = false;
   }
 
