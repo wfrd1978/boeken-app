@@ -1,112 +1,204 @@
 {
-  "gemaakt": "2026-10-23",
-  "ronde": "2026-week-43",
+  "gemaakt": "2026-10-24",
+  "ronde": "2026-week-44",
   "tips": [
     {
-      "id": "2026w43-rode-erfenis",
+      "id": "2026w44-cryptoparadijs",
       "soort": "nieuw",
-      "titel": "De rode erfenis",
+      "titel": "Het cryptoparadijs",
       "auteurs": [
-        "Almar Otten"
+        "Roel Janssen"
       ],
       "jaar": 2026,
-      "uitgever": "Luitingh-Sijthoff",
-      "reden": "Een politieke thriller waarin het terrorisme van de Rote Armee Fraktion terugkeert in het Nederland en Duitsland van nu. Voor wie houdt van spanning met historische lading.",
-      "synopsis": "Bomaanslagen in Amsterdam en Brussel lijken geïnspireerd door de Rote Armee Fraktion. Rechercheur David van Karsveld onderzoekt ze samen met Nederlandse en Duitse diensten, terwijl Lore op zoek gaat naar haar moeder, die een duister geheim met zich meedraagt. Beide verhaallijnen komen samen.",
+      "reden": "Een financiële thriller over witwassen en macht, voor wie houdt van spanning met een maatschappelijke kern.",
+      "synopsis": "Bij een advocatenkantoor verdwijnt 22 miljoen euro en de fraudeur pleegt zelfmoord. Financieel specialist Rick Reijders volgt het geld, dat in cryptomunt is omgezet, tot in El Salvador. Daar stuit hij op witwaspraktijken en complotten die democratieën bedreigen.",
       "categorie": "Thriller & spanning"
     },
     {
-      "id": "2026w43-narcostaat",
+      "id": "2026w44-goud-seyss-inquart",
       "soort": "nieuw",
-      "titel": "Narcostaat Nederland",
+      "titel": "Het goud van Seyss-Inquart",
       "auteurs": [
-        "Johan van Kastel"
+        "John Kuipers"
       ],
-      "isbn": "9789021063256",
       "jaar": 2026,
-      "reden": "Een oud-undercoveragent over de verborgen drugsoorlog in Nederland. Voor wie wil begrijpen hoe onderwereld en overheid met elkaar verweven raken.",
-      "synopsis": "Johan van Kastel werkte undercover en vertelt hoe hij een groot drugsschandaal blootlegde, en wat dat zegt over de strijd van de Nederlandse staat tegen de georganiseerde misdaad.",
-      "categorie": "Journalistiek & samenleving"
+      "reden": "Een misdaadroman in bezet Nederland, voor wie houdt van spanning met historische lading en morele dilemma's.",
+      "synopsis": "Winter 1943: bij een overval op een juwelierszaak vallen twee doden en de Duitsers verdenken het verzet. Als maanden later het lijk van een heler opduikt, onderzoekt rechercheur Swieninck een verband tussen beide zaken. Hij vraagt zich af of hij de daders wel wil vinden als het verzet erachter zit. Deel 4 in een reeks.",
+      "categorie": "Thriller & spanning"
     },
     {
-      "id": "2026w43-bontebok",
-      "soort": "nieuw",
-      "titel": "Bontebok: Onderduik en verzet in het land van Abe Lenstra",
+      "id": "2026w44-de-taak",
+      "soort": "parel",
+      "titel": "De taak",
       "auteurs": [
-        "Jaap Visser"
+        "Robert Pollack"
+      ],
+      "jaar": 2019,
+      "uitgever": "Ambo|Anthos",
+      "reden": "Een politieke thriller over macht, recht en het Rusland van Poetin. Voor wie houdt van spanning met inhoud.",
+      "synopsis": "Twee Europese functionarissen reizen naar Sint-Petersburg om de dood van een Russische advocaat in een cel te onderzoeken. De autoriteiten werken tegen, een gevangenisarts sterft na zijn getuigenis en de geheime dienst zet druk. Het verhaal is deels geïnspireerd op de zaak-Magnitski.",
+      "categorie": "Thriller & spanning"
+    },
+    {
+      "id": "2026w44-dagboek-uit-de-kampen",
+      "soort": "nieuw",
+      "titel": "Dagboek uit de kampen",
+      "auteurs": [
+        "Nelly Mousset-Vos"
       ],
       "jaar": 2026,
-      "uitgever": "Spectrum",
-      "reden": "Waargebeurde oorlogsverhalen uit Friesland, met voetbal op de achtergrond. Over gewone mensen die onder druk het verschil maakten.",
-      "synopsis": "Bontebok, vlak bij Heerenveen, telde zoveel Joodse onderduikers dat het dorp de bijnaam 'de Jordaan' kreeg. Journalist Jaap Visser vertelt over de Lemmerboot, die Joden redde en Amsterdamse voetballertjes als hongerevacués naar Heerenveen bracht, waar zij optrokken met Abe Lenstra.",
+      "uitgever": "Horizon",
+      "reden": "Een persoonlijk getuigenis van een vrouw onder extreme druk. Voor wie wil lezen hoe mensen in de oorlog overleefden.",
+      "synopsis": "De Belgische operazangeres en verzetsvrouw hield in het geheim een dagboek bij vanaf haar arrestatie in 1943 tot de bevrijding uit het concentratiekamp. Ze schrijft over de scheiding van haar dochters, het lijden, de solidariteit tussen gevangenen en kunst als toevluchtsoord.",
       "categorie": "Oorlog & geschiedenis"
     },
     {
-      "id": "2026w43-van-vleuten",
+      "id": "2026w44-blijf-in-leven",
       "soort": "nieuw",
-      "titel": "Annemiek van Vleuten: Vallen, opstaan en de drive om beter te worden",
+      "titel": "Blijf in leven: Berlijn 1939-1945",
       "auteurs": [
-        "Dennis Boxhoorn",
-        "Annemiek van Vleuten"
+        "Ian Buruma"
       ],
-      "isbn": "9789046834312",
       "jaar": 2026,
-      "uitgever": "Nieuw Amsterdam",
-      "reden": "Een openhartig verhaal over topsport: twijfel, blessures, perfectionisme en de mentale kracht om steeds weer op te staan.",
-      "synopsis": "De carrière van een van de beste wielrensters ooit, met haar tegenslagen en blessures, en wat zij leerde over prestatiedruk, perfectionisme en het verlaten van je comfortzone.",
-      "categorie": "Sport"
+      "uitgever": "Prometheus",
+      "reden": "Het dagelijks leven in Hitlers hoofdstad, verteld aan de hand van brieven en getuigenissen. Voor wie geschiedenis het liefst dichtbij leest.",
+      "synopsis": "Buruma beschrijft Berlijn van 1939 tot de ondergang, voor joodse inwoners en gewone Berlijners. Hij put uit brieven, interviews, archieven en de herinneringen van zijn vader, die in Berlijn dwangarbeid verrichtte. Het motto is 'blijf in leven'.",
+      "categorie": "Oorlog & geschiedenis"
     },
     {
-      "id": "2026w43-vuelta-smeets",
-      "soort": "nieuw",
-      "titel": "Vuelta a España: De grote rondes 2",
+      "id": "2026w44-cilkas-keuze",
+      "soort": "parel",
+      "titel": "Cilka's keuze",
       "auteurs": [
-        "Mart Smeets"
+        "Heather Morris"
       ],
-      "isbn": "9789462973824",
+      "isbn": "9789402704112",
+      "jaar": 2019,
+      "uitgever": "HarperCollins Holland",
+      "reden": "Een aangrijpend, op waarheid gebaseerd verhaal over overleven onder onmenselijke druk, en over de moed om je waardigheid te bewaren.",
+      "synopsis": "Cilka overleeft Auschwitz-Birkenau, maar wordt na de bevrijding als 'collaborateur' veroordeeld en naar een Siberisch werkkamp gestuurd. Ook daar moet ze opnieuw kiezen tussen overleven en haar waardigheid. Een roman gebaseerd op een waargebeurd levensverhaal.",
+      "categorie": "Oorlog & geschiedenis"
+    },
+    {
+      "id": "2026w44-mijn-twee-moeders",
+      "soort": "parel",
+      "titel": "Mijn twee moeders: Hoe een joods jongetje gered werd door zijn kindermeisje",
+      "auteurs": [
+        "Stefan Skotnicki",
+        "Dore van Duivenbode"
+      ],
+      "jaar": 2025,
+      "uitgever": "Alfabet Uitgevers",
+      "reden": "Een kort, waargebeurd oorlogsverhaal over moed en trouw. Voor wie persoonlijke getuigenissen zoekt.",
+      "synopsis": "De vijfjarige Stefan wordt door zijn ouders weggestuurd voordat de familie wordt gedeporteerd. Jarenlang zwerft hij met zijn katholieke kindermeisje Zosia over het Poolse platteland, steeds proberend onopvallend te blijven. Na de oorlog blijft het antisemitisme en vertrekt hij uiteindelijk uit Polen.",
+      "categorie": "Oorlog & geschiedenis"
+    },
+    {
+      "id": "2026w44-trots-tranen-triomf",
+      "soort": "nieuw",
+      "titel": "Trots, tranen en triomf: Nederlandse vrouwen in de Tour de France",
+      "auteurs": [
+        "Michel Simons"
+      ],
       "jaar": 2026,
       "uitgever": "De Kring",
-      "reden": "Wielergeschiedenis verteld door Mart Smeets: de Ronde van Spanje van 1935 tot nu, met de Nederlanders die er hun stempel drukten.",
-      "synopsis": "Het tweede deel van Mart Smeets' reeks over de grote rondes. Over de winnaars van de Vuelta, de geschiedenis van de ronde in vogelvlucht en de Nederlandse renners in Spanje.",
+      "reden": "Wielrensters over hun hoogte- en dieptepunten, mentale veerkracht en de drive om de top te halen.",
+      "synopsis": "Michel Simons sprak 43 huidige en voormalige rensters, onder wie Vollering, Vos en Wiebes. Ze vertellen over succes, pech en doorzetten in de Tour de France Femmes. Met anekdotes, foto's en een overzicht van alle Nederlandse deelnames.",
       "categorie": "Sport"
     },
     {
-      "id": "2026w43-trage-paarden",
+      "id": "2026w44-op-gevoel",
       "soort": "parel",
-      "titel": "Trage paarden",
+      "titel": "Op gevoel: Een wielerleven",
       "auteurs": [
-        "Mick Herron"
+        "Tom Dumoulin",
+        "Nando Boers"
       ],
-      "isbn": "9789044635461",
-      "jaar": 2018,
-      "reden": "Een spionagethriller met vaart én droge humor, over afgeschreven Britse agenten. Het eerste deel van de reeks achter de tv-serie Slow Horses.",
-      "synopsis": "Na een blunder wordt River Cartwright naar Slough House gestuurd, het afvoerputje van de Britse inlichtingendienst onder leiding van de onuitstaanbare Jackson Lamb. Als er een jongeman wordt ontvoerd, zien de afgeschreven agenten hun kans.",
-      "categorie": "Thriller & spanning"
+      "jaar": 2024,
+      "uitgever": "Thomas Rap",
+      "reden": "Een openhartig wielerverhaal over prestatiedruk, twijfel en een eigen weg. Voor wie van wielrennen en mentale kracht houdt.",
+      "synopsis": "Tom Dumoulin blikt terug op zijn wielerloopbaan, van de Giro-zege tot de druk en twijfel die daarbij hoorden. Hij vertelt hoe hij zijn eigen weg vond binnen en buiten het peloton.",
+      "categorie": "Sport"
     },
     {
-      "id": "2026w43-vaderland",
+      "id": "2026w44-littekens",
       "soort": "parel",
-      "titel": "Vaderland",
+      "titel": "Littekens",
       "auteurs": [
-        "Robert Harris"
+        "Joey Litjens"
       ],
-      "jaar": 2012,
-      "uitgever": "Cargo",
-      "reden": "Wat als Hitler de oorlog had gewonnen? Een klassieke thriller die geschiedenis en spanning knap verweeft.",
-      "synopsis": "Berlijn, 1964. Duitsland heeft de oorlog gewonnen. Als er een lijk in een meer wordt gevonden, stuit rechercheur Xavier March op een geheim dat het regime koste wat kost verborgen wil houden.",
-      "categorie": "Thriller & spanning"
+      "jaar": 2024,
+      "uitgever": "Volt",
+      "reden": "Een rauw levensverhaal over vallen, opstaan en jezelf opnieuw uitvinden.",
+      "synopsis": "Voormalig motorcoureur Joey Litjens zag zijn carrière eindigen na een zware crash met blijvende zenuwschade. Hij vertelt over revalidatie, rouw om zijn vader, een comeback, een periode van excessen en een nieuwe crash. Daarna keert hij zijn leven om en helpt hij anderen.",
+      "categorie": "Biografie & levensverhaal"
     },
     {
-      "id": "2026w43-de-weg-volgen",
+      "id": "2026w44-fentanyl",
+      "soort": "nieuw",
+      "titel": "Fentanyl: Hoe een zware pijnstiller in handen viel van nietsontziende drugskartels",
+      "auteurs": [
+        "Teun Voeten"
+      ],
+      "isbn": "9789025322984",
+      "jaar": 2026,
+      "uitgever": "Querido",
+      "reden": "Een reportage over farmaceutische macht en georganiseerde misdaad, voor wie wil begrijpen hoe een crisis ontstaat.",
+      "synopsis": "Oorlogsfotograaf Teun Voeten volgt de fentanylcrisis in de Verenigde Staten en Mexico en spreekt verslaafden in meerdere steden. Hij onderzoekt de rol van Purdue, Mexicaanse labs en grondstoffen uit China, en vraagt zich af of het middel Europa gaat bereiken.",
+      "categorie": "Journalistiek & samenleving"
+    },
+    {
+      "id": "2026w44-de-ijsprofeet",
+      "soort": "nieuw",
+      "titel": "De ijsprofeet: Wim Hof, het duistere verhaal achter zijn wereldwijde succes",
+      "auteurs": [
+        "Robert van de Griend",
+        "Anneke Stoffelen"
+      ],
+      "jaar": 2025,
+      "uitgever": "Singel Uitgeverijen",
+      "reden": "Onderzoeksjournalistiek over een goeroe en zijn volgers, bekroond als beste journalistieke boek van 2025.",
+      "synopsis": "De auteurs ontrafelen de mythe rond ijsbadgoeroe Wim Hof. Ze onderzoeken zijn familieachtergrond, beschuldigingen van geweld en twijfelachtige recordpogingen, en toetsen zijn gezondheidsclaims. Ook vragen ze waarom zo veel mensen een goeroe zo kritiekloos volgen.",
+      "categorie": "Journalistiek & samenleving"
+    },
+    {
+      "id": "2026w44-klopjacht",
+      "soort": "nieuw",
+      "titel": "Klopjacht",
+      "auteurs": [
+        "Patrick van der Valk"
+      ],
+      "jaar": 2026,
+      "uitgever": "Luitingh-Sijthoff",
+      "reden": "Een kijkje achter de schermen van de opsporing van voortvluchtige criminelen, voor wie houdt van true crime.",
+      "synopsis": "Oud-politieman Patrick van der Valk richtte in 2007 een van de eerste voortvluchtigenteams van Nederland op. Hij beschrijft achtervolgingen, afluisteren en andere opsporingsmethoden, en de spanning tussen het werk op straat en de systemen erboven.",
+      "categorie": "Journalistiek & samenleving"
+    },
+    {
+      "id": "2026w44-doen-als-jezus",
+      "soort": "nieuw",
+      "titel": "Doen als Jezus: De man die alles veranderde",
+      "auteurs": [
+        "Kees Postma"
+      ],
+      "jaar": 2025,
+      "uitgever": "VBK Media",
+      "reden": "Een toegankelijk, praktisch boek over leven als volger van Jezus in het gewone dagelijks leven.",
+      "synopsis": "In korte hoofdstukken kijkt pastor Kees Postma naar wat Jezus zei, deed en tegenkwam, met observaties, anekdotes en praktische tips. Het boek is bedoeld voor zoekers en doorgewinterde christenen die eerlijker en royaler willen leven, ook als ze struikelen.",
+      "categorie": "Geloof & zingeving"
+    },
+    {
+      "id": "2026w44-leef-geen-leugens",
       "soort": "parel",
-      "titel": "De weg volgen",
+      "titel": "Leef geen leugens: Herken en weersta de drie vijanden die je vrede ondermijnen",
       "auteurs": [
         "John Mark Comer"
       ],
-      "jaar": 2024,
+      "isbn": "9789033803031",
+      "jaar": 2022,
       "uitgever": "Ark Media",
-      "reden": "Comer over discipelschap: hoe je in een drukke tijd leeft in het ritme van Jezus. Praktisch, toegankelijk en met diepgang.",
-      "synopsis": "In De weg volgen (Practicing the Way) laat John Mark Comer zien hoe je leerling van Jezus wordt in het gewone leven, met ritmes en gewoonten die ruimte maken voor God, rust en groei.",
+      "reden": "Praktische spiritualiteit over vrijheid en innerlijke rust, van een bekende schrijver over discipelschap.",
+      "synopsis": "Comer beschrijft de duivel, het vlees en de wereld als drie vijanden van je vrede. Hij laat zien hoe je ze herkent en weerstaat met oude christelijke gewoonten als stilte, gebed en eerlijkheid.",
       "categorie": "Geloof & zingeving"
     }
   ]
