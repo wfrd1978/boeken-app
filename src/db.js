@@ -79,6 +79,8 @@ export function normaliseerBoek(b) {
     recensie: tekst(b.recensie),
     opmerking: tekst(b.opmerking),
     koboWacht: b.koboWacht === true,
+    koboGedownload: b.koboGedownload === true,
+    papierGekocht: b.papierGekocht === true,
     categorie: CATEGORIEEN.includes(b.categorie) ? b.categorie : '',
     synopsis: typeof b.synopsis === 'string' ? b.synopsis : undefined,
     toegevoegdOp: typeof b.toegevoegdOp === 'string' && !isNaN(Date.parse(b.toegevoegdOp)) ? b.toegevoegdOp : new Date().toISOString(),
@@ -109,6 +111,8 @@ function nieuwBoek(boek, toegevoegdOp = new Date().toISOString()) {
     // Leeg laten (undefined) als we hem nog niet hebben, dan haalt de app hem later op.
     synopsis: boek.synopsis || undefined,
     koboWacht: boek.koboWacht ?? false,
+    koboGedownload: boek.koboGedownload ?? false,
+    papierGekocht: boek.papierGekocht ?? false,
     categorie: boek.categorie ?? '',
     toegevoegdOp,
     bron: boek.bron ?? 'getypt',
