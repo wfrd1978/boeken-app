@@ -1,6 +1,7 @@
 // Backup: alle boeken (met covers) in één JSON-bestand, en weer terugzetten.
 import { db, normaliseerBoek } from './db.js';
 import { stopAchtergrond } from './verrijken.js';
+import { normaliseerTip } from './tips.js';
 
 const SLEUTEL = 'laatsteBackup';
 const HERINNER_NA_DAGEN = 14;
@@ -46,9 +47,7 @@ function zetVoorkeuren(v) {
 // Alleen tips met een id en titel; de rest van een tip is gewone tekst.
 function schoonArchief(a) {
   if (!Array.isArray(a)) return null;
-  return a
-    .filter((t) => t && typeof t.id === 'string' && typeof t.titel === 'string')
-    .map((t) => JSON.parse(JSON.stringify(t)));
+  return a.map(normaliseerTip).filter(Boolean);
 }
 
 async function fotoAlsTekst() {

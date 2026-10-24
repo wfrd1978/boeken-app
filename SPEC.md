@@ -79,6 +79,8 @@ https://wfrd1978.github.io/boeken-app/
 
 ## Veiligheid en betrouwbaarheid
 
+- **Controle 24 oktober:** tips uit `tips.json` en uit een backup worden bij binnenkomst gecontroleerd (een verkeerde tip kan het startscherm niet meer laten vastlopen); een backup accepteert alleen echte Open Library-werken en echte datums; de camera gaat ook uit als je tijdens het opstarten op Annuleren tikt; *Kies een cover* reageert niet meer op een zoekpoging van een eerder geopend venster; de service worker ruimt oude bestanden op.
+
 - Alles wat van buiten komt (zoekbronnen, backups, tips) wordt afgeschermd voordat het in beeld komt, ook aanhalingstekens. Als cover worden alleen https-, blob- en ingebakken plaatjes gebruikt.
 - Een Content-Security-Policy staat alleen de eigen code toe; geen inline scripts.
 - Ophalen op de achtergrond vult alleen velden die nog leeg zijn, in één handeling, en alleen als het nog hetzelfde boek is.
@@ -141,6 +143,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die de gebruiker zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van de gebruiker: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Algemene controle (met een tweede, onafhankelijke review): geen beveiligingslekken; negen kleinere fouten hersteld |
 | 2026-10-24 | Getest en klaar: Koninklijke Bibliotheek als bron, stoerdere vormgeving, donkere modus 's avonds en tipvlak van rand tot rand |
 | 2026-10-24 | Donkere modus die vanzelf aangaat ('s avonds van 20:00 tot 7:00), met keuze in Instellingen; tipvlak van rand tot rand |
 | 2026-10-24 | Vormgeving iets stoerder: donkergroene vlakken, gevulde tabs, gouden accenten |

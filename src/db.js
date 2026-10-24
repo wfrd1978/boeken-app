@@ -53,6 +53,14 @@ export function alleBoeken() {
 
 const DATUM = /^\d{4}-\d{2}(-\d{2})?$/;
 
+// '2025-10' of '2025-10-14', en een datum die echt bestaat (geen 31 februari).
+function echteDatum(d) {
+  if (typeof d !== 'string' || !DATUM.test(d)) return false;
+  const [j, m, dag = '1'] = d.split('-').map(Number);
+  const datum = new Date(j, m - 1, dag);
+  return datum.getFullYear() === j && datum.getMonth() === m - 1 && datum.getDate() === Number(dag);
+}
+
 // Controleert een boek uit een backup en zet het in de vaste vorm. Onbekende velden
 // vallen weg, verkeerde soorten gegevens worden leeg. Zonder titel: een fout.
 export function normaliseerBoek(b) {
@@ -66,7 +74,8 @@ export function normaliseerBoek(b) {
     titel,
     auteurs: Array.isArray(b.auteurs) ? b.auteurs.filter((a) => typeof a === 'string' && a.trim()) : [],
     isbn: tekst(b.isbn).replace(/[^0-9X]/gi, ''),
-    werk: typeof b.werk === 'string' ? b.werk : undefined,
+    // Alleen een echt Open Library-werk ('/works/OL123W'); al het andere wordt opnieuw opgezocht.
+    werk: typeof b.werk === 'string' && /^(\/works\/OL\d+W)?$/.test(b.werk) ? b.werk : undefined,
     cover: b.cover instanceof Blob ? b.cover : null,
     coverUrl: tekst(b.coverUrl),
     uitgever: tekst(b.uitgever),
@@ -75,7 +84,7 @@ export function normaliseerBoek(b) {
     taal: tekst(b.taal),
     status: STATUSSEN.includes(b.status) ? b.status : 'Wil ik lezen',
     sterren: getal(b.sterren, 1, 5),
-    leesdata: Array.isArray(b.leesdata) ? b.leesdata.filter((d) => typeof d === 'string' && DATUM.test(d)) : [],
+    leesdata: Array.isArray(b.leesdata) ? b.leesdata.filter(echteDatum) : [],
     recensie: tekst(b.recensie),
     opmerking: tekst(b.opmerking),
     koboWacht: b.koboWacht === true,
@@ -159,8 +168,9 @@ export async function vulWerkenAan(zoekWerk) {
     const werk = boek.isbn ? await zoekWerk(boek.isbn) : '';
     // null = opzoeken lukte niet (bijvoorbeeld geen internet): later opnieuw.
     if (werk === null) continue;
+    // Alleen als het nog hetzelfde boek is (na een teruggezette backup kan een id een ander boek zijn).
     await db.boeken.where('id').equals(boek.id).modify((b) => {
-      if (b.werk === undefined) b.werk = werk;
+      if (b.werk === undefined && b.titel === boek.titel && b.toegevoegdOp === boek.toegevoegdOp) b.werk = werk;
     });
   }
 }

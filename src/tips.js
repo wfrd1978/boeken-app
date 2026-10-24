@@ -62,19 +62,42 @@ export function ordenTips(tips, score) {
     .map(({ t }) => t);
 }
 
+// Een tip uit tips.json (of uit een backup) in een vaste, veilige vorm. Klopt de kern niet
+// (geen id of titel), dan valt hij weg; rare velden worden leeg. Zo kan één verkeerde tip
+// het startscherm nooit laten vastlopen.
+export function normaliseerTip(t) {
+  if (!t || typeof t !== 'object' || typeof t.id !== 'string' || typeof t.titel !== 'string' || !t.titel.trim()) return null;
+  const tekst = (v) => (typeof v === 'string' ? v : undefined);
+  return {
+    id: t.id,
+    soort: t.soort === 'parel' ? 'parel' : 'nieuw',
+    titel: t.titel.trim(),
+    auteurs: Array.isArray(t.auteurs) ? t.auteurs.filter((a) => typeof a === 'string') : typeof t.auteurs === 'string' ? [t.auteurs] : [],
+    isbn: tekst(t.isbn),
+    jaar: Number.isInteger(t.jaar) ? t.jaar : undefined,
+    uitgever: tekst(t.uitgever),
+    coverUrl: tekst(t.coverUrl),
+    reden: tekst(t.reden) ?? '',
+    synopsis: tekst(t.synopsis),
+    categorie: tekst(t.categorie),
+  };
+}
+
 // Velden die een latere ronde mag verbeteren bij een tip die al op de telefoon staat,
 // bijvoorbeeld een cover die er eerst niet bij zat of een gecorrigeerde titel.
 const BIJ_TE_WERKEN = ['coverUrl', 'titel', 'isbn', 'jaar', 'uitgever', 'categorie'];
 
-async function bewaarArchief(nieuw, bijwerkingen = []) {
-  const archief = (await db.instellingen.get('tipArchief'))?.waarde ?? [];
+async function bewaarArchief(ruw, bijwerkingen = []) {
+  const nieuw = (Array.isArray(ruw) ? ruw : []).map(normaliseerTip).filter(Boolean);
+  const archief = ((await db.instellingen.get('tipArchief'))?.waarde ?? []).map(normaliseerTip).filter(Boolean);
   const opId = new Map(archief.map((t) => [t.id, t]));
   let veranderd = false;
-  for (const b of [...(nieuw ?? []), ...(bijwerkingen ?? [])]) {
+  for (const b of [...nieuw, ...(Array.isArray(bijwerkingen) ? bijwerkingen : [])]) {
     const al = b && opId.get(b.id);
     if (!al) continue;
     for (const veld of BIJ_TE_WERKEN) {
-      if (b[veld] !== undefined && b[veld] !== al[veld]) {
+      const ok = veld === 'jaar' ? Number.isInteger(b[veld]) : typeof b[veld] === 'string' && (veld !== 'titel' || b[veld].trim());
+      if (ok && b[veld] !== al[veld]) {
         al[veld] = b[veld];
         veranderd = true;
       }
@@ -90,7 +113,7 @@ async function bewaarArchief(nieuw, bijwerkingen = []) {
 // uit wat het toestel al heeft: direct beschikbaar, zonder te wachten op internet.
 export async function tipsUitArchief(boeken) {
   const [archief, reacties] = await Promise.all([db.instellingen.get('tipArchief'), tipReacties()]);
-  const open = (archief?.waarde ?? []).filter((t) => !reacties[t.id] && !vindDubbel(t, boeken));
+  const open = (archief?.waarde ?? []).map(normaliseerTip).filter((t) => t && !reacties[t.id] && !vindDubbel(t, boeken));
   return ordenTips(open, smaak(reacties, boeken)).slice(0, MAX_ZICHTBAAR);
 }
 
