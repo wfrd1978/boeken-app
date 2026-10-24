@@ -447,6 +447,97 @@ function rijHtml(titel, boeken, naarTab) {
     </section>`;
 }
 
+// --- Kobo-check: eens per maand nalopen welke wachtende boeken nu in Kobo Plus zitten ---
+// Kobo heeft geen koppeling en blokkeert automatisch kijken, dus Wilfred kijkt zelf;
+// de app zet de lijst klaar en geeft eens per maand een seintje.
+
+const KOBO_CHECK_DAGEN = 30;
+const KOBO_LATER_DAGEN = 7;
+
+function leesDatum(sleutel) {
+  try {
+    const waarde = localStorage.getItem(sleutel);
+    return waarde ? new Date(waarde) : null;
+  } catch {
+    return null;
+  }
+}
+
+function zetDatum(sleutel, datum = new Date()) {
+  try {
+    localStorage.setItem(sleutel, datum.toISOString());
+  } catch {
+    // Niet erg; dan komt het seintje wat eerder terug.
+  }
+}
+
+function dagenGeleden(datum) {
+  return datum ? (Date.now() - datum) / 86400000 : Infinity;
+}
+
+function koboSeintjeHtml(boeken) {
+  const aantal = boeken.filter((b) => b.koboWacht).length;
+  if (!aantal) return '';
+  if (dagenGeleden(leesDatum('koboCheck')) < KOBO_CHECK_DAGEN || dagenGeleden(leesDatum('koboLater')) < KOBO_LATER_DAGEN) return '';
+  return `
+    <div class="herinnering kobo-seintje" id="kobo-seintje">
+      <p><strong>Tijd voor je Kobo-check</strong><br />${aantal === 1 ? '1 boek wacht' : `${aantal} boeken wachten`} op Kobo Plus. Kijk even of er al iets te downloaden is.</p>
+      <div class="herinnering-knoppen">
+        <a href="#/kobo">Bekijk de lijst</a>
+        <button class="link-knop" id="kobo-later">Over een week</button>
+      </div>
+    </div>`;
+}
+
+async function toonKoboCheck() {
+  const nr = schermNr;
+  ruimCoversOp();
+  const wachtend = (await alleBoeken())
+    .filter((b) => b.koboWacht)
+    .sort((a, b) => kaal(a.titel).localeCompare(kaal(b.titel), 'nl'));
+  if (nr !== schermNr) return;
+  const laatst = leesDatum('koboCheck');
+  app.innerHTML = `
+    <header class="kop">
+      <a class="terug" href="#/">‹ Boeken</a>
+      <h1>Kobo-check</h1>
+    </header>
+    <p class="zacht">Tik op <b>Kobo ↗</b> om het boek op kobo.com te bekijken. Staat er dat het bij Kobo Plus hoort, download het dan en tik hier op <b>Gedownload</b>.</p>
+    <p class="zacht klein">${laatst ? `Vorige check: ${laatst.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}.` : 'Nog niet eerder gecontroleerd.'}</p>
+    ${
+      wachtend.length
+        ? `<ul class="lijst" id="kobo-lijst">${wachtend
+            .map(
+              (b) => `
+          <li class="nalopen-regel" data-id="${b.id}">
+            <div class="cover-vak">${coverHtml(b, 'cover-klein', lijstLinks)}</div>
+            <div class="boek-tekst"><strong>${veilig(b.titel)}</strong><span>${veilig(auteurTekst(b))}</span></div>
+            <div class="nalopen-knoppen">
+              <a class="link-knop" href="${koboZoekUrl(b)}" target="_blank" rel="noopener">Kobo ↗</a>
+              <button class="keuze" data-gedownload="${b.id}">Gedownload</button>
+            </div>
+          </li>`
+            )
+            .join('')}</ul>
+           <button class="hoofdknop" id="kobo-klaar">Klaar, volgende maand weer</button>`
+        : '<p class="leeg">Er wachten geen boeken op Kobo Plus.</p>'
+    }`;
+  document.getElementById('kobo-lijst')?.addEventListener('click', async (e) => {
+    const knop = e.target.closest('[data-gedownload]');
+    if (!knop) return;
+    await boekBijwerken(Number(knop.dataset.gedownload), { koboWacht: false, koboGedownload: true });
+    const li = knop.closest('li');
+    li.classList.add('klaar');
+    li.querySelector('.nalopen-knoppen').innerHTML = '<span class="keuze actief">Gedownload ✓</span>';
+    melding('Op Gedownload in Kobo gezet');
+  });
+  document.getElementById('kobo-klaar')?.addEventListener('click', () => {
+    zetDatum('koboCheck');
+    location.hash = '#/';
+    melding('Fijn. Over een maand weer een seintje');
+  });
+}
+
 function startHtml(boeken, naam) {
   const { deel, datum } = groet(naam);
   const nu = boeken.filter((b) => b.status === 'Bezig');
@@ -461,6 +552,7 @@ function startHtml(boeken, naam) {
   return `
     <section class="start">
       <p class="groet">${veilig(deel)}<span>${datum}</span></p>
+      ${koboSeintjeHtml(boeken)}
       ${
         nu.length
           ? `<div class="helden${nu.length > 1 ? ' meer' : ''}">${nu.map(heldHtml).join('')}</div>`
@@ -537,6 +629,10 @@ async function toonLijst() {
   `;
   if (!boeken.length) return;
 
+  document.getElementById('kobo-later')?.addEventListener('click', () => {
+    zetDatum('koboLater');
+    document.getElementById('kobo-seintje')?.remove();
+  });
   document.getElementById('later')?.addEventListener('click', () => {
     herinnerLater();
     document.querySelector('.herinnering').remove();
@@ -721,7 +817,7 @@ function overDezeAppHtml() {
       </details>
       <details>
         <summary>Wat kan de app niet?</summary>
-        <p>Er is geen koppeling met je Kobo of Kobo Plus: daar biedt Kobo geen mogelijkheid voor. Wel kun je een boek markeren als Wacht op Kobo Plus en het met één tik opzoeken bij Kobo.</p>
+        <p>Er is geen koppeling met je Kobo of Kobo Plus: daar biedt Kobo geen mogelijkheid voor. Wel kun je een boek markeren als Wacht op Kobo Plus en het met één tik opzoeken bij Kobo. Eens per maand geeft de app een seintje voor de Kobo-check: een lijst van al die boeken, zodat je snel ziet wat er nu te downloaden is. Automatisch kijken kan niet, omdat Kobo dat blokkeert.</p>
         <p>Er is geen automatische backup naar de cloud: een backup maak je zelf. Na 14 dagen herinnert de app je eraan.</p>
         <p>Je boeken staan niet op meerdere apparaten tegelijk. Op een nieuwe telefoon zet je een backup terug.</p>
       </details>
@@ -789,6 +885,12 @@ async function toonInstellingen() {
       <a class="tweede-knop" id="covers-nalopen" href="#/covers" hidden>Covers zelf nalopen</a>
       <button class="link-knop" id="bronnen-test">Test de verbinding met de boekenbronnen</button>
       <p class="zacht" id="bronnen-uitslag"></p>
+    </section>
+
+    <section class="blok">
+      <h2>Kobo-check</h2>
+      <p>Eens per maand loop je na welke boeken die wachten op Kobo Plus nu te downloaden zijn. Je krijgt daarvoor een seintje op het startscherm.</p>
+      <a class="tweede-knop" href="#/kobo">Open de Kobo-check</a>
     </section>
 
     <section class="blok">
@@ -2372,6 +2474,7 @@ async function route({ naarBoven = false } = {}) {
   else if (location.hash === '#/profiel') toonProfiel();
   else if (location.hash === '#/covers') toonCoversNalopen();
   else if (location.hash === '#/nieuws') toonNieuwsPagina();
+  else if (location.hash === '#/kobo') toonKoboCheck();
   else if (location.hash.startsWith('#/nieuws/')) toonNieuwsBericht(decodeURIComponent(location.hash.slice('#/nieuws/'.length)));
   else if (boekId) toonBoek(Number(boekId[1]));
   else if (location.hash === '#/zoek') {
