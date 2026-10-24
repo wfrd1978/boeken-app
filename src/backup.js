@@ -2,6 +2,7 @@
 import { db, normaliseerBoek } from './db.js';
 import { stopAchtergrond } from './verrijken.js';
 import { normaliseerTip } from './tips.js';
+import { normaliseerBericht } from './nieuws.js';
 
 const SLEUTEL = 'laatsteBackup';
 const HERINNER_NA_DAGEN = 14;
@@ -72,6 +73,7 @@ export async function maakBackupBestand() {
     tipReacties: (await db.instellingen.get('tipReacties'))?.waarde ?? null,
     profielFoto: await fotoAlsTekst(),
     tipArchief: (await db.instellingen.get('tipArchief'))?.waarde ?? null,
+    nieuwsArchief: (await db.instellingen.get('nieuwsArchief'))?.waarde ?? null,
     voorkeuren: leesVoorkeuren(),
   };
   const datum = nu.toISOString().slice(0, 10);
@@ -194,6 +196,7 @@ export async function zetBackupTerug(inhoud) {
   const profiel = schoonProfiel(inhoud.profiel);
   const reacties = schoneReacties(inhoud.tipReacties);
   const archief = schoonArchief(inhoud.tipArchief);
+  const nieuws = Array.isArray(inhoud.nieuwsArchief) ? inhoud.nieuwsArchief.map(normaliseerBericht).filter(Boolean) : null;
   const foto =
     typeof inhoud.profielFoto === 'string' && inhoud.profielFoto.startsWith('data:image/') ? await tekstNaarBlob(inhoud.profielFoto) : null;
   // Werk op de achtergrond (covers, synopsis) eerst stoppen: dat hoort bij de oude lijst.
@@ -207,6 +210,7 @@ export async function zetBackupTerug(inhoud) {
     // Een backup zonder foto laat de huidige foto staan.
     if (foto) await db.instellingen.put({ sleutel: 'profielFoto', waarde: foto });
     if (archief) await db.instellingen.put({ sleutel: 'tipArchief', waarde: archief });
+    if (nieuws) await db.instellingen.put({ sleutel: 'nieuwsArchief', waarde: nieuws });
   });
   zetVoorkeuren(inhoud.voorkeuren);
   return boeken.length;

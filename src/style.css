@@ -556,3 +556,10 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 
 /* Nieuws: de bron in het groen. */
 .nieuws-kop { color: var(--accent); }
+
+/* Een nieuwsbericht in de app */
+.nieuws-artikel { display: flex; flex-direction: column; gap: 4px; }
+.nieuws-artikel h1 { font-family: var(--schreef); font-size: 1.7rem; line-height: 1.2; margin: 6px 0 10px; }
+.nieuws-artikel p { margin: 0 0 14px; line-height: 1.6; font-size: 1.05rem; }
+.nieuws-artikel .hoofdknop { margin-top: 8px; text-align: center; text-decoration: none; }
+.nieuws-artikel .klein { margin-top: 12px; }

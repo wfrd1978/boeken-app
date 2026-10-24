@@ -40,7 +40,7 @@ import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
 import { deelTekst, deelBoek } from './delen.js';
-import { haalNieuws, ordenNieuws, overMijnSchrijver } from './nieuws.js';
+import { haalNieuws, nieuwsArchief, ordenNieuws, overMijnSchrijver } from './nieuws.js';
 import { STEEKWOORDEN, recensieOpdracht, claudeAdres } from './recensie.js';
 import { berekenStatistieken, huidigeMaand, geldigeStartmaand } from './statistieken.js';
 import { veilig, veiligeUrl } from './veilig.js';
@@ -703,7 +703,7 @@ function overDezeAppHtml() {
         <summary>Wat gaat er over internet?</summary>
         <p>Bij zoeken en toevoegen vraagt de app gegevens op bij Open Library, Google Books en de Koninklijke Bibliotheek: alleen de titel, auteur of ISBN waarnaar je zoekt. Je lijst, sterren en recensies gaan nooit mee.</p>
         <p>De boekentips komen uit een openbare lijst op de site van de app. Die wordt elke zaterdagochtend vernieuwd door een geplande taak van Claude. Wat je met een tip doet, blijft op je telefoon.</p>
-        <p>Het boekennieuws komt, net als de tips, uit een openbare lijst die elke zaterdag wordt vernieuwd. Of een bericht over een schrijver uit je lijst gaat, bekijkt de app op je telefoon zelf.</p>
+        <p>Het boekennieuws komt, net als de tips, uit een openbare lijst; elke ochtend komen er een of twee berichten bij, in het Nederlands samengevat. Alle berichten blijven op je telefoon bewaard. Of een bericht over een schrijver uit je lijst gaat, bekijkt de app op je telefoon zelf.</p>
         <p>Delen gaat alleen als jij op Deel tikt, en dan via het gewone deelmenu van je iPhone.</p>
         <p>Hulp van Claude bij een recensie: pas als jij op Open Claude tikt, gaan de titel, je sterren, je steekwoorden en wat je zelf al schreef naar je eigen Claude-account. De app praat zelf met geen enkele AI-dienst.</p>
       </details>
@@ -1558,36 +1558,89 @@ function nieuwsDatum(iso) {
   return isNaN(d) ? '' : d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
 }
 
+function nieuwsKop(b, boeken) {
+  return `${overMijnSchrijver(b, boeken) ? '<b>Schrijver die je leest</b> · ' : ''}${veilig(b.bron)}${b.datum ? ` · ${veilig(nieuwsDatum(b.datum))}` : ''}`;
+}
+
+// Tikken opent het bericht in de app; daar staat de knop naar de website.
 function nieuwsHtml(b, boeken) {
   return `
     <li>
-      <a class="nieuws-bericht" href="${veilig(veiligeUrl(b.url))}" target="_blank" rel="noopener">
-        <span class="nieuws-kop">${overMijnSchrijver(b, boeken) ? '<b>Schrijver die je leest</b> · ' : ''}${veilig(b.bron ?? '')}${
-          b.datum ? ` · ${veilig(nieuwsDatum(b.datum))}` : ''
-        }</span>
+      <a class="nieuws-bericht" href="#/nieuws/${encodeURIComponent(b.id)}">
+        <span class="nieuws-kop">${nieuwsKop(b, boeken)}</span>
         <strong>${veilig(b.titel)}</strong>
-        <span class="nieuws-tekst">${veilig(b.tekst ?? '')}</span>
+        <span class="nieuws-tekst">${veilig(b.tekst)}</span>
       </a>
     </li>`;
 }
 
-// Een paar berichten onder de tips; 'Meer nieuws' klapt de rest uit.
+// Op het startscherm: de drie belangrijkste uit het recente nieuws, en een link naar alles.
 async function toonNieuws(boeken) {
   const vak = document.getElementById('nieuws-rij');
   if (!vak) return;
-  const berichten = ordenNieuws(await haalNieuws(), boeken);
+  const alle = await haalNieuws();
+  const berichten = ordenNieuws(alle.slice(0, 10), boeken).slice(0, NIEUWS_ZICHTBAAR);
   if (!berichten.length || !document.body.contains(vak)) return;
   vak.hidden = false;
   vak.innerHTML = `
-    <div class="rij-kop"><h2>Boekennieuws</h2></div>
-    <ul class="nieuws-lijst">${berichten.slice(0, NIEUWS_ZICHTBAAR).map((b) => nieuwsHtml(b, boeken)).join('')}</ul>
+    <div class="rij-kop"><h2>Boekennieuws</h2><a class="link-knop" href="#/nieuws">Alle nieuws ›</a></div>
+    <ul class="nieuws-lijst">${berichten.map((b) => nieuwsHtml(b, boeken)).join('')}</ul>`;
+}
+
+// De nieuwspagina: alle berichten die de app ooit kreeg, per maand.
+async function toonNieuwsPagina() {
+  const nr = schermNr;
+  ruimCoversOp();
+  const [berichten, boeken] = await Promise.all([haalNieuws(), alleBoeken()]);
+  if (nr !== schermNr) return;
+  const perMaand = new Map();
+  for (const b of berichten) {
+    const tekst = b.datum ? maandTekst(b.datum.slice(0, 7)) : 'Eerder';
+    const maand = tekst.charAt(0).toUpperCase() + tekst.slice(1);
+    if (!perMaand.has(maand)) perMaand.set(maand, []);
+    perMaand.get(maand).push(b);
+  }
+  app.innerHTML = `
+    <header class="kop">
+      <a class="terug" href="#/">‹ Boeken</a>
+      <h1>Boekennieuws</h1>
+    </header>
     ${
-      berichten.length > NIEUWS_ZICHTBAAR
-        ? `<details class="nieuws-meer"><summary>Meer nieuws (${berichten.length - NIEUWS_ZICHTBAAR})</summary>
-             <ul class="nieuws-lijst">${berichten.slice(NIEUWS_ZICHTBAAR).map((b) => nieuwsHtml(b, boeken)).join('')}</ul>
-           </details>`
-        : ''
+      berichten.length
+        ? [...perMaand]
+            .map(
+              ([maand, lijst]) => `
+          <h2 class="stat-kop">${veilig(maand)}</h2>
+          <ul class="nieuws-lijst">${lijst.map((b) => nieuwsHtml(b, boeken)).join('')}</ul>`
+            )
+            .join('')
+        : '<p class="leeg">Nog geen nieuws. Elke ochtend komen er nieuwe berichten.</p>'
     }`;
+}
+
+// Eén bericht, in het Nederlands in de app, met een knop naar het hele bericht op de website.
+async function toonNieuwsBericht(id) {
+  const nr = schermNr;
+  ruimCoversOp();
+  const [berichten, boeken] = await Promise.all([nieuwsArchief(), alleBoeken()]);
+  if (nr !== schermNr) return;
+  const b = berichten.find((x) => x.id === id);
+  if (!b) {
+    location.hash = '#/nieuws';
+    return;
+  }
+  const alineas = b.artikel.length ? b.artikel : [b.tekst];
+  app.innerHTML = `
+    <header class="kop">
+      <a class="terug" href="#/nieuws">‹ Alle nieuws</a>
+    </header>
+    <article class="nieuws-artikel">
+      <span class="nieuws-kop">${nieuwsKop(b, boeken)}</span>
+      <h1>${veilig(b.titel)}</h1>
+      ${alineas.map((a) => `<p>${veilig(a)}</p>`).join('')}
+      <a class="hoofdknop" href="${veilig(b.url)}" target="_blank" rel="noopener">Lees het hele bericht${b.bron ? ` bij ${veilig(b.bron)}` : ''} ↗</a>
+      <p class="zacht klein">Dit is een samenvatting in eigen woorden. Het volledige bericht staat op de website van ${veilig(b.bron || 'de bron')}.</p>
+    </article>`;
 }
 
 // --- Boekentips ---
@@ -2318,6 +2371,8 @@ async function route({ naarBoven = false } = {}) {
   else if (location.hash === '#/instellingen') toonInstellingen();
   else if (location.hash === '#/profiel') toonProfiel();
   else if (location.hash === '#/covers') toonCoversNalopen();
+  else if (location.hash === '#/nieuws') toonNieuwsPagina();
+  else if (location.hash.startsWith('#/nieuws/')) toonNieuwsBericht(decodeURIComponent(location.hash.slice('#/nieuws/'.length)));
   else if (boekId) toonBoek(Number(boekId[1]));
   else if (location.hash === '#/zoek') {
     // Zoeken = de lijst met de cursor in het zoekveld.

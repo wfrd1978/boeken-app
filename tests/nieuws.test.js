@@ -18,3 +18,15 @@ describe('boekennieuws', () => {
     expect(ordenNieuws(berichten, boeken).map((b) => b.id)).toEqual(['b', 'c', 'a']);
   });
 });
+
+import { normaliseerBericht } from '../src/nieuws.js';
+
+describe('nieuwsberichten controleren', () => {
+  it('houdt een goed bericht met artikel, en weigert berichten zonder https-bron', () => {
+    const b = normaliseerBericht({ id: 'a', titel: ' Kop ', url: 'https://x.nl/a', artikel: ['Eén.', '', 'Twee.'], datum: '2026-10-25' });
+    expect(b).toMatchObject({ titel: 'Kop', artikel: ['Eén.', 'Twee.'], datum: '2026-10-25', schrijvers: [] });
+    expect(normaliseerBericht({ id: 'b', titel: 'Kop', url: 'javascript:alert(1)' })).toBeNull();
+    expect(normaliseerBericht({ id: 'c', titel: 'Kop', url: 'http://x.nl' })).toBeNull();
+    expect(normaliseerBericht({ id: 'd', titel: 'Kop', url: 'https://x.nl', artikel: 'Een.\n\nTwee.' }).artikel).toEqual(['Een.', 'Twee.']);
+  });
+});

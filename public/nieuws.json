@@ -9,7 +9,12 @@
       "bron": "VPRO OVT",
       "url": "https://www.vpro.nl/ovt/artikelen/maand-van-de-geschiedenis-2026",
       "datum": "2026-10-24",
-      "schrijvers": []
+      "schrijvers": [],
+      "artikel": [
+        "Zondag 25 oktober wordt de Libris Geschiedenis Prijs 2026 uitgereikt. Dat gebeurt tijdens een live-uitzending van het VPRO-programma OVT vanuit de OBA, de centrale bibliotheek van Amsterdam. Laura Stek presenteert; schrijver Abdelkader Benali is als jurylid te gast.",
+        "De prijs gaat naar het beste geschiedenisboek voor een breed publiek. De jury let vooral op oorspronkelijkheid, leesbaarheid en of het boek historisch klopt.",
+        "De uitreiking sluit de Maand van de Geschiedenis af, die OVT eind september opende met een live-uitzending vanuit Forum in Groningen."
+      ]
     },
     {
       "id": "2026w44-maand-geschiedenis",
@@ -18,7 +23,12 @@
       "bron": "VPRO OVT",
       "url": "https://www.vpro.nl/ovt/artikelen/maand-van-de-geschiedenis-2026",
       "datum": "2026-10-01",
-      "schrijvers": []
+      "schrijvers": [],
+      "artikel": [
+        "Oktober is de Maand van de Geschiedenis, het grootste geschiedenisevenement van Nederland. Het thema is dit jaar 'Lichaam & Geest'.",
+        "Door het hele land zijn er lezingen, rondleidingen en uitzendingen. Het VPRO-programma OVT opende de maand op 27 september met een live-uitzending vanuit Forum in Groningen, met onder anderen Suzanna Jansen, die het essay van de Maand van de Geschiedenis schreef.",
+        "De maand eindigt op 25 oktober met de uitreiking van de Libris Geschiedenis Prijs."
+      ]
     },
     {
       "id": "2026w44-comer-into-the-quiet",
@@ -27,7 +37,14 @@
       "bron": "Rush to Press",
       "url": "https://rushtopress.org/spck-group-acquires-new-york-times-bestselling-author-johnmark-comers-latest-book/",
       "datum": "2026-10-06",
-      "schrijvers": ["John Mark Comer"]
+      "schrijvers": [
+        "John Mark Comer"
+      ],
+      "artikel": [
+        "Op 6 oktober verscheen in het Verenigd Koninkrijk 'Into the Quiet: Following Jesus in a World of Noise', het nieuwe boek van John Mark Comer. Uitgeverij SPCK brengt het daar uit; in Amerika verschijnt het bij Penguin Random House.",
+        "Het boek gaat over het verlangen naar stilte in een wereld vol lawaai, prikkels en afleiding. Comer put uit de contemplatieve traditie van de vroege kerk en nodigt lezers uit tot eenzaamheid, stilte en rust voor God. 'We zijn overprikkeld, uitgeput en kurkdroog vanbinnen', zegt hij. 'Jezus biedt een betere weg.'",
+        "Zijn eerdere boek De radicale uitbanning van haast is in twintig talen vertaald en ging meer dan een miljoen keer over de toonbank. Een Nederlandse vertaling van Into the Quiet is nog niet aangekondigd."
+      ]
     },
     {
       "id": "2026w44-hebban-thrillerprijs",
@@ -36,7 +53,14 @@
       "bron": "Nieuws.nl",
       "url": "https://nieuws.nl/entertainment/terugkeer-van-michael-berg-wint-hebban-thrillerprijs-2026",
       "datum": "2026-05-12",
-      "schrijvers": ["Michael Berg"]
+      "schrijvers": [
+        "Michael Berg"
+      ],
+      "artikel": [
+        "Terugkeer van Michael Berg won in mei de Hebban Thrillerprijs 2026. De winnaar werd bekendgemaakt in het NOS Radio 1 Journaal; de prijs bestaat onder meer uit een award en 1500 euro.",
+        "Het boek gaat over een agent die na een traumatische ervaring bij de Amsterdamse politie terugkeert naar zijn geboortestreek in Zuid-Limburg, om daar een coldcaseteam te leiden. De vermissing van een jonge moeder leidt tot de jacht op een seriemoordenaar.",
+        "De vakjury noemde het 'een ijzersterke en meeslepende thriller' met veel Zuid-Limburgse sfeer en sterke personages. Terugkeer is het eerste deel van een trilogie en verscheen bij Ambo|Anthos. Michael Berg is het pseudoniem van Michel van Bergen Henegouwen; met Nacht in Parijs won hij eerder De Gouden Strop."
+      ]
     }
   ]
 }
