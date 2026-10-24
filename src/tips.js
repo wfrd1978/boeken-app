@@ -83,7 +83,7 @@ async function bewaarArchief(nieuw, bijwerkingen = []) {
   const erbij = (nieuw ?? []).filter((t) => t && !opId.has(t.id));
   const samen = [...erbij, ...archief];
   if (erbij.length || veranderd) await db.instellingen.put({ sleutel: 'tipArchief', waarde: samen });
-  return samen;
+  return { samen, veranderd: erbij.length > 0 || veranderd };
 }
 
 // Tips zonder reactie en zonder boek dat al in de lijst staat (ook niet als vertaling),
@@ -94,10 +94,10 @@ export async function tipsUitArchief(boeken) {
   return ordenTips(open, smaak(reacties, boeken)).slice(0, MAX_ZICHTBAAR);
 }
 
-// Haalt de nieuwste ronde op en bewaart nieuwe tips. Geeft het aantal nieuwe tips terug.
+// Haalt de nieuwste ronde op en bewaart nieuwe of verbeterde tips (bijvoorbeeld met een cover).
+// Geeft true als er iets veranderd is, zodat het scherm opnieuw getekend kan worden.
 export async function verversTips() {
   const lijst = await haalTips();
-  const voor = (await db.instellingen.get('tipArchief'))?.waarde?.length ?? 0;
-  const na = (await bewaarArchief(lijst?.tips, lijst?.bijwerkingen)).length;
-  return na - voor;
+  if (!lijst) return false;
+  return (await bewaarArchief(lijst.tips, lijst.bijwerkingen)).veranderd;
 }
