@@ -26,7 +26,7 @@ async function tekstNaarBlob(dataUrl) {
 }
 
 // Keuzes in de lijst (sorteren, tab, filter): klein, maar fijn om mee te verhuizen.
-const VOORKEUREN = ['sortering', 'tab', 'toon', 'weergave', 'koboCheck'];
+const VOORKEUREN = ['sortering', 'tab', 'toon', 'weergave', 'koboCheck', 'nieuwsGelezen'];
 
 function leesVoorkeuren() {
   try {
