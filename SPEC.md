@@ -141,6 +141,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die de gebruiker zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van de gebruiker: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Getest en klaar: Koninklijke Bibliotheek als bron, stoerdere vormgeving, donkere modus 's avonds en tipvlak van rand tot rand |
 | 2026-10-24 | Donkere modus die vanzelf aangaat ('s avonds van 20:00 tot 7:00), met keuze in Instellingen; tipvlak van rand tot rand |
 | 2026-10-24 | Vormgeving iets stoerder: donkergroene vlakken, gevulde tabs, gouden accenten |
 | 2026-10-24 | Koninklijke Bibliotheek als derde bron: nieuwe Nederlandse boeken (zoals Mijn laatste radiojaar) en scannen werken ook als Google uitvalt |
