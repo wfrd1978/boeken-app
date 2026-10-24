@@ -1,16 +1,19 @@
 /* Vormgeving naar het voorbeeld van nieuwsapps (Volkskrant, Trouw, NOS):
-   wit, zwart, dunne lijnen, één accentkleur en titels in een schreefletter. */
+   warm papierwit, zwart, dunne lijnen, groen als accent met een vleugje goud
+   (uit het logo), en titels in een schreefletter. */
 
 :root {
-  --bg: #ffffff;
-  --vlak: #f4f4f2;
-  --tekst: #111111;
-  --zacht: #6b6b6b;
-  --lijn: #e2e2e2;
+  --bg: #fbf9f5;
+  --vlak: #f2eee6;
+  --tekst: #141414;
+  --zacht: #6b6862;
+  --lijn: #e5e0d6;
   --accent: #1f4d3f;
   --accent-tekst: #ffffff;
   --accent-zacht: #e8f0ec;
-  --cover-leeg: #ececea;
+  --cover-leeg: #ebe6dc;
+  --goud: #c99a2e;
+  --tips-vlak: #edf3ef;
   --geel: #fbf3dc;
   --rood: #c0392b;
   --rood-zacht: #fbe9e7;
@@ -31,6 +34,8 @@
     --accent-tekst: #0c1a15;
     --accent-zacht: #1b2d27;
     --cover-leeg: #262a28;
+    --goud: #e0b955;
+    --tips-vlak: #18241f;
     --geel: #2e2919;
     --rood: #e0685a;
     --rood-zacht: #34201d;
@@ -118,7 +123,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .cover-groot.geen-cover { font-size: 3rem; }
 
 /* Statuslabel zoals 'ANALYSE' bij de Volkskrant: klein, kapitaal, in de accentkleur. */
-.regel { display: flex; align-items: center; gap: 8px; }
+.regel { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; }
 .status {
   font-size: 0.72rem !important; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
   color: var(--zacht) !important;
@@ -459,3 +464,28 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .nieuws-bericht strong { font-family: var(--schreef); font-size: 1.05rem; line-height: 1.3; }
 .nieuws-tekst { color: var(--zacht); font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .nieuws-meer summary { cursor: pointer; color: var(--accent); padding: 12px 0; }
+
+/* --- Een vleugje kleur --- */
+
+/* Een kort gouden streepje boven elke kop, zoals in een krant. */
+.rij-kop h2, .lijst-kop, .stat-kop { position: relative; }
+.rij-kop h2::before, .lijst-kop::before, .stat-kop::before {
+  content: ''; display: block; width: 28px; height: 3px; border-radius: 2px;
+  background: var(--goud); margin-bottom: 8px;
+}
+
+/* Tips op een zacht groen vlak, zodat ze opvallen zonder te schreeuwen. */
+#tips-rij:not([hidden]) {
+  background: var(--tips-vlak); border-radius: 16px; margin: 26px -8px 0; padding: 4px 8px 14px;
+}
+#tips-rij .rij-kop { border-top: 0; }
+
+/* Categorie als klein gekleurd bolletje met naam. */
+.cat { display: inline-flex !important; align-items: center; gap: 5px; color: var(--zacht) !important; font-size: 0.75rem !important; }
+.cat i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); display: inline-block; }
+.keuze[data-c] { border-color: color-mix(in srgb, var(--c) 45%, var(--lijn)); }
+.keuze[data-c].actief { background: var(--c); border-color: var(--c); color: #fff; }
+
+/* Profielstatistieken: eerste tegel in het accent. */
+.tegel:first-child { background: var(--accent); border-color: var(--accent); }
+.tegel:first-child strong, .tegel:first-child span { color: var(--accent-tekst); }

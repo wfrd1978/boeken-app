@@ -97,6 +97,9 @@ Inspiratie: de apps van de Volkskrant, Trouw en NOS. Simpel en strak, zoals een 
 
 Gekozen: accentkleur donkergroen (#1F4D3F), de lijst als rijtje (kleine cover links). Titels in de schreefletter van de iPhone (New York), de rest in de systeemletter. De lijst heeft tabjes per status; de balk onderin vervangt de losse +-knop en de link naar Instellingen.
 
+
+**Een vleugje kleur (24 okt):** warm papierwit als achtergrond in plaats van wit; een kort gouden streepje (goud uit het logo) boven elke kop; *Tips voor jou* op een zacht groen vlak; elke categorie een eigen gedempte kleur (bolletje met naam in de lijst, gekleurde knoppen bij het boek); de eerste statistiektegel in het groen. Donkere modus doet mee.
+
 ## Nog te doen en buiten beeld
 
 Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (stap 13), daarna categorieën (stap 14) en statistieken (stap 15); zie CLAUDE.md. Daarna eventueel informatie over de schrijver en verfilmingen. Delen met anderen en wekelijkse tips (Fase 3). Geen accounts, geen synchronisatie tussen apparaten, geen betaalde diensten.
@@ -132,6 +135,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die Wilfred zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van Wilfred: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Iets meer kleur, subtiel: warm papierwit, gouden streepjes, groen tipvlak, categoriekleuren |
 | 2026-10-24 | Nalooplijst: knop Foto naast Plak, omdat kopiëren van Google-covers op de iPhone geen plaatje opleverde |
 | 2026-10-24 | Bij een storing van Google gaan boeken met een cover door op Open Library |
 | 2026-10-24 | Tips en nieuws onder de rij Wil ik lezen; covers van tips direct zichtbaar zodra een ronde is bijgewerkt (kleinere plaatjes, 320 pixels) |

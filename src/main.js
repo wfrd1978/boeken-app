@@ -282,6 +282,7 @@ function boekRegel(b) {
         <span class="regel">
           <span class="status status-${STATUSSEN.indexOf(b.status)}">${veilig(statusNaam(b.status))}</span>
           ${b.koboWacht ? '<span class="status kobo">· Wacht op Kobo Plus</span>' : ''}
+          ${categorieStip(b.categorie)}
           ${b.sterren ? `<span class="sterren-klein" aria-label="${b.sterren} sterren">${sterrenTekst(b.sterren)}</span>` : ''}
         </span>
         <strong>${veilig(b.titel)}</strong>
@@ -1259,8 +1260,27 @@ async function toonBevestigen(boek) {
   });
 }
 
+// Een rustige, gedempte kleur per categorie, voor een bolletje in de lijst en de knoppen.
+const CATEGORIE_KLEUR = {
+  'Thriller & spanning': '#8e3b46',
+  'Oorlog & geschiedenis': '#7a6542',
+  Sport: '#2f6f8f',
+  'Biografie & levensverhaal': '#b0682c',
+  'Journalistiek & samenleving': '#4c5c8c',
+  'Roman & humor': '#b8891f',
+  'Geloof & zingeving': '#5c7f4f',
+  Overig: '#8a8680',
+};
+
+function categorieStip(categorie) {
+  if (!CATEGORIE_KLEUR[categorie]) return '';
+  return `<span class="cat"><i style="--c:${CATEGORIE_KLEUR[categorie]}"></i>${veilig(categorie.split(' & ')[0])}</span>`;
+}
+
 function categorieKnoppen(gekozen = '') {
-  return CATEGORIEEN.map((c) => `<button class="keuze${c === gekozen ? ' actief' : ''}" data-c="${veilig(c)}">${veilig(c)}</button>`).join('');
+  return CATEGORIEEN.map(
+    (c) => `<button class="keuze${c === gekozen ? ' actief' : ''}" data-c="${veilig(c)}" style="--c:${CATEGORIE_KLEUR[c]}">${veilig(c)}</button>`
+  ).join('');
 }
 
 function waarschuwingHtml(bestaand) {
