@@ -674,6 +674,17 @@ function backupTekst() {
   return `Laatste backup: ${laatste.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })} (${wanneer}).`;
 }
 
+// Licht of donker. Het wisselen zelf gebeurt in thema.js, dat al laadt vóór de app.
+const WEERGAVEN = { avond: "Donker 's avonds", iphone: 'Zoals mijn iPhone', licht: 'Altijd licht', donker: 'Altijd donker' };
+
+function weergave() {
+  try {
+    return localStorage.getItem('weergave') || 'avond';
+  } catch {
+    return 'avond';
+  }
+}
+
 // Uitleg in gewone taal: hoe de app werkt, waar je gegevens staan, wat wel en niet kan.
 function overDezeAppHtml() {
   return `
@@ -778,6 +789,16 @@ async function toonInstellingen() {
       <p class="zacht" id="bronnen-uitslag"></p>
     </section>
 
+    <section class="blok">
+      <h2>Weergave</h2>
+      <div class="keuzes" id="weergave">
+        ${Object.entries(WEERGAVEN)
+          .map(([k, naam]) => `<button class="keuze${k === weergave() ? ' actief' : ''}" data-weergave="${k}">${naam}</button>`)
+          .join('')}
+      </div>
+      <p class="zacht klein">Donker 's avonds: van 20:00 tot 7:00 donker, en altijd als je iPhone op donker staat.</p>
+    </section>
+
     ${overDezeAppHtml()}
 
     <p class="versie">Versie van ${__VERSIE__}</p>
@@ -810,6 +831,18 @@ async function toonInstellingen() {
   });
 
   toonVerhuis();
+
+  document.getElementById('weergave').addEventListener('click', (e) => {
+    const knop = e.target.closest('[data-weergave]');
+    if (!knop) return;
+    try {
+      localStorage.setItem('weergave', knop.dataset.weergave);
+    } catch {
+      // Niet erg; dan geldt de keuze alleen nu.
+    }
+    window.boekenThema?.toepassen();
+    document.querySelectorAll('#weergave .keuze').forEach((k) => k.classList.toggle('actief', k === knop));
+  });
 
   const telling = await coverTelling();
   const zonder = telling.totaal - telling.met;

@@ -102,7 +102,9 @@ Gekozen: accentkleur donkergroen (#1F4D3F), de lijst als rijtje (kleine cover li
 
 **Een vleugje kleur (24 okt):** warm papierwit als achtergrond in plaats van wit; een kort gouden streepje (goud uit het logo) boven elke kop; *Tips voor jou* op een zacht groen vlak; elke categorie een eigen gedempte kleur (bolletje met naam in de lijst, gekleurde knoppen bij het boek); de eerste statistiektegel in het groen. Donkere modus doet mee.
 
-**Iets stoerder (24 okt):** donkergroen (de kleur van het logo) als grote vlakken: de kaart met het boek dat je nu leest en het vlak *Tips voor jou*; het woordmerk Boeken in het groen met een gouden streep; gekozen tab en het gekozen onderdeel in de balk onderin gevuld groen; stevigere gouden streepjes boven koppen; statistiektegels in groen en zacht goud; de bron bij nieuws in het groen.
+**Iets stoerder (24 okt):** donkergroen (de kleur van het logo) als grote vlakken: de kaart met het boek dat je nu leest en het vlak *Tips voor jou*; het woordmerk Boeken in het groen met een gouden streep; gekozen tab en het gekozen onderdeel in de balk onderin gevuld groen; stevigere gouden streepjes boven koppen; statistiektegels in groen en zacht goud; de bron bij nieuws in het groen. Het tipvlak loopt van rand tot rand, zodat de covers van de schermrand komen.
+
+**Licht en donker:** keuze in Instellingen onder *Weergave*: *Donker 's avonds* (standaard: van 20:00 tot 7:00 donker, en altijd als de iPhone op donker staat), *Zoals mijn iPhone*, *Altijd licht*, *Altijd donker*. Het wisselen gebeurt in `thema.js`, dat vóór de app laadt (geen witte flits) en elke minuut en bij terugkomen in de app opnieuw kijkt. De keuze gaat mee in de backup.
 
 ## Nog te doen en buiten beeld
 
@@ -139,6 +141,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die Wilfred zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van Wilfred: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Donkere modus die vanzelf aangaat ('s avonds van 20:00 tot 7:00), met keuze in Instellingen; tipvlak van rand tot rand |
 | 2026-10-24 | Vormgeving iets stoerder: donkergroene vlakken, gevulde tabs, gouden accenten |
 | 2026-10-24 | Koninklijke Bibliotheek als derde bron: nieuwe Nederlandse boeken (zoals Mijn laatste radiojaar) en scannen werken ook als Google uitvalt |
 | 2026-10-24 | Getest en klaar: verhuizen, boekennieuws, tipcovers, nieuwe volgorde startscherm, kleur, en de labels Gedownload in Kobo en Papieren boek gekocht |
