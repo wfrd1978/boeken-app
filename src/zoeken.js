@@ -496,19 +496,21 @@ export function googleAfbeeldingenUrl(boek) {
 }
 
 // Een gekopieerde afbeelding (of het adres ervan) uit het klembord als cover.
-// Geeft null als er niets bruikbaars in het klembord staat.
+// Lukt dat niet, dan { cover: null, gevonden: [...] }: welke soorten inhoud er wel in stonden.
 export async function coverUitKlembord() {
+  const gevonden = [];
   for (const item of await navigator.clipboard.read()) {
+    gevonden.push(...item.types);
     const type = item.types.find((t) => t.startsWith('image/'));
     if (type) return { cover: await verkleinFoto(await item.getType(type)), coverUrl: '' };
-    if (item.types.includes('text/plain')) {
-      const tekst = (await (await item.getType('text/plain')).text()).trim();
-      if (/^https:\/\/\S+$/.test(tekst)) {
-        const bewaard = await bewaarbareCover(tekst);
-        // Alleen een adres dat echt een plaatje is, of een Google-cover die we alleen kunnen tonen.
-        if (bewaard.cover || tekst.includes('books.google')) return bewaard;
-      }
+    for (const tekstType of ['text/uri-list', 'text/plain']) {
+      if (!item.types.includes(tekstType)) continue;
+      const tekst = (await (await item.getType(tekstType)).text()).trim().split(/\s+/)[0];
+      if (!/^https:\/\/\S+$/.test(tekst)) continue;
+      // Alleen een adres waarvan we het plaatje echt kunnen bewaren.
+      const bewaard = await bewaarbareCover(tekst);
+      if (bewaard.cover) return bewaard;
     }
   }
-  return null;
+  return { cover: null, gevonden };
 }

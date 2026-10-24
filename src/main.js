@@ -1863,8 +1863,9 @@ async function toonCoverKeuze(boek, bewaar, klaar) {
 async function plakCover() {
   try {
     const cover = await coverUitKlembord();
-    if (cover) return cover;
-    melding('Geen afbeelding gevonden. Houd het plaatje vast en kies Kopieer.');
+    if (cover.cover) return cover;
+    const soorten = [...new Set(cover.gevonden)].join(', ') || 'niets';
+    melding(`Geen plaatje in het klembord (wel: ${soorten}). Gebruik Foto: bewaar de cover eerst in Foto's.`);
   } catch {
     melding('Plakken lukt niet. Houd het plaatje vast en kies Kopieer, of gebruik Eigen foto.');
   }
@@ -1930,6 +1931,7 @@ async function toonCoversNalopen() {
       <div class="nalopen-knoppen">
         ${metCover ? '' : `<a class="link-knop" href="${googleAfbeeldingenUrl(b)}" target="_blank" rel="noopener">Zoek ↗</a>`}
         <button class="keuze" data-plak="${b.id}">Plak</button>
+        <label class="keuze">Foto<input type="file" accept="image/*" data-foto="${b.id}" hidden /></label>
       </div>
     </li>`;
   app.innerHTML = `
@@ -1941,14 +1943,14 @@ async function toonCoversNalopen() {
     ${
       zonder.length
         ? `<h2 class="stat-kop">Zonder cover</h2>
-           <p class="zacht">Tik op <b>Zoek</b>, houd in Google het juiste plaatje vast en kies <b>Kopieer</b>. Kom terug en tik op <b>Plak</b>.</p>
+           <p class="zacht">Tik op <b>Zoek</b> en houd in Google het juiste plaatje vast. Kies <b>Kopieer</b> en tik hier op <b>Plak</b>, of kies <b>Voeg toe aan Foto's</b> en tik hier op <b>Foto</b>.</p>
            <ul class="lijst nalopen">${zonder.map((b) => regel(b, false)).join('')}</ul>`
         : ''
     }
     ${
       internet.length
         ? `<h2 class="stat-kop">Alleen via internet</h2>
-           <p class="zacht">Deze covers staan nog niet als plaatje op je telefoon. Houd de cover hieronder vast, kies <b>Kopieer</b> en tik op <b>Plak</b>. Dan zit hij in je backup.</p>
+           <p class="zacht">Deze covers staan nog niet als plaatje op je telefoon. Houd de cover hieronder vast en kies <b>Voeg toe aan Foto's</b>. Tik dan op <b>Foto</b> en kies hem. Dan zit hij in je backup.</p>
            <ul class="lijst nalopen">${internet.map((b) => regel(b, true)).join('')}</ul>`
         : ''
     }`;
@@ -1959,23 +1961,28 @@ async function toonCoversNalopen() {
       : 'Alle covers staan als plaatje op je telefoon.';
   };
   zetAantal();
-  app.querySelectorAll('.nalopen').forEach((lijst) =>
+  const bewaarCover = async (li, id, cover) => {
+    await boekBijwerken(id, cover);
+    li.querySelector('.cover-vak').innerHTML = coverHtml(await haalBoek(id), 'cover-klein', lijstLinks);
+    li.querySelector('.nalopen-knoppen').innerHTML = '<span class="keuze actief">✓</span>';
+    li.classList.add('klaar');
+    zetAantal();
+    melding('Cover bewaard');
+  };
+  app.querySelectorAll('.nalopen').forEach((lijst) => {
     lijst.addEventListener('click', async (e) => {
       const knop = e.target.closest('[data-plak]');
       if (!knop) return;
       const cover = await plakCover();
-      if (!cover) return;
-      const id = Number(knop.dataset.plak);
-      await boekBijwerken(id, cover);
-      const li = knop.closest('li');
-      li.querySelector('.cover-vak').innerHTML = coverHtml(await haalBoek(id), 'cover-klein', lijstLinks);
-      knop.textContent = '✓';
-      knop.disabled = true;
-      li.classList.add('klaar');
-      zetAantal();
-      melding('Cover bewaard');
-    })
-  );
+      if (cover) await bewaarCover(knop.closest('li'), Number(knop.dataset.plak), cover);
+    });
+    lijst.addEventListener('change', async (e) => {
+      const invoer = e.target.closest('[data-foto]');
+      const bestand = invoer?.files?.[0];
+      if (!bestand) return;
+      await bewaarCover(invoer.closest('li'), Number(invoer.dataset.foto), { cover: await verkleinFoto(bestand), coverUrl: '' });
+    });
+  });
 }
 
 // --- Boek ---
