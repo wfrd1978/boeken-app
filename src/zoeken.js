@@ -350,9 +350,12 @@ export async function zoekBijpassend(boek, { heeftCover = false } = {}) {
   const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
   // Zonder auteur en ISBN is een gelijke titel te weinig zekerheid: dan niets aanvullen.
   if (!auteur && !boek.isbn) return null;
+  // Heeft het boek al een cover, dan zijn alleen de gegevens nodig (ISBN, uitgever, jaar):
+  // Open Library en de Koninklijke Bibliotheek, en Google blijft gespaard voor de synopsis.
   const pogingen = await Promise.allSettled([
     zoekOpenLibrary({ titel: boek.titel, auteur }, 5),
-    zoekGoogleBooks(`intitle:${boek.titel}${auteur ? ` inauthor:${auteur}` : ''}`, false, 5),
+    kbZoek(`${boek.titel} ${auteur}`),
+    heeftCover ? Promise.resolve([]) : zoekGoogleBooks(`intitle:${boek.titel}${auteur ? ` inauthor:${auteur}` : ''}`, false, 5),
   ]);
   if (pogingen.every((p) => p.status === 'rejected')) throw new TijdelijkeFout('Geen verbinding');
   const passend = pogingen.flatMap((p) => p.value ?? []).filter((k) => vindDubbel(boek, [k]));
@@ -362,7 +365,7 @@ export async function zoekBijpassend(boek, { heeftCover = false } = {}) {
   // Alleen echte weigeringen tellen: te druk (429), storing (5xx) of geen verbinding (0).
   const weigering = pogingen.find((p) => p.status === 'rejected' && tijdelijk(p.reason))?.reason;
   // Heeft het boek al een cover en vond Open Library het wel, dan is dat genoeg: niet wachten op Google.
-  if (weigering && !passend.some((k) => k.coverUrl) && !(heeftCover && passend.length)) {
+  if (weigering && !passend.some((k) => k.coverUrl) && !heeftCover) {
     throw new TijdelijkeFout('Bron tijdelijk niet beschikbaar', weigering.status ?? 0);
   }
   const beste = passend[0];

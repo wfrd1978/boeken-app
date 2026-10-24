@@ -91,14 +91,16 @@ export async function verrijkAlles() {
           gestopt = true;
           break;
         }
-        // Het achtergronddeel van de Google-vragen voor vandaag is op: morgen verder.
-        if (!googleStand().achtergrondMag) {
-          gestopt = true;
+        // Boeken met een cover hebben Google niet nodig. Zonder cover: is het achtergronddeel
+        // van de Google-vragen voor vandaag op, dan dit boek morgen.
+        const heeftCover = Boolean(boek.cover || boek.coverUrl);
+        if (!heeftCover && !googleStand().achtergrondMag) {
           googleOp = true;
-          break;
+          totaal -= 1;
+          continue;
         }
         const stand = { klaar, totaal };
-        const poging = await metGeduld(() => zoekBijpassend(boek, { heeftCover: Boolean(boek.cover || boek.coverUrl) }), 'covers', stand);
+        const poging = await metGeduld(() => zoekBijpassend(boek, { heeftCover }), 'covers', stand);
         laatsteFout = stand.laatsteFout;
         if (stand.googleOp) googleOp = true;
         if (!poging || (poging.overslaan && ++overgeslagen >= MAX_OVERGESLAGEN_OP_RIJ)) {
@@ -152,8 +154,7 @@ export async function verrijkAlles() {
       setTimeout(verrijkAlles, 0);
     }
   }
-  // Google is voor vandaag op: de synopsis kan ook wachten.
-  if (googleOp) return;
+  // De synopsis kijkt zelf of er vandaag nog Google-vragen over zijn.
   // Daarna de synopsis bij boeken die er nog geen hebben.
   vulSynopsisAan();
 }
