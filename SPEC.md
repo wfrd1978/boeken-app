@@ -62,6 +62,7 @@ https://wfrd1978.github.io/boeken-app/
 ## Boekentips (stap 13)
 
 - **Wat:** elke week 16 tips; ongeveer tweederde recent verschenen (afgelopen jaar), eenderde oudere parels, verspreid over minstens vier categorieën. De app toont er 8 tegelijk; reageert de gebruiker, dan schuift de volgende door.
+- **Covers:** elke tip krijgt waar mogelijk een `coverUrl` mee (het coverplaatje van de boekpagina op Hebban, gecontroleerd door de wekelijkse taak). Zonder `coverUrl` zoekt de app zelf; een mislukte zoekpoging wordt na drie dagen opnieuw geprobeerd. Met `bijwerkingen` in `tips.json` kan een latere ronde een tip die al op de telefoon staat verbeteren (cover, titel, ISBN, jaar, uitgever, categorie). Zet de gebruiker een tip op zijn lijst, dan neemt het boek de cover van de tip mee.
 - **Leren van keuzes:** op de telefoon zelf, zonder dat er iets online gaat. Per categorie en per soort (nieuw of parel) telt *Wil ik lezen* +2, *Al gelezen* +1 en *Niet voor mij* −2; vijfsterrenboeken tellen licht mee voor hun categorie. De tips met de hoogste score staan vooraan. De wekelijkse taak ziet de reacties niet (ze staan alleen op de telefoon); wil de gebruiker dat Claude ook leert, dan deelt hij af en toe een backup in een sessie en past Claude het profiel in de taak aan. Nederlandse uitgaven die in Nederland te krijgen zijn.
 - **Vermijden:** heel dikke boeken, literaire romans, Engelstalige boeken. Nooit een boek dat al in de lijst staat (ook niet als vertaling) of eerder met *Niet voor mij* is weggetikt.
 - **Op het startscherm:** rij *Tips voor jou* met cover, titel, auteur en één zin waarom. Tik: synopsis en knoppen *Wil ik lezen*, *Al gelezen* (met sterren) en *Niet voor mij*. Reacties gaan mee in de backup. Tips zonder reactie blijven staan als er een nieuwe ronde komt (nieuwe vooraan, hooguit 12 tegelijk); de app bewaart ze op het toestel.
@@ -131,6 +132,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die de gebruiker zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van de gebruiker: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Tips krijgen een cover mee uit Hebban; oude tips kunnen worden bijgewerkt. 'Trage paarden' (Mick Herron) heet in de huidige uitgave 'Slome paarden' |
 | 2026-10-24 | Boekennieuws: wekelijks via dezelfde taak als de tips (nieuws.json, openbaar, met bron per bericht) |
 | 2026-10-24 | Verhuizen naar een andere telefoon: verhuisoverzicht, covers vastleggen als plaatje, en de backup neemt ook openstaande tips en lijstkeuzes mee |
 | 2026-10-24 | Eerste automatische ronde (week 44) kon niet online: een losse taak-sessie mag niet in de repository schrijven. Tips handmatig online gezet (15, één zonder Nederlandse uitgave weggelaten); de taak draait voortaan in de bouwsessie |
