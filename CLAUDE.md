@@ -22,7 +22,7 @@ Werk alleen aan de fase die actief is. Nu actief: **Fase 2** (fase 1 is afgerond
 | Bouwgereedschap | Vite + gewoon JavaScript, geen framework | Weinig onderdelen, makkelijk te volgen |
 | Opslag | IndexedDB op de telefoon, via Dexie.js | Bewaart veel boeken met covers, werkt offline |
 | Backup | JSON-bestand via het deelmenu naar iCloud Drive / Mac | Gratis, data blijft van de gebruiker |
-| Boekgegevens | Open Library + Google Books (gratis, met een eigen Google-sleutel) | Geen kosten; samen de beste dekking. De sleutel is beperkt tot wfrd1978.github.io en de Books API |
+| Boekgegevens | Open Library + Google Books (gratis, met een eigen Google-sleutel) + Koninklijke Bibliotheek (data.bibliotheken.nl, open en gratis) | Geen kosten; samen de beste dekking. De sleutel is beperkt tot wfrd1978.github.io en de Books API. De KB kent bijna elk Nederlands boek en is de reserve als Google uitvalt |
 | ISBN-scan | ZXing (barcodescanner in de browser) | Werkt ook op iPhone/Safari |
 | Excel | SheetJS | Maakt een echt .xlsx-bestand |
 | Online zetten | GitHub Pages, automatisch bij elke push | Gratis; camera vraagt een https-adres, dat levert Pages |

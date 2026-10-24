@@ -688,7 +688,7 @@ function overDezeAppHtml() {
       </details>
       <details>
         <summary>Wat gaat er over internet?</summary>
-        <p>Bij zoeken en toevoegen vraagt de app gegevens op bij Open Library en Google Books: alleen de titel, auteur of ISBN waarnaar je zoekt. Je lijst, sterren en recensies gaan nooit mee.</p>
+        <p>Bij zoeken en toevoegen vraagt de app gegevens op bij Open Library, Google Books en de Koninklijke Bibliotheek: alleen de titel, auteur of ISBN waarnaar je zoekt. Je lijst, sterren en recensies gaan nooit mee.</p>
         <p>De boekentips komen uit een openbare lijst op de site van de app. Die wordt elke zaterdagochtend vernieuwd door een geplande taak van Claude. Wat je met een tip doet, blijft op je telefoon.</p>
         <p>Het boekennieuws komt, net als de tips, uit een openbare lijst die elke zaterdag wordt vernieuwd. Of een bericht over een schrijver uit je lijst gaat, bekijkt de app op je telefoon zelf.</p>
         <p>Delen gaat alleen als jij op Deel tikt, en dan via het gewone deelmenu van je iPhone.</p>
@@ -1177,9 +1177,9 @@ async function toonBevestigen(boek) {
              ${boek.isbn ? `<p class="details">ISBN ${veilig(boek.isbn)}</p>` : ''}
              ${
                boek.reden === 'google'
-                 ? '<p class="details">Open Library kent dit ISBN niet, en Google Books gaf geen antwoord (mogelijk de daglimiet). Vul titel en auteur zelf in; cover en gegevens worden later aangevuld.</p>'
+                 ? '<p class="details">Open Library en de Koninklijke Bibliotheek kennen dit ISBN niet, en Google Books gaf geen antwoord (storing of daglimiet). Vul titel en auteur zelf in; cover en gegevens worden later aangevuld.</p>'
                  : boek.reden === 'onbekend'
-                   ? '<p class="details">Dit ISBN is bij Open Library en Google Books niet bekend. Vul titel en auteur zelf in.</p>'
+                   ? '<p class="details">Dit ISBN is bij Open Library, Google Books en de Koninklijke Bibliotheek niet bekend. Vul titel en auteur zelf in.</p>'
                    : ''
              }`
           : `${coverHtml(boek, 'cover-groot')}

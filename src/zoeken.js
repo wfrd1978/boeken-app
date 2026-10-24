@@ -1,4 +1,5 @@
-import { vindDubbel } from './dubbel.js';
+import { vindDubbel, kaal } from './dubbel.js';
+import { kbOpIsbn, kbZoek } from './kb.js';
 
 // Boekgegevens ophalen bij Open Library en Google Books (gratis).
 
@@ -219,11 +220,16 @@ function sleutel(boek) {
 
 // Zoekt bij beide bronnen tegelijk, voegt samen zonder dubbelingen en zet Nederlandse uitgaven bovenaan.
 export async function zoekBoeken(tekst) {
-  const pogingen = await Promise.allSettled([
-    zoekGoogleBooks(tekst, true),
-    zoekOpenLibrary(tekst),
-    zoekGoogleBooks(tekst),
-  ]);
+  // De KB krijgt alles wat op titel of schrijver past; alleen boeken waarin alle
+  // zoekwoorden voorkomen, blijven over.
+  const woorden = kaal(tekst).split(/\s+/).filter(Boolean);
+  const kb = kbZoek(tekst).then((lijst) =>
+    lijst.filter((b) => {
+      const inhoud = kaal(`${b.titel} ${b.auteurs.join(' ')}`);
+      return woorden.every((w) => inhoud.includes(w));
+    })
+  );
+  const pogingen = await Promise.allSettled([zoekGoogleBooks(tekst, true), kb, zoekOpenLibrary(tekst), zoekGoogleBooks(tekst)]);
   if (pogingen.every((p) => p.status === 'rejected')) {
     throw new Error('Geen verbinding met de boekenbronnen');
   }
@@ -236,8 +242,9 @@ export async function zoekBoeken(tekst) {
     if (!eerder) gezien.set(k, boek);
     // Vul ontbrekende cover of ISBN aan uit de andere bron.
     else {
-      if (!eerder.coverUrl && boek.coverUrl) eerder.coverUrl = boek.coverUrl;
-      if (!eerder.isbn && boek.isbn) eerder.isbn = boek.isbn;
+      for (const veld of ['coverUrl', 'isbn', 'uitgever', 'jaar', 'paginas']) {
+        if (!eerder[veld] && boek[veld]) eerder[veld] = boek[veld];
+      }
     }
   }
   const resultaten = [...gezien.values()];
@@ -286,9 +293,16 @@ async function openLibraryUitgave(isbn) {
 
 // Een boek opzoeken met een gescand of getypt ISBN. Geeft null als geen bron het kent.
 export async function zoekOpIsbn(isbn) {
-  const pogingen = await Promise.allSettled([zoekOpenLibrary({ isbn }, 1), zoekGoogleBooks(`isbn:${isbn}`, false, 3)]);
+  const [pogingOl, pogingGb, pogingKb] = await Promise.allSettled([
+    zoekOpenLibrary({ isbn }, 1),
+    zoekGoogleBooks(`isbn:${isbn}`, false, 3),
+    kbOpIsbn(isbn),
+  ]);
+  const pogingen = [pogingOl, pogingGb];
   const [ol, gb] = pogingen.map((p) => p.value ?? []);
-  let beste = gb[0] ?? ol[0];
+  // De KB kent vrijwel elk Nederlands boek: als reserve, en om gaten te vullen.
+  const kb = pogingKb.value ?? null;
+  let beste = gb[0] ?? ol[0] ?? kb;
   let ander = gb[0] ? ol[0] : null;
   if (!beste) {
     // Tweede kans bij Open Library, per uitgave.
@@ -303,9 +317,10 @@ export async function zoekOpIsbn(isbn) {
     if (pogingen[1].status === 'rejected') throw new GoogleWeigert('Google Books antwoordt niet');
     return null;
   }
-  if (ander) {
+  for (const bron of [ander, kb]) {
+    if (!bron || bron === beste) continue;
     for (const veld of ['werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal', 'synopsis']) {
-      if (!beste[veld] && ander[veld]) beste[veld] = ander[veld];
+      if (!beste[veld] && bron[veld]) beste[veld] = bron[veld];
     }
   }
   return { ...beste, isbn };
