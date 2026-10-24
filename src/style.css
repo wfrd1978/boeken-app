@@ -71,6 +71,8 @@
 :root[data-thema="licht"] { color-scheme: light; }
 
 * { box-sizing: border-box; }
+/* Verborgen is echt verborgen, ook bij knoppen met een eigen weergave. */
+[hidden] { display: none !important; }
 
 body {
   margin: 0;

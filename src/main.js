@@ -84,7 +84,7 @@ zetKoboOm()
 
 // Voortgang van het ophalen van covers tonen waar dat kan.
 opVoortgang(({ soort = 'covers', klaar, totaal, gestopt, wacht, laatsteFout, googleOp }) => {
-  const naam = soort === 'synopsis' ? 'Synopsis' : 'Covers en gegevens';
+  const naam = soort === 'synopsis' ? 'Synopsis' : 'Gegevens';
   const code = laatsteFout ? ` (Google: fout ${laatsteFout})` : '';
   const el = document.getElementById('verrijk-status');
   if (el) {
@@ -96,12 +96,12 @@ opVoortgang(({ soort = 'covers', klaar, totaal, gestopt, wacht, laatsteFout, goo
           ? `${naam} ophalen gepauzeerd (${klaar} van ${totaal})${code}: een bron weigert even. Het gaat later vanzelf verder.`
           : wacht
             ? `${naam} ophalen: ${klaar} van ${totaal}. Google vraagt om even te wachten${code}; over ${wacht} seconden verder…`
-            : `${naam} ophalen: ${klaar} van ${totaal}…${soort === 'covers' ? ' Daarna volgt de synopsis.' : ''}`
+            : `${soort === 'synopsis' ? 'Synopsis ophalen' : 'Boekgegevens en ontbrekende covers aanvullen'}: ${klaar} van ${totaal}…${soort === 'covers' ? ' Daarna volgt de synopsis.' : ''}`
         : '';
     el.hidden = !el.textContent;
   }
   if (klaar === totaal && totaal > 0) {
-    melding(soort === 'synopsis' ? 'Synopsis ophalen is klaar' : 'Covers zoeken is klaar');
+    melding(soort === 'synopsis' ? 'Synopsis ophalen is klaar' : 'Boekgegevens zijn aangevuld');
     // Lijst bijwerken als die open staat en er niet getypt wordt.
     if (soort === 'covers' && (location.hash === '' || location.hash === '#/')) {
       if (document.activeElement?.id !== 'lijst-zoek') {
