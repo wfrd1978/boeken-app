@@ -66,7 +66,7 @@ https://wfrd1978.github.io/boeken-app/
 - **Vermijden:** heel dikke boeken, literaire romans, Engelstalige boeken. Nooit een boek dat al in de lijst staat (ook niet als vertaling) of eerder met *Niet voor mij* is weggetikt.
 - **Op het startscherm:** rij *Tips voor jou* met cover, titel, auteur en één zin waarom. Tik: synopsis en knoppen *Wil ik lezen*, *Al gelezen* (met sterren) en *Niet voor mij*. Reacties gaan mee in de backup. Tips zonder reactie blijven staan als er een nieuwe ronde komt (nieuwe vooraan, hooguit 12 tegelijk); de app bewaart ze op het toestel.
 - **Op de Toevoegen-pagina:** dezelfde tips onder elkaar, met de reden erbij en een knop **+** die de tip meteen op *Wil ik lezen* zet. Tikken op een tip opent hem helemaal (zoals op het startscherm). Elke tip heeft een categorie (veld `categorie` in `tips.json`); die krijgt het boek mee.
-- **Hoe:** de app haalt `tips.json` op van de eigen site. Een wekelijkse geplande taak van Claude (Routine 'Wekelijkse boekentips', zaterdag 06:38) zet daar nieuwe tips neer; Wilfred hoeft niets te doen. De uitleg bij een tip is algemeen ("voor wie houdt van …") en noemt zijn eigen boeken niet. Eens per maand of zo stuurt Wilfred een backup, zodat de smaak wordt bijgesteld.
+- **Hoe:** de app haalt `tips.json` op van de eigen site. Een wekelijkse geplande taak van Claude (Routine 'Wekelijkse boekentips', zaterdag 06:38, draait in de vaste bouwsessie omdat alleen die mag schrijven in de repository) zet daar nieuwe tips neer; Wilfred hoeft niets te doen. De uitleg bij een tip is algemeen ("voor wie houdt van …") en noemt zijn eigen boeken niet. Eens per maand of zo stuurt Wilfred een backup, zodat de smaak wordt bijgesteld.
 
 ## Veiligheid en betrouwbaarheid
 
@@ -125,6 +125,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die Wilfred zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van Wilfred: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Eerste automatische ronde (week 44) kon niet online: een losse taak-sessie mag niet in de repository schrijven. Tips handmatig online gezet (15, één zonder Nederlandse uitgave weggelaten); de taak draait voortaan in de bouwsessie |
 | 2026-10-24 | Getest en klaar: recensiehulp via Claude, covers kopiëren en plakken, uitgebreide deeltekst |
 | 2026-10-24 | Covers: automatisch de eerste hit van Google Afbeeldingen kan niet (Google's zoekkoppeling is dicht voor nieuwe gebruikers en stopt in januari 2027). Daarom kopiëren en plakken, met een nalooplijst |
 | 2026-10-24 | Recensiehulp via de Claude-app (gratis, met Wilfreds eigen account) in plaats van een AI-dienst met sleutel |
