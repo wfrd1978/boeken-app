@@ -98,7 +98,7 @@ export async function verrijkAlles() {
           break;
         }
         const stand = { klaar, totaal };
-        const poging = await metGeduld(() => zoekBijpassend(boek), 'covers', stand);
+        const poging = await metGeduld(() => zoekBijpassend(boek, { heeftCover: Boolean(boek.cover || boek.coverUrl) }), 'covers', stand);
         laatsteFout = stand.laatsteFout;
         if (stand.googleOp) googleOp = true;
         if (!poging || (poging.overslaan && ++overgeslagen >= MAX_OVERGESLAGEN_OP_RIJ)) {

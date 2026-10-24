@@ -331,7 +331,7 @@ export async function testBronnen() {
 // Zoekt de gegevens bij een boek waarvan titel en auteur bekend zijn (bijvoorbeeld uit
 // de Excel-lijst). Alleen een resultaat dat echt hetzelfde boek is, telt; Nederlandse
 // uitgaven eerst. Geeft null als niets past, en een fout als geen bron bereikbaar is.
-export async function zoekBijpassend(boek) {
+export async function zoekBijpassend(boek, { heeftCover = false } = {}) {
   const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
   // Zonder auteur en ISBN is een gelijke titel te weinig zekerheid: dan niets aanvullen.
   if (!auteur && !boek.isbn) return null;
@@ -346,7 +346,8 @@ export async function zoekBijpassend(boek) {
   // cover, dan later opnieuw proberen in plaats van 'niets gevonden' te concluderen.
   // Alleen echte weigeringen tellen: te druk (429), storing (5xx) of geen verbinding (0).
   const weigering = pogingen.find((p) => p.status === 'rejected' && tijdelijk(p.reason))?.reason;
-  if (weigering && !passend.some((k) => k.coverUrl)) {
+  // Heeft het boek al een cover en vond Open Library het wel, dan is dat genoeg: niet wachten op Google.
+  if (weigering && !passend.some((k) => k.coverUrl) && !(heeftCover && passend.length)) {
     throw new TijdelijkeFout('Bron tijdelijk niet beschikbaar', weigering.status ?? 0);
   }
   const beste = passend[0];
