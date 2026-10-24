@@ -417,8 +417,9 @@ export async function zoekCover(boek, { opTitel = true } = {}) {
     if (!url) continue;
     const blob = await haalPlaatje(url);
     if (blob) return { cover: blob, coverUrl: url };
-    // Google-plaatjes kunnen we niet opslaan, maar wel tonen.
-    if (!reserve && url.includes('books.google')) reserve = url;
+    // Google-plaatjes (en een cover die al bij het boek zat, zoals bij een tip) kunnen we
+    // niet altijd opslaan, maar wel tonen.
+    if (!reserve && (url.includes('books.google') || url === boek.coverUrl)) reserve = url;
   }
   return { cover: null, coverUrl: reserve };
 }

@@ -1529,18 +1529,23 @@ function tipCoverCache() {
   }
 }
 
+// Een mislukte zoekpoging (bijvoorbeeld bij de Google-daglimiet) na drie dagen opnieuw proberen.
+const TIP_COVER_OPNIEUW = 3 * 86400000;
+
 async function tipCover(tip) {
   if (veiligeUrl(tip.coverUrl)) return veiligeUrl(tip.coverUrl);
   const cache = tipCoverCache();
-  if (tip.id in cache) return cache[tip.id];
+  const bewaard = cache[tip.id];
+  if (typeof bewaard === 'string' && bewaard) return bewaard;
+  if (bewaard?.mislukt && Date.now() - bewaard.mislukt < TIP_COVER_OPNIEUW) return '';
   const { coverUrl } = await zoekCover(tip, { opTitel: true });
-  cache[tip.id] = coverUrl || '';
+  cache[tip.id] = coverUrl || { mislukt: Date.now() };
   try {
     localStorage.setItem('tipCovers', JSON.stringify(cache));
   } catch {
     // Niet erg; dan zoeken we hem de volgende keer opnieuw.
   }
-  return cache[tip.id];
+  return coverUrl || '';
 }
 
 // Eerst de tips die het toestel al heeft (meteen, zodat het scherm niet verspringt),

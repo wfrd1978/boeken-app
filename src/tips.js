@@ -62,12 +62,27 @@ export function ordenTips(tips, score) {
     .map(({ t }) => t);
 }
 
-async function bewaarArchief(nieuw) {
+// Velden die een latere ronde mag verbeteren bij een tip die al op de telefoon staat,
+// bijvoorbeeld een cover die er eerst niet bij zat of een gecorrigeerde titel.
+const BIJ_TE_WERKEN = ['coverUrl', 'titel', 'isbn', 'jaar', 'uitgever', 'categorie'];
+
+async function bewaarArchief(nieuw, bijwerkingen = []) {
   const archief = (await db.instellingen.get('tipArchief'))?.waarde ?? [];
-  const bekend = new Set(archief.map((t) => t.id));
-  const erbij = (nieuw ?? []).filter((t) => !bekend.has(t.id));
+  const opId = new Map(archief.map((t) => [t.id, t]));
+  let veranderd = false;
+  for (const b of [...(nieuw ?? []), ...(bijwerkingen ?? [])]) {
+    const al = b && opId.get(b.id);
+    if (!al) continue;
+    for (const veld of BIJ_TE_WERKEN) {
+      if (b[veld] !== undefined && b[veld] !== al[veld]) {
+        al[veld] = b[veld];
+        veranderd = true;
+      }
+    }
+  }
+  const erbij = (nieuw ?? []).filter((t) => t && !opId.has(t.id));
   const samen = [...erbij, ...archief];
-  if (erbij.length) await db.instellingen.put({ sleutel: 'tipArchief', waarde: samen });
+  if (erbij.length || veranderd) await db.instellingen.put({ sleutel: 'tipArchief', waarde: samen });
   return samen;
 }
 
@@ -83,6 +98,6 @@ export async function tipsUitArchief(boeken) {
 export async function verversTips() {
   const lijst = await haalTips();
   const voor = (await db.instellingen.get('tipArchief'))?.waarde?.length ?? 0;
-  const na = (await bewaarArchief(lijst?.tips)).length;
+  const na = (await bewaarArchief(lijst?.tips, lijst?.bijwerkingen)).length;
   return na - voor;
 }

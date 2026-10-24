@@ -1,9 +1,9 @@
 // Service worker: zorgt dat de app snel opent, ook met slecht of geen internet.
-const CACHE = 'boeken-v4';
+const CACHE = 'boeken-v5';
 // Covers van Google Books en Open Library apart bewaren, zodat ze na een herstart meteen
 // van de telefoon komen in plaats van opnieuw van internet.
 const COVERS = 'covers-v1';
-const COVER_ADRESSEN = ['books.google.com', 'books.googleusercontent.com', 'covers.openlibrary.org'];
+const COVER_ADRESSEN = ['books.google.com', 'books.googleusercontent.com', 'covers.openlibrary.org', 'static.unbidan.nl'];
 const MAX_COVERS = 600;
 const WACHT_OP_NETWERK = 3000;
 
