@@ -375,7 +375,7 @@ export async function zoekWerk(isbn) {
 
 // Haal een plaatje op als bestand, zodat het ook offline zichtbaar blijft.
 // Lukt dat niet (Google Books staat het niet toe), dan bewaren we alleen het adres.
-async function haalPlaatje(url) {
+export async function haalPlaatje(url) {
   try {
     const res = await fetch(url);
     if (!res.ok) return null;

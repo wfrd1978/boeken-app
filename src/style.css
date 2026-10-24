@@ -445,3 +445,6 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .nalopen-knoppen .link-knop { padding: 8px 0; }
 .nalopen-regel.klaar .boek-tekst { opacity: 0.6; }
 #cover-laag .tweede-knop { margin-top: 10px; width: 100%; }
+/* Een cover in de nalooplijst moet je kunnen vasthouden om te kopiëren. */
+.vasthouden { -webkit-touch-callout: default; -webkit-user-select: auto; user-select: auto; }
+.verhuis { margin-top: 18px; }
