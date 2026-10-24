@@ -462,10 +462,10 @@ function startHtml(boeken, naam) {
                </div>
              </div>`
       }
-      <section class="rij" id="tips-rij" hidden></section>
-      <section class="nieuws" id="nieuws-rij" hidden></section>
       ${rijHtml('Onlangs gelezen', gelezen, 'Gelezen')}
       ${rijHtml('Wil ik lezen', wil, 'Wil ik lezen')}
+      <section class="rij" id="tips-rij" hidden></section>
+      <section class="nieuws" id="nieuws-rij" hidden></section>
     </section>`;
 }
 
@@ -1555,8 +1555,8 @@ async function toonTipsRij(boeken, verversen = true) {
   if (!vak) return;
   const tips = await tipsUitArchief(boeken);
   if (verversen) {
-    verversTips().then((nieuw) => {
-      if (nieuw > 0 && document.body.contains(vak)) toonTipsRij(boeken, false);
+    verversTips().then((veranderd) => {
+      if (veranderd && document.body.contains(vak)) toonTipsRij(boeken, false);
     });
   }
   if (!tips.length || !document.body.contains(vak)) return;
@@ -1677,8 +1677,8 @@ async function toonToevoegTips(verversen = true) {
   const boeken = await alleBoeken();
   const tips = await tipsUitArchief(boeken);
   if (verversen) {
-    verversTips().then((nieuw) => {
-      if (nieuw > 0 && document.body.contains(vak)) toonToevoegTips(false);
+    verversTips().then((veranderd) => {
+      if (veranderd && document.body.contains(vak)) toonToevoegTips(false);
     });
   }
   if (!document.body.contains(vak)) return;
