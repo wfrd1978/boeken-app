@@ -40,6 +40,7 @@ import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
 import { deelTekst, deelBoek } from './delen.js';
+import { haalNieuws, ordenNieuws, overMijnSchrijver } from './nieuws.js';
 import { STEEKWOORDEN, recensieOpdracht, claudeAdres } from './recensie.js';
 import { berekenStatistieken, huidigeMaand, geldigeStartmaand } from './statistieken.js';
 import { veilig, veiligeUrl } from './veilig.js';
@@ -462,6 +463,7 @@ function startHtml(boeken, naam) {
              </div>`
       }
       <section class="rij" id="tips-rij" hidden></section>
+      <section class="nieuws" id="nieuws-rij" hidden></section>
       ${rijHtml('Onlangs gelezen', gelezen, 'Gelezen')}
       ${rijHtml('Wil ik lezen', wil, 'Wil ik lezen')}
     </section>`;
@@ -558,6 +560,7 @@ async function toonLijst() {
     el.style.backgroundImage = `url(${JSON.stringify(el.dataset.achtergrond)})`;
   });
   await toonTipsRij(boeken);
+  toonNieuws(boeken);
   if (nr !== schermNr) return;
   document.querySelector('.start')?.addEventListener('click', (e) => {
     const knop = e.target.closest('[data-naar-tab]');
@@ -678,6 +681,7 @@ function overDezeAppHtml() {
         <summary>Wat gaat er over internet?</summary>
         <p>Bij zoeken en toevoegen vraagt de app gegevens op bij Open Library en Google Books: alleen de titel, auteur of ISBN waarnaar je zoekt. Je lijst, sterren en recensies gaan nooit mee.</p>
         <p>De boekentips komen uit een openbare lijst op de site van de app. Die wordt elke zaterdagochtend vernieuwd door een geplande taak van Claude. Wat je met een tip doet, blijft op je telefoon.</p>
+        <p>Het boekennieuws komt, net als de tips, uit een openbare lijst die elke zaterdag wordt vernieuwd. Of een bericht over een schrijver uit je lijst gaat, bekijkt de app op je telefoon zelf.</p>
         <p>Delen gaat alleen als jij op Deel tikt, en dan via het gewone deelmenu van je iPhone.</p>
         <p>Hulp van Claude bij een recensie: pas als jij op Open Claude tikt, gaan de titel, je sterren, je steekwoorden en wat je zelf al schreef naar je eigen Claude-account. De app praat zelf met geen enkele AI-dienst.</p>
       </details>
@@ -1471,6 +1475,47 @@ async function toonProfiel() {
       koppelVanaf();
     });
   koppelVanaf();
+}
+
+// --- Boekennieuws ---
+
+const NIEUWS_ZICHTBAAR = 3;
+
+function nieuwsDatum(iso) {
+  const d = new Date(`${iso}T12:00:00`);
+  return isNaN(d) ? '' : d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
+}
+
+function nieuwsHtml(b, boeken) {
+  return `
+    <li>
+      <a class="nieuws-bericht" href="${veilig(veiligeUrl(b.url))}" target="_blank" rel="noopener">
+        <span class="nieuws-kop">${overMijnSchrijver(b, boeken) ? '<b>Schrijver die je leest</b> · ' : ''}${veilig(b.bron ?? '')}${
+          b.datum ? ` · ${veilig(nieuwsDatum(b.datum))}` : ''
+        }</span>
+        <strong>${veilig(b.titel)}</strong>
+        <span class="nieuws-tekst">${veilig(b.tekst ?? '')}</span>
+      </a>
+    </li>`;
+}
+
+// Een paar berichten onder de tips; 'Meer nieuws' klapt de rest uit.
+async function toonNieuws(boeken) {
+  const vak = document.getElementById('nieuws-rij');
+  if (!vak) return;
+  const berichten = ordenNieuws(await haalNieuws(), boeken);
+  if (!berichten.length || !document.body.contains(vak)) return;
+  vak.hidden = false;
+  vak.innerHTML = `
+    <div class="rij-kop"><h2>Boekennieuws</h2></div>
+    <ul class="nieuws-lijst">${berichten.slice(0, NIEUWS_ZICHTBAAR).map((b) => nieuwsHtml(b, boeken)).join('')}</ul>
+    ${
+      berichten.length > NIEUWS_ZICHTBAAR
+        ? `<details class="nieuws-meer"><summary>Meer nieuws (${berichten.length - NIEUWS_ZICHTBAAR})</summary>
+             <ul class="nieuws-lijst">${berichten.slice(NIEUWS_ZICHTBAAR).map((b) => nieuwsHtml(b, boeken)).join('')}</ul>
+           </details>`
+        : ''
+    }`;
 }
 
 // --- Boekentips ---

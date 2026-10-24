@@ -448,3 +448,14 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 /* Een cover in de nalooplijst moet je kunnen vasthouden om te kopiëren. */
 .vasthouden { -webkit-touch-callout: default; -webkit-user-select: auto; user-select: auto; }
 .verhuis { margin-top: 18px; }
+
+/* Boekennieuws op het startscherm */
+.nieuws { margin: 8px 0 24px; }
+.nieuws-lijst { list-style: none; margin: 0; padding: 0; }
+.nieuws-lijst li { border-bottom: 1px solid var(--lijn); }
+.nieuws-bericht { display: flex; flex-direction: column; gap: 3px; padding: 12px 0; color: inherit; text-decoration: none; }
+.nieuws-kop { color: var(--zacht); font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.nieuws-kop b { color: var(--accent); }
+.nieuws-bericht strong { font-family: var(--schreef); font-size: 1.05rem; line-height: 1.3; }
+.nieuws-tekst { color: var(--zacht); font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.nieuws-meer summary { cursor: pointer; color: var(--accent); padding: 12px 0; }
