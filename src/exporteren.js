@@ -28,6 +28,8 @@ export async function maakExcel() {
     Synopsis: b.synopsis ?? '',
     Opmerking: b.opmerking ?? '',
     'Wacht op Kobo Plus': b.koboWacht ? 'ja' : '',
+    'Gedownload in Kobo': b.koboGedownload ? 'ja' : '',
+    'Papieren boek gekocht': b.papierGekocht ? 'ja' : '',
     ISBN: b.isbn ?? '',
     Uitgever: b.uitgever ?? '',
     Jaar: b.jaar ?? '',
@@ -36,7 +38,7 @@ export async function maakExcel() {
     'Toegevoegd op': b.toegevoegdOp ? b.toegevoegdOp.slice(0, 10).split('-').reverse().join('-') : '',
   }));
   const blad = XLSX.utils.json_to_sheet(rijen);
-  blad['!cols'] = [40, 30, 14, 24, 8, 24, 50, 60, 24, 10, 15, 22, 6, 8, 6, 13].map((wch) => ({ wch }));
+  blad['!cols'] = [40, 30, 14, 24, 8, 24, 50, 60, 24, 10, 10, 10, 15, 22, 6, 8, 6, 13].map((wch) => ({ wch }));
   blad['!autofilter'] = { ref: blad['!ref'] };
   const werkmap = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(werkmap, blad, 'Boeken');

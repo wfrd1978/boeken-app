@@ -225,6 +225,14 @@ const SORTERINGEN = {
 // Tabjes bovenaan de lijst, zoals in een nieuwsapp.
 const TABS = ['Alles', 'Bezig', 'Gelezen', 'Wil ik lezen'];
 
+// Waar het boek is: voor de labels in de lijst, de knoppen bij een boek en de Toon-keuze.
+// De sleutel 'kobo' blijft voor Wacht op Kobo Plus, zodat een bewaarde keuze blijft werken.
+const BEZIT = {
+  kobo: { veld: 'koboWacht', naam: 'Wacht op Kobo Plus' },
+  gedownload: { veld: 'koboGedownload', naam: 'Gedownload in Kobo' },
+  papier: { veld: 'papierGekocht', naam: 'Papieren boek gekocht' },
+};
+
 // Zoekterm, tab en sortering blijven bewaard als je een boek opent en terugkomt.
 let zoekterm = '';
 let sortering = 'toegevoegd';
@@ -239,7 +247,7 @@ try {
   // Zonder opslag gewoon de standaard.
 }
 // Een bewaarde keuze die niet meer bestaat, valt terug op alles.
-if (toon && !['geen', 'kobo', ...CATEGORIEEN].includes(toon)) toon = '';
+if (toon && !['geen', ...Object.keys(BEZIT), ...CATEGORIEEN].includes(toon)) toon = '';
 
 function laatsteLeesdatum(boek) {
   return boek.leesdata?.length ? boek.leesdata[boek.leesdata.length - 1] : '';
@@ -263,7 +271,7 @@ function filter(boeken) {
   const inTab = boeken.filter(
     (b) =>
       (tab === 'Alles' || b.status === tab) &&
-      (!toon || (toon === 'kobo' ? b.koboWacht : toon === 'geen' ? !b.categorie : b.categorie === toon))
+      (!toon || (BEZIT[toon] ? b[BEZIT[toon].veld] : toon === 'geen' ? !b.categorie : b.categorie === toon))
   );
   if (!woorden.length) return inTab;
   return inTab.filter((b) => {
@@ -281,7 +289,7 @@ function boekRegel(b) {
       <div class="boek-tekst">
         <span class="regel">
           <span class="status status-${STATUSSEN.indexOf(b.status)}">${veilig(statusNaam(b.status))}</span>
-          ${b.koboWacht ? '<span class="status kobo">· Wacht op Kobo Plus</span>' : ''}
+          ${Object.values(BEZIT).filter((x) => b[x.veld]).map((x) => `<span class="status kobo">· ${x.naam}</span>`).join('')}
           ${categorieStip(b.categorie)}
           ${b.sterren ? `<span class="sterren-klein" aria-label="${b.sterren} sterren">${sterrenTekst(b.sterren)}</span>` : ''}
         </span>
@@ -516,7 +524,7 @@ async function toonLijst() {
                    <option value="">Alles</option>
                    ${CATEGORIEEN.map((c) => `<option value="${veilig(c)}"${c === toon ? ' selected' : ''}>${veilig(c)}</option>`).join('')}
                    <option value="geen"${toon === 'geen' ? ' selected' : ''}>Nog geen categorie</option>
-                   <option value="kobo"${toon === 'kobo' ? ' selected' : ''}>Wacht op Kobo Plus</option>
+                   ${Object.entries(BEZIT).map(([k, x]) => `<option value="${k}"${toon === k ? ' selected' : ''}>${x.naam}</option>`).join('')}
                  </select>
                </label>
                <span class="aantal" id="aantal"></span>
@@ -2062,9 +2070,11 @@ async function toonBoek(id) {
       <p class="label">Categorie</p>
       <div class="keuzes" id="categorieen">${categorieKnoppen()}</div>
 
-      <p class="label">Kobo</p>
+      <p class="label">Kobo en boek</p>
+      <div class="keuzes" id="bezit">
+        ${Object.values(BEZIT).map((x) => `<button class="keuze${boek[x.veld] ? ' actief' : ''}" data-veld="${x.veld}">${x.naam}</button>`).join('')}
+      </div>
       <div class="kobo-regel">
-        <button class="keuze${boek.koboWacht ? ' actief' : ''}" id="kobo-wacht">Wacht op Kobo Plus</button>
         <a class="link-knop" href="${koboZoekUrl(boek)}" target="_blank" rel="noopener">Zoek bij Kobo ↗</a>
       </div>
 
@@ -2160,10 +2170,17 @@ async function toonBoek(id) {
     tekenCategorie();
   });
 
-  const koboKnop = document.getElementById('kobo-wacht');
-  koboKnop.addEventListener('click', async () => {
-    await bewaar({ koboWacht: !boek.koboWacht });
-    koboKnop.classList.toggle('actief', boek.koboWacht);
+  // Wacht op Kobo Plus, Gedownload in Kobo, Papieren boek gekocht: elk aan of uit.
+  // Gedownload betekent dat het wachten voorbij is, dus dat label gaat dan uit.
+  document.getElementById('bezit').addEventListener('click', async (e) => {
+    const knop = e.target.closest('[data-veld]');
+    if (!knop) return;
+    const veld = knop.dataset.veld;
+    const wijziging = { [veld]: !boek[veld] };
+    if (veld === 'koboGedownload' && wijziging.koboGedownload) wijziging.koboWacht = false;
+    if (veld === 'koboWacht' && wijziging.koboWacht) wijziging.koboGedownload = false;
+    await bewaar(wijziging);
+    document.querySelectorAll('#bezit .keuze').forEach((k) => k.classList.toggle('actief', Boolean(boek[k.dataset.veld])));
   });
 
   const tekenLeesdata = () => {
