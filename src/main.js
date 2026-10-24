@@ -96,7 +96,7 @@ opVoortgang(({ soort = 'covers', klaar, totaal, gestopt, wacht, laatsteFout, goo
           ? `${naam} ophalen gepauzeerd (${klaar} van ${totaal})${code}: een bron weigert even. Het gaat later vanzelf verder.`
           : wacht
             ? `${naam} ophalen: ${klaar} van ${totaal}. Google vraagt om even te wachten${code}; over ${wacht} seconden verder…`
-            : `${soort === 'synopsis' ? 'Synopsis ophalen' : 'Boekgegevens en ontbrekende covers aanvullen'}: ${klaar} van ${totaal}…${soort === 'covers' ? ' Daarna volgt de synopsis.' : ''}`
+            : `${soort === 'synopsis' ? 'Synopsis ophalen' : 'Boekgegevens aanvullen (zoals uitgever, jaar en aantal bladzijden; een cover alleen waar die nog ontbreekt)'}: ${klaar} van ${totaal}…${soort === 'covers' ? ' Daarna volgt de synopsis.' : ''}`
         : '';
     el.hidden = !el.textContent;
   }
@@ -613,7 +613,6 @@ async function toonLijst() {
     }
     ${inSafari() ? safariHtml() : ''}
     ${boeken.length && moetHerinneren() ? herinneringHtml() : ''}
-    <p class="verrijk-status" id="verrijk-status" hidden></p>
     ${
       boeken.length
         ? `<div class="lijst-bediening">
