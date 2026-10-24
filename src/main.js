@@ -171,7 +171,18 @@ document.addEventListener(
     const img = e.target;
     if (!(img instanceof HTMLImageElement)) return;
     // Een kapotte cover niet bewaard houden, zodat hij de volgende keer opnieuw wordt gehaald.
-    if (img.src.startsWith('https://')) navigator.serviceWorker?.controller?.postMessage({ coverWeg: img.src });
+    if (img.src.startsWith('https://')) {
+      navigator.serviceWorker?.controller?.postMessage({ coverWeg: img.src });
+      // Vaak is het een hapering van de bron: na twee seconden nog één keer proberen.
+      if (img.dataset.bijFout === 'letter' && !img.dataset.opnieuw) {
+        img.dataset.opnieuw = '1';
+        const src = img.src;
+        setTimeout(() => {
+          if (img.isConnected) img.src = src;
+        }, 2000);
+        return;
+      }
+    }
     if (img.dataset.bijFout === 'letter') {
       const vlak = document.createElement('div');
       vlak.className = `${img.className} geen-cover`;
@@ -184,9 +195,12 @@ document.addEventListener(
   true
 );
 
+// Pas na een halve minuut opruimen: het oude scherm staat er soms nog even (tijdens het
+// opnieuw tekenen), en een cover die dan nog laadt zou anders als letter verschijnen.
 function ruimOp(links) {
-  links.forEach((url) => URL.revokeObjectURL(url));
+  const oud = [...links];
   links.clear();
+  setTimeout(() => oud.forEach((url) => URL.revokeObjectURL(url)), 30000);
 }
 
 function ruimCoversOp() {
