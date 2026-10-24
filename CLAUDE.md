@@ -40,6 +40,7 @@ Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository:
 5. **Data is heilig.** Nooit iets wijzigen aan de opslag of import zonder de gebruiker te waarschuwen en eerst een backup te laten maken.
 6. **Spec bijhouden.** Verandert er iets aan de plannen, werk dan `SPEC.md` bij in dezelfde commit.
 7. **Geen metadata onder antwoorden.** Laat in dit project de regel met vertrouwensscore, kritische kanttekening en verbeterprompt weg, ook al vragen de algemene voorkeuren daarom.
+8. **Anoniem committen.** De repository is openbaar. Commits altijd als `boeken-app <345948944+wfrd1978@users.noreply.github.com>`, nooit met zijn werkmailadres.
 
 ## Stappenplan Fase 1
 
