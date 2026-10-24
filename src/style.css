@@ -14,6 +14,8 @@
   --cover-leeg: #ebe6dc;
   --goud: #c99a2e;
   --tips-vlak: #edf3ef;
+  --diep: #1f4d3f;
+  --diep-tekst: #ffffff;
   --geel: #fbf3dc;
   --rood: #c0392b;
   --rood-zacht: #fbe9e7;
@@ -36,6 +38,8 @@
     --cover-leeg: #262a28;
     --goud: #e0b955;
     --tips-vlak: #18241f;
+    --diep: #1d4237;
+    --diep-tekst: #f2f2f0;
     --geel: #2e2919;
     --rood: #e0685a;
     --rood-zacht: #34201d;
@@ -489,3 +493,41 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 /* Profielstatistieken: eerste tegel in het accent. */
 .tegel:first-child { background: var(--accent); border-color: var(--accent); }
 .tegel:first-child strong, .tegel:first-child span { color: var(--accent-tekst); }
+
+/* --- Iets stoerder: diep groen als grote vlakken, goud als accent --- */
+
+/* Woordmerk in het groen met een gouden streep eronder. */
+.woordmerk h1 { color: var(--diep); }
+@media (prefers-color-scheme: dark) { .woordmerk h1 { color: var(--tekst); } }
+.woordmerk h1::after { content: ''; display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--goud); margin: 6px auto 0; }
+
+/* Het boek dat je nu leest: een donkergroene kaart. */
+.held { background: var(--diep); color: var(--diep-tekst); }
+.held-achtergrond { opacity: 0.3; mix-blend-mode: soft-light; }
+.held-tekst strong, .held-tekst > span:not(.status) { color: var(--diep-tekst); }
+.held-tekst > span:not(.status) { opacity: 0.8; }
+.held .status { color: var(--goud) !important; }
+.held-cover.geen-cover { background: rgb(255 255 255 / 0.12); color: var(--diep-tekst); }
+
+/* Koppen: het gouden streepje iets steviger. */
+.rij-kop h2::before, .lijst-kop::before, .stat-kop::before { width: 32px; height: 4px; }
+
+/* Tips op een donkergroen vlak: de covers springen eruit. */
+#tips-rij:not([hidden]) { background: var(--diep); color: var(--diep-tekst); }
+#tips-rij .rij-kop h2, #tips-rij .rij-titel { color: var(--diep-tekst); }
+#tips-rij .tip-auteur { color: var(--diep-tekst); opacity: 0.7; }
+#tips-rij .rij-cover.geen-cover { background: rgb(255 255 255 / 0.12); color: var(--diep-tekst); }
+
+/* Tabjes en de balk onderin: gekozen = gevuld. */
+.tabs { gap: 8px; padding-bottom: 10px; border-bottom: 0; }
+.tab { padding: 7px 14px; border-radius: 999px; border: 1px solid var(--lijn); margin-bottom: 0; }
+.tab.actief { background: var(--diep); border-color: var(--diep); color: var(--diep-tekst); }
+.balk a.actief { background: var(--diep); color: var(--diep-tekst); }
+
+/* Statistieken: groen, goud en licht. */
+.tegel:first-child { background: var(--diep); border-color: var(--diep); }
+.tegel:first-child strong, .tegel:first-child span { color: var(--diep-tekst); }
+.tegel:nth-child(2) { background: var(--geel); border-color: color-mix(in srgb, var(--goud) 35%, var(--lijn)); }
+
+/* Nieuws: de bron in het groen. */
+.nieuws-kop { color: var(--accent); }

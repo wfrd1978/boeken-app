@@ -102,6 +102,8 @@ Gekozen: accentkleur donkergroen (#1F4D3F), de lijst als rijtje (kleine cover li
 
 **Een vleugje kleur (24 okt):** warm papierwit als achtergrond in plaats van wit; een kort gouden streepje (goud uit het logo) boven elke kop; *Tips voor jou* op een zacht groen vlak; elke categorie een eigen gedempte kleur (bolletje met naam in de lijst, gekleurde knoppen bij het boek); de eerste statistiektegel in het groen. Donkere modus doet mee.
 
+**Iets stoerder (24 okt):** donkergroen (de kleur van het logo) als grote vlakken: de kaart met het boek dat je nu leest en het vlak *Tips voor jou*; het woordmerk Boeken in het groen met een gouden streep; gekozen tab en het gekozen onderdeel in de balk onderin gevuld groen; stevigere gouden streepjes boven koppen; statistiektegels in groen en zacht goud; de bron bij nieuws in het groen.
+
 ## Nog te doen en buiten beeld
 
 Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (stap 13), daarna categorieën (stap 14) en statistieken (stap 15); zie CLAUDE.md. Daarna eventueel informatie over de schrijver en verfilmingen. Delen met anderen en wekelijkse tips (Fase 3). Geen accounts, geen synchronisatie tussen apparaten, geen betaalde diensten.
@@ -137,6 +139,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die de gebruiker zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van de gebruiker: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Vormgeving iets stoerder: donkergroene vlakken, gevulde tabs, gouden accenten |
 | 2026-10-24 | Koninklijke Bibliotheek als derde bron: nieuwe Nederlandse boeken (zoals Mijn laatste radiojaar) en scannen werken ook als Google uitvalt |
 | 2026-10-24 | Getest en klaar: verhuizen, boekennieuws, tipcovers, nieuwe volgorde startscherm, kleur, en de labels Gedownload in Kobo en Papieren boek gekocht |
 | 2026-10-24 | Labels Gedownload in Kobo en Papieren boek gekocht, naast Wacht op Kobo Plus (ook in Toon en de Excel-export) |
