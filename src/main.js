@@ -463,9 +463,9 @@ function startHtml(boeken, naam) {
              </div>`
       }
       ${rijHtml('Onlangs gelezen', gelezen, 'Gelezen')}
+      <section class="nieuws" id="nieuws-rij" hidden></section>
       ${rijHtml('Wil ik lezen', wil, 'Wil ik lezen')}
       <section class="rij" id="tips-rij" hidden></section>
-      <section class="nieuws" id="nieuws-rij" hidden></section>
     </section>`;
 }
 
