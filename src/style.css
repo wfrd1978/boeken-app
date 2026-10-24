@@ -25,8 +25,10 @@
   color-scheme: light dark;
 }
 
+/* Donker: vanzelf als de iPhone donker staat (tenzij in de app 'licht' gekozen is),
+   of als de app zelf donker kiest (data-thema="donker", bijvoorbeeld 's avonds). */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-thema="licht"]) {
     --bg: #121413;
     --vlak: #1d201f;
     --tekst: #f2f2f0;
@@ -46,6 +48,27 @@
     --ster: #e0b955;
   }
 }
+:root[data-thema="donker"] {
+    --bg: #121413;
+    --vlak: #1d201f;
+    --tekst: #f2f2f0;
+    --zacht: #9a9e9c;
+    --lijn: #2b2f2d;
+    --accent: #8cc7b2;
+    --accent-tekst: #0c1a15;
+    --accent-zacht: #1b2d27;
+    --cover-leeg: #262a28;
+    --goud: #e0b955;
+    --tips-vlak: #18241f;
+    --diep: #1d4237;
+    --diep-tekst: #f2f2f0;
+    --geel: #2e2919;
+    --rood: #e0685a;
+    --rood-zacht: #34201d;
+    --ster: #e0b955;
+    color-scheme: dark;
+}
+:root[data-thema="licht"] { color-scheme: light; }
 
 * { box-sizing: border-box; }
 
@@ -479,8 +502,9 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 }
 
 /* Tips op een zacht groen vlak, zodat ze opvallen zonder te schreeuwen. */
+/* Van rand tot rand, zodat de covers van de schermrand komen en niet halverwege het vlak opduiken. */
 #tips-rij:not([hidden]) {
-  background: var(--tips-vlak); border-radius: 16px; margin: 26px -8px 0; padding: 4px 8px 14px;
+  background: var(--tips-vlak); margin: 30px -16px 0; padding: 18px 16px 18px;
 }
 #tips-rij .rij-kop { border-top: 0; }
 
@@ -498,7 +522,8 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 
 /* Woordmerk in het groen met een gouden streep eronder. */
 .woordmerk h1 { color: var(--diep); }
-@media (prefers-color-scheme: dark) { .woordmerk h1 { color: var(--tekst); } }
+@media (prefers-color-scheme: dark) { :root:not([data-thema="licht"]) .woordmerk h1 { color: var(--tekst); } }
+:root[data-thema="donker"] .woordmerk h1 { color: var(--tekst); }
 .woordmerk h1::after { content: ''; display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--goud); margin: 6px auto 0; }
 
 /* Het boek dat je nu leest: een donkergroene kaart. */
