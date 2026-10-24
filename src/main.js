@@ -62,6 +62,8 @@ import {
   aantalTeVerrijken,
   zonderCoverOpnieuw,
   coverTelling,
+  coverStand,
+  legCoversVast,
   synopsisTelling,
 } from './verrijken.js';
 
@@ -670,6 +672,7 @@ function overDezeAppHtml() {
         <p>Alles wat je invult staat alleen op deze telefoon, in de app op je beginscherm: je boeken, covers, sterren, recensies, je profiel en je foto. Er is geen account en geen server. Niemand anders kan erbij, ook Claude niet.</p>
         <p>Safari en de app op je beginscherm bewaren elk hun eigen gegevens. Gebruik daarom altijd de app op je beginscherm.</p>
         <p>Een backup is één bestand met alles erin. Jij bepaalt waar het staat, bijvoorbeeld in iCloud Drive. Verlies je je telefoon, dan zet je met dat bestand alles terug.</p>
+        <p>Naar een andere telefoon: maak een backup, zet de app op het beginscherm van de nieuwe telefoon, open hem vanaf het beginscherm en kies Backup terugzetten. Bij Backup zie je wat er meegaat. Covers die alleen als internetadres bestaan, kun je daar eerst als plaatje vastleggen.</p>
       </details>
       <details>
         <summary>Wat gaat er over internet?</summary>
@@ -729,6 +732,7 @@ async function toonInstellingen() {
         <input type="file" id="backup-bestand" accept="application/json,.json" hidden />
       </label>
       <div id="terugzet-vak"></div>
+      <div class="verhuis" id="verhuis"></div>
     </section>
 
     <section class="blok">
@@ -792,6 +796,8 @@ async function toonInstellingen() {
     }
   });
 
+  toonVerhuis();
+
   const telling = await coverTelling();
   const zonder = telling.totaal - telling.met;
   document.getElementById('cover-telling').textContent = telling.totaal
@@ -805,9 +811,11 @@ async function toonInstellingen() {
     : '';
   const opnieuw = document.getElementById('covers-opnieuw');
   opnieuw.hidden = !zonder;
+  // Nalopen: boeken zonder cover en covers die alleen via internet bestaan.
+  const stand = await coverStand();
   const nalopen = document.getElementById('covers-nalopen');
-  nalopen.hidden = !zonder;
-  nalopen.textContent = `Covers zelf nalopen (${zonder})`;
+  nalopen.hidden = !(stand.geen + stand.internet);
+  nalopen.textContent = `Covers zelf nalopen (${stand.geen + stand.internet})`;
   opnieuw.textContent = `Zoek opnieuw naar ontbrekende covers (${zonder})`;
   opnieuw.addEventListener('click', async () => {
     opnieuw.disabled = true;
@@ -1813,56 +1821,111 @@ async function plakCover() {
   return null;
 }
 
+// Wat komt er mee als je naar een andere telefoon gaat? Covers die alleen een internetadres
+// hebben, gaan als adres mee; die kunnen hier alsnog als plaatje worden vastgelegd.
+async function toonVerhuis() {
+  const vak = document.getElementById('verhuis');
+  if (!vak) return;
+  const st = await coverStand();
+  if (!st.totaal || !document.body.contains(vak)) return;
+  const n = (x, een, meer) => `${x} ${x === 1 ? een : meer}`;
+  vak.innerHTML = `
+    <p class="label">Wat er in je backup zit</p>
+    <p class="zacht">${n(st.totaal, 'boek', 'boeken')} met al je sterren, leesdata, recensies en categorieën. Covers: ${st.plaatje} als plaatje${
+      st.internet ? `, ${st.internet} alleen als internetadres` : ''
+    }${st.geen ? `, ${st.geen} zonder cover` : ''}. Ook je profiel, profielfoto, reacties op tips en je keuzes in de lijst.</p>
+    ${
+      st.internet
+        ? `<p class="zacht">Covers met alleen een internetadres komen op een nieuwe telefoon opnieuw van internet. Leg ze vast als plaatje, dan zitten ze echt in je backup.</p>
+           <button class="tweede-knop" id="leg-vast">Covers als plaatje vastleggen (${st.internet})</button>
+           <p class="zacht" id="leg-vast-stand"></p>`
+        : st.plaatje
+          ? '<p class="zacht">Alle covers zitten als plaatje in je backup.</p>'
+          : ''
+    }`;
+  document.getElementById('leg-vast')?.addEventListener('click', async (e) => {
+    const knop = e.currentTarget;
+    const stand = document.getElementById('leg-vast-stand');
+    knop.disabled = true;
+    const { gelukt, over } = await legCoversVast(({ klaar, totaal }) => {
+      knop.textContent = `Bezig… ${klaar} van ${totaal}`;
+    });
+    knop.remove();
+    const nu = await coverStand();
+    const nalopen = document.getElementById('covers-nalopen');
+    if (nalopen) {
+      nalopen.hidden = !(nu.geen + nu.internet);
+      nalopen.textContent = `Covers zelf nalopen (${nu.geen + nu.internet})`;
+    }
+    stand.innerHTML = over
+      ? `${n(gelukt, 'cover', 'covers')} vastgelegd. ${n(over, 'cover kon', 'covers konden')} niet automatisch: <a href="#/covers">leg die zelf vast</a> (houd de cover vast, kies Kopieer en tik op Plak).`
+      : `Klaar: ${n(gelukt, 'cover', 'covers')} vastgelegd. Maak nu een nieuwe backup.`;
+  });
+}
+
 // --- Covers nalopen: alle boeken zonder cover op een rij ---
 
 async function toonCoversNalopen() {
   const nr = schermNr;
   ruimCoversOp();
-  const zonder = (await alleBoeken())
-    .filter((b) => !b.cover && !b.coverUrl)
-    .sort((a, b) => achternaam(a).localeCompare(achternaam(b), 'nl') || a.titel.localeCompare(b.titel, 'nl'));
+  const opNaam = (a, b) => achternaam(a).localeCompare(achternaam(b), 'nl') || a.titel.localeCompare(b.titel, 'nl');
+  const alle = await alleBoeken();
+  const zonder = alle.filter((b) => !(b.cover instanceof Blob) && !b.coverUrl).sort(opNaam);
+  const internet = alle.filter((b) => !(b.cover instanceof Blob) && b.coverUrl).sort(opNaam);
   if (nr !== schermNr) return;
+  const regel = (b, metCover) => `
+    <li class="nalopen-regel" data-id="${b.id}">
+      <div class="cover-vak">${metCover ? `<img class="cover-klein vasthouden" src="${veilig(veiligeUrl(b.coverUrl))}" alt="Cover van ${veilig(b.titel)}" data-letter="${veilig(b.titel.charAt(0))}" data-bij-fout="letter" />` : coverHtml(b, 'cover-klein')}</div>
+      <div class="boek-tekst"><strong>${veilig(b.titel)}</strong><span>${veilig(auteurTekst(b))}</span></div>
+      <div class="nalopen-knoppen">
+        ${metCover ? '' : `<a class="link-knop" href="${googleAfbeeldingenUrl(b)}" target="_blank" rel="noopener">Zoek ↗</a>`}
+        <button class="keuze" data-plak="${b.id}">Plak</button>
+      </div>
+    </li>`;
   app.innerHTML = `
     <header class="kop">
       <a class="terug" href="#/instellingen">‹ Instellingen</a>
       <h1>Covers nalopen</h1>
     </header>
-    <p class="zacht">Per boek: tik op <b>Zoek</b>, houd in Google het juiste plaatje vast en kies <b>Kopieer</b>. Kom terug en tik op <b>Plak</b>. De cover wordt op je telefoon bewaard.</p>
+    <p class="zacht" id="nalopen-aantal"></p>
     ${
       zonder.length
-        ? `<p class="zacht" id="nalopen-aantal">${zonder.length === 1 ? 'Nog 1 boek' : `Nog ${zonder.length} boeken`} zonder cover.</p>
-           <ul class="lijst" id="nalopen">${zonder
-             .map(
-               (b) => `
-             <li class="nalopen-regel" data-id="${b.id}">
-               <div class="cover-vak">${coverHtml(b, 'cover-klein')}</div>
-               <div class="boek-tekst"><strong>${veilig(b.titel)}</strong><span>${veilig(auteurTekst(b))}</span></div>
-               <div class="nalopen-knoppen">
-                 <a class="link-knop" href="${googleAfbeeldingenUrl(b)}" target="_blank" rel="noopener">Zoek ↗</a>
-                 <button class="keuze" data-plak="${b.id}">Plak</button>
-               </div>
-             </li>`
-             )
-             .join('')}</ul>`
-        : '<p class="leeg">Alle boeken hebben een cover.</p>'
+        ? `<h2 class="stat-kop">Zonder cover</h2>
+           <p class="zacht">Tik op <b>Zoek</b>, houd in Google het juiste plaatje vast en kies <b>Kopieer</b>. Kom terug en tik op <b>Plak</b>.</p>
+           <ul class="lijst nalopen">${zonder.map((b) => regel(b, false)).join('')}</ul>`
+        : ''
+    }
+    ${
+      internet.length
+        ? `<h2 class="stat-kop">Alleen via internet</h2>
+           <p class="zacht">Deze covers staan nog niet als plaatje op je telefoon. Houd de cover hieronder vast, kies <b>Kopieer</b> en tik op <b>Plak</b>. Dan zit hij in je backup.</p>
+           <ul class="lijst nalopen">${internet.map((b) => regel(b, true)).join('')}</ul>`
+        : ''
     }`;
-  document.getElementById('nalopen')?.addEventListener('click', async (e) => {
-    const knop = e.target.closest('[data-plak]');
-    if (!knop) return;
-    const cover = await plakCover();
-    if (!cover) return;
-    const id = Number(knop.dataset.plak);
-    await boekBijwerken(id, cover);
-    const regel = knop.closest('li');
-    const boek = await haalBoek(id);
-    regel.querySelector('.cover-vak').innerHTML = coverHtml(boek, 'cover-klein', lijstLinks);
-    knop.textContent = '✓';
-    knop.disabled = true;
-    regel.classList.add('klaar');
+  const zetAantal = () => {
     const over = document.querySelectorAll('.nalopen-regel:not(.klaar)').length;
-    document.getElementById('nalopen-aantal').textContent = over ? `Nog ${over === 1 ? '1 boek' : `${over} boeken`} zonder cover.` : 'Alle covers staan erin.';
-    melding('Cover bewaard');
-  });
+    document.getElementById('nalopen-aantal').textContent = over
+      ? `Nog ${over === 1 ? '1 boek' : `${over} boeken`} om na te lopen.`
+      : 'Alle covers staan als plaatje op je telefoon.';
+  };
+  zetAantal();
+  app.querySelectorAll('.nalopen').forEach((lijst) =>
+    lijst.addEventListener('click', async (e) => {
+      const knop = e.target.closest('[data-plak]');
+      if (!knop) return;
+      const cover = await plakCover();
+      if (!cover) return;
+      const id = Number(knop.dataset.plak);
+      await boekBijwerken(id, cover);
+      const li = knop.closest('li');
+      li.querySelector('.cover-vak').innerHTML = coverHtml(await haalBoek(id), 'cover-klein', lijstLinks);
+      knop.textContent = '✓';
+      knop.disabled = true;
+      li.classList.add('klaar');
+      zetAantal();
+      melding('Cover bewaard');
+    })
+  );
 }
 
 // --- Boek ---

@@ -1,7 +1,7 @@
 // Op de achtergrond covers en gegevens ophalen voor geïmporteerde boeken.
 // Titel en auteur uit de lijst blijven altijd zoals de gebruiker ze schreef.
 import { db } from './db.js';
-import { zoekBijpassend, zoekCover, zoekWerk, zoekSynopsis, TijdelijkeFout, googleStand } from './zoeken.js';
+import { zoekBijpassend, zoekCover, zoekWerk, zoekSynopsis, TijdelijkeFout, googleStand, haalPlaatje } from './zoeken.js';
 
 const AANVULLEN = ['isbn', 'werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal', 'synopsis'];
 // Rustig tempo: Google heeft naast een daglimiet ook een limiet per minuut.
@@ -233,4 +233,37 @@ export async function coverTelling() {
 
 export async function aantalTeVerrijken() {
   return db.boeken.filter((b) => b.verrijkt === false).count();
+}
+
+// --- Covers vastleggen voor een verhuizing ---
+
+// Hoeveel covers staan als plaatje op de telefoon (en gaan dus mee in de backup),
+// hoeveel alleen als internetadres, en hoeveel boeken hebben er geen.
+export async function coverStand() {
+  const alle = await db.boeken.toArray();
+  const plaatje = alle.filter((b) => b.cover instanceof Blob).length;
+  const internet = alle.filter((b) => !(b.cover instanceof Blob) && b.coverUrl).length;
+  return { totaal: alle.length, plaatje, internet, geen: alle.length - plaatje - internet };
+}
+
+// Covers die alleen als adres bestaan, alsnog als plaatje bewaren. Google staat dat niet
+// toe; daarvoor zoeken we dezelfde uitgave (zelfde ISBN) bij Open Library. Het adres blijft
+// staan, er komt alleen het plaatje bij. Wat niet lukt, kan de gebruiker zelf kopiëren en plakken.
+export async function legCoversVast(voortgang = () => {}) {
+  const lijst = await db.boeken.filter((b) => !(b.cover instanceof Blob) && Boolean(b.coverUrl)).toArray();
+  let gelukt = 0;
+  for (const [i, boek] of lijst.entries()) {
+    if (!navigator.onLine) break;
+    let blob = boek.coverUrl.includes('books.google') ? null : await haalPlaatje(boek.coverUrl);
+    if (!blob && boek.isbn) blob = await haalPlaatje(`https://covers.openlibrary.org/b/isbn/${boek.isbn}-M.jpg?default=false`);
+    if (blob) {
+      await db.boeken.where('id').equals(boek.id).modify((b) => {
+        if (!(b.cover instanceof Blob) && b.coverUrl === boek.coverUrl) b.cover = blob;
+      });
+      gelukt += 1;
+    }
+    voortgang({ klaar: i + 1, totaal: lijst.length, gelukt });
+    await wacht(300);
+  }
+  return { gelukt, over: lijst.length - gelukt };
 }

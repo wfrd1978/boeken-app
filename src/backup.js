@@ -23,6 +23,34 @@ async function tekstNaarBlob(dataUrl) {
   return new Blob([Uint8Array.from(bytes, (c) => c.charCodeAt(0))], { type });
 }
 
+// Keuzes in de lijst (sorteren, tab, filter): klein, maar fijn om mee te verhuizen.
+const VOORKEUREN = ['sortering', 'tab', 'toon'];
+
+function leesVoorkeuren() {
+  try {
+    return Object.fromEntries(VOORKEUREN.map((k) => [k, localStorage.getItem(k)]).filter(([, v]) => typeof v === 'string'));
+  } catch {
+    return null;
+  }
+}
+
+function zetVoorkeuren(v) {
+  if (!v || typeof v !== 'object') return;
+  try {
+    for (const k of VOORKEUREN) if (typeof v[k] === 'string') localStorage.setItem(k, v[k]);
+  } catch {
+    // Niet erg: dan gelden de standaardkeuzes.
+  }
+}
+
+// Alleen tips met een id en titel; de rest van een tip is gewone tekst.
+function schoonArchief(a) {
+  if (!Array.isArray(a)) return null;
+  return a
+    .filter((t) => t && typeof t.id === 'string' && typeof t.titel === 'string')
+    .map((t) => JSON.parse(JSON.stringify(t)));
+}
+
 async function fotoAlsTekst() {
   const foto = (await db.instellingen.get('profielFoto'))?.waarde;
   return foto instanceof Blob ? blobNaarTekst(foto) : null;
@@ -44,6 +72,8 @@ export async function maakBackupBestand() {
     profiel: (await db.instellingen.get('profiel'))?.waarde ?? null,
     tipReacties: (await db.instellingen.get('tipReacties'))?.waarde ?? null,
     profielFoto: await fotoAlsTekst(),
+    tipArchief: (await db.instellingen.get('tipArchief'))?.waarde ?? null,
+    voorkeuren: leesVoorkeuren(),
   };
   const datum = nu.toISOString().slice(0, 10);
   return new File([JSON.stringify(inhoud)], `boeken-backup-${datum}.json`, { type: 'application/json' });
@@ -164,6 +194,7 @@ export async function zetBackupTerug(inhoud) {
   );
   const profiel = schoonProfiel(inhoud.profiel);
   const reacties = schoneReacties(inhoud.tipReacties);
+  const archief = schoonArchief(inhoud.tipArchief);
   const foto =
     typeof inhoud.profielFoto === 'string' && inhoud.profielFoto.startsWith('data:image/') ? await tekstNaarBlob(inhoud.profielFoto) : null;
   // Werk op de achtergrond (covers, synopsis) eerst stoppen: dat hoort bij de oude lijst.
@@ -176,6 +207,8 @@ export async function zetBackupTerug(inhoud) {
     if (reacties) await db.instellingen.put({ sleutel: 'tipReacties', waarde: reacties });
     // Een backup zonder foto laat de huidige foto staan.
     if (foto) await db.instellingen.put({ sleutel: 'profielFoto', waarde: foto });
+    if (archief) await db.instellingen.put({ sleutel: 'tipArchief', waarde: archief });
   });
+  zetVoorkeuren(inhoud.voorkeuren);
   return boeken.length;
 }
