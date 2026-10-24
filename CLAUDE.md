@@ -29,7 +29,7 @@ Werk alleen aan de fase die actief is. Nu actief: **Fase 2** (fase 1 is afgerond
 
 Geen betaalde diensten of API-sleutels zonder expliciete toestemming van Wilfred.
 
-Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository: die is openbaar. Ze staan in de app en in Wilfreds backups. Uitzondering met toestemming van Wilfred: de tiplijst (`tips.json`) staat wel online; de uitleg bij een tip is algemeen en verwijst niet naar zijn eigen boeken. Het lezersprofiel staat alleen in de opdracht van de wekelijkse taak (privé in zijn account).
+Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository: die is openbaar. Ze staan in de app en in Wilfreds backups. Uitzondering met toestemming van Wilfred: de tiplijst (`tips.json`) en het boekennieuws (`nieuws.json`) staan wel online; de uitleg bij een tip en de nieuwsberichten zijn algemeen en verwijzen niet naar zijn eigen boeken. Het lezersprofiel staat alleen in de opdracht van de wekelijkse taak (privé in zijn account).
 
 ## Werkafspraken
 
@@ -77,6 +77,6 @@ Volgorde en keuzes bepaalt Wilfred; bij elk idee eerst kort de opties en kosten 
 - **Gelezen boeken delen** met zijn netwerk: knop 'Deel' is gebouwd (deelmenu met titel, sterren, zin uit de recensie). Nog open: deelkaart als afbeelding, 'Mijn leesmaand/-jaar'.
 - **De app delen met anderen**: welkomstscherm, tips per persoon of uit, Kobo optioneel; eventueel via AI Startpunt voor EO-collega's.
 - **Lezen interactief maken met andere gebruikers** (samen lezen, elkaars tips, boekenclub). Vraagt om een gedeelde plek voor gegevens; eerst samen nadenken over privacy en kosten.
-- **Nieuws over boeken en schrijvers**, bijvoorbeeld wekelijks via dezelfde geplande taak als de tips (een nieuws.json).
+- ~~**Nieuws over boeken en schrijvers**~~ — gebouwd: rij Boekennieuws, wekelijks via dezelfde taak (`nieuws.json`).
 - ~~**Hulp bij het schrijven van een recensie**~~ — gebouwd via de Claude-app (gratis; opdracht ingevuld, tekst terugplakken).
 - **Kleinere ideeën**: citaten bewaren, 'Leen bij de bibliotheek', een zacht leesdoel zonder druk.
