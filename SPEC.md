@@ -137,6 +137,7 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-23 | Categorieën toegevoegd aan het plan (stap 14), vóór de statistieken |
 | 2026-10-23 | Acht categorieën (zie velden); bestaande boeken ingedeeld via een indeellijst die de gebruiker zelf importeert. Het filter op 'Wacht op Kobo Plus' (stap 16) zit in dezelfde Toon-keuze en is daarmee meegebouwd |
 | 2026-10-24 | Statistieken tellen pas vanaf een startmaand (oktober 2026), op verzoek van de gebruiker: de oude lijst heeft bijna geen datums en vooral sterren bij topboeken |
+| 2026-10-24 | Getest en klaar: verhuizen, boekennieuws, tipcovers, nieuwe volgorde startscherm, kleur, en de labels Gedownload in Kobo en Papieren boek gekocht |
 | 2026-10-24 | Labels Gedownload in Kobo en Papieren boek gekocht, naast Wacht op Kobo Plus (ook in Toon en de Excel-export) |
 | 2026-10-24 | Iets meer kleur, subtiel: warm papierwit, gouden streepjes, groen tipvlak, categoriekleuren |
 | 2026-10-24 | Nalooplijst: knop Foto naast Plak, omdat kopiëren van Google-covers op de iPhone geen plaatje opleverde |
