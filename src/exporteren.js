@@ -2,7 +2,7 @@
 import { db, statusNaam } from './db.js';
 import { achternaam } from './dubbel.js';
 
-// Een leesdatum zoals de gebruiker hem leest: "oktober 2025" of "14-10-2025".
+// Een leesdatum zoals je hem leest: "oktober 2025" of "14-10-2025".
 function datumTekst(iso) {
   const [jaar, maand, dag] = iso.split('-');
   if (!dag) {

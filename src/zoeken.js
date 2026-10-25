@@ -3,7 +3,7 @@ import { kbOpIsbn, kbZoek } from './kb.js';
 
 // Boekgegevens ophalen bij Open Library en Google Books (gratis).
 
-// een eigen, gratis Google-sleutel (met zijn toestemming, 23 okt 2026). Hij werkt alleen
+// Eigen, gratis Google-sleutel (met toestemming, 23 okt 2026). Hij werkt alleen
 // vanaf https://wfrd1978.github.io en alleen voor de Books API, dus openbaar zichtbaar is geen
 // probleem. Zonder sleutel deel je de daglimiet met iedereen en krijg je vaak geen antwoord.
 const GOOGLE_SLEUTEL = 'AIzaSyBqtajJfZxGfc6wMAAYVOsIDOoUjaexDq4';
@@ -16,7 +16,7 @@ function googleUrl(zoekvraag, extra = '') {
 const WACHTTIJD = 10000;
 
 // --- Zuinig met Google ---
-// de sleutel mag 1.000 vragen per dag doen. De teller gaat op nul om middernacht in
+// De sleutel mag 1.000 vragen per dag doen. De teller gaat op nul om middernacht in
 // Californië (in Nederland 9:00 of 10:00). Het werk op de achtergrond mag er hooguit 600
 // gebruiken, zodat er altijd genoeg overblijft om boeken te zoeken en toe te voegen.
 const ACHTERGROND_BUDGET = 600;

@@ -64,7 +64,7 @@ export async function haalNieuws() {
   return nieuwsArchief();
 }
 
-// Gaat een bericht over een schrijver van wie de gebruiker boeken heeft? Dat wordt alleen
+// Gaat een bericht over een schrijver uit de eigen lijst? Dat wordt alleen
 // op de telefoon bekeken; het nieuwsbestand zelf weet niets van zijn lijst.
 export function overMijnSchrijver(bericht, boeken) {
   const mijn = new Set(boeken.flatMap((b) => b.auteurs ?? []).map(kaal));

@@ -81,7 +81,7 @@ export async function maakBackupBestand() {
 }
 
 // Via het deelmenu (iPhone: 'Bewaar in Bestanden'), anders als download.
-// Geeft true als de backup bewaard is, false als de gebruiker annuleerde.
+// Geeft true als de backup bewaard is, false bij annuleren.
 export async function bewaarBackup(bestand) {
   if (navigator.canShare?.({ files: [bestand] })) {
     try {

@@ -1,4 +1,4 @@
-// Een voorstel voor de categorie van een nieuw boek. De gebruiker kiest zelf; dit is alleen een hulp.
+// Een voorstel voor de categorie van een nieuw boek. de keuze blijft vrij; dit is alleen een hulp.
 import { CATEGORIEEN } from './db.js';
 import { kaal } from './dubbel.js';
 

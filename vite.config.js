@@ -5,7 +5,7 @@ export default defineConfig({
   base: '/boeken-app/',
   // SheetJS (Excel) is groot, maar wordt alleen geladen bij importeren en exporteren.
   build: { chunkSizeWarningLimit: 600 },
-  // Moment van bouwen, zodat de gebruiker in de app ziet welke versie hij heeft.
+  // Moment van bouwen, zodat je in de app ziet welke versie je hebt.
   define: {
     __VERSIE__: JSON.stringify(
       new Date().toLocaleString('nl-NL', {

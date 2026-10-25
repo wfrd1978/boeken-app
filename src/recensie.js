@@ -1,4 +1,4 @@
-// Hulp bij een recensie: de app maakt een opdracht voor Claude, de gebruiker plakt de tekst terug.
+// Hulp bij een recensie: de app maakt een opdracht voor Claude, de tekst wordt teruggeplakt.
 // Gratis via de Claude-app; de app zelf praat met geen enkele AI-dienst.
 
 export const STEEKWOORDEN = [

@@ -32,7 +32,7 @@ export async function zetTipReactie(tip, reactie) {
   await db.instellingen.put({ sleutel: 'tipReacties', waarde: reacties });
 }
 
-// Alle tips die de app ooit kreeg, bewaard op het toestel. Zo blijven tips waar de gebruiker
+// Alle tips die de app ooit kreeg, bewaard op het toestel. Zo blijven tips waar je
 // nog niet op reageerde staan als er een nieuwe ronde komt; nieuwe tips komen vooraan.
 const MAX_ZICHTBAAR = 8;
 

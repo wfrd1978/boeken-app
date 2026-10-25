@@ -24,7 +24,7 @@ export function statusNaam(status) {
   return STATUS_IN_BEELD[status] ?? status;
 }
 
-// De indeling die de gebruiker koos. Elk boek heeft er één (of nog geen).
+// De gekozen indeling. Elk boek heeft er één (of nog geen).
 export const CATEGORIEEN = [
   'Thriller & spanning',
   'Oorlog & geschiedenis',

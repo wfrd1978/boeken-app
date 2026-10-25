@@ -463,7 +463,7 @@ function rijHtml(titel, boeken, naarTab) {
 }
 
 // --- Kobo-check: eens per maand nalopen welke wachtende boeken nu in Kobo Plus zitten ---
-// Kobo heeft geen koppeling en blokkeert automatisch kijken, dus de gebruiker kijkt zelf;
+// Kobo heeft geen koppeling en blokkeert automatisch kijken, dus je kijkt zelf;
 // de app zet de lijst klaar en geeft eens per maand een seintje.
 
 const KOBO_CHECK_DAGEN = 30;
@@ -710,7 +710,7 @@ async function toonLijst() {
       tekst: 'Ongedaan maken',
       actie: async () => {
         await boekTerugzetten(boek);
-        // Staat de lijst nog open, dan bijwerken; anders ziet de gebruiker hem straks vanzelf.
+        // Staat de lijst nog open, dan bijwerken; anders komt hij straks vanzelf.
         if (!document.getElementById('lijst')) return;
         boeken.push(boek);
         zetAantal();
@@ -1140,13 +1140,14 @@ async function toonInstellingen() {
       return;
     }
     const gemaakt = new Date(inhoud.gemaakt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
-    // Terugzetten vervangt alles. Staat er al een lijst, dan eerst een verse backup daarvan,
-    // zodat een verkeerd gekozen bestand nooit je werk van de laatste tijd kost.
-    if (backupNodig(aantal)) {
+    // Terugzetten vervangt alles. Staat er al een lijst, dan eerst nu een backup daarvan
+    // (in het afgelopen kwartier), zodat een verkeerd gekozen bestand nooit werk kost.
+    const laatste = laatsteBackup();
+    if (aantal > 0 && (!laatste || Date.now() - laatste > 15 * 60000)) {
       vak.innerHTML = `
         <div class="waarschuwing">
           <p><strong>Backup van ${gemaakt} met ${inhoud.boeken.length} boeken</strong><br />
-          Terugzetten vervangt je huidige lijst van ${aantal === 1 ? '1 boek' : `${aantal} boeken`}. Maak daarom eerst hierboven een backup van je huidige lijst en kies daarna dit bestand opnieuw.</p>
+          Terugzetten vervangt je huidige lijst van ${aantal === 1 ? '1 boek' : `${aantal} boeken`}. Maak daarom eerst nu hierboven een backup van je huidige lijst (Backup maken, dan Bewaar backup) en kies daarna dit bestand opnieuw.</p>
           <button class="link-knop" id="annuleer">Sluiten</button>
         </div>`;
       document.getElementById('annuleer').addEventListener('click', () => (vak.innerHTML = ''));
@@ -1618,7 +1619,7 @@ async function toonProfiel() {
   ruimCoversOp();
   const [profiel, boeken, foto] = await Promise.all([haalProfiel(), alleBoeken(), profielFotoAdres()]);
   if (nr !== schermNr) return;
-  // De statistieken tellen vanaf de maand waarin de gebruiker begon met bijhouden.
+  // De statistieken tellen vanaf de maand waarin het bijhouden begon.
   // Nog niet gekozen: deze maand, en die keuze wordt bewaard zodat hij niet elke maand verschuift.
   if (!geldigeStartmaand(profiel.statsVanaf)) {
     profiel.statsVanaf = huidigeMaand();

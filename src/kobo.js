@@ -1,4 +1,4 @@
-// 'Wacht op Kobo Plus': een boek dat de gebruiker wil lezen, maar dat nog niet in zijn abonnement zit.
+// 'Wacht op Kobo Plus': een boek op de verlanglijst dat nog niet in het abonnement zit.
 import { eersteAuteur } from './dubbel.js';
 
 // Haalt "Kobo Plus: ja/nee" uit een opmerking (zo staat het in de Excel-lijst van de

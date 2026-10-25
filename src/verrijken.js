@@ -1,5 +1,5 @@
 // Op de achtergrond covers en gegevens ophalen voor geïmporteerde boeken.
-// Titel en auteur uit de lijst blijven altijd zoals de gebruiker ze schreef.
+// Titel en auteur uit de lijst blijven altijd zoals ze zijn ingevuld.
 import { db } from './db.js';
 import { zoekBijpassend, zoekCover, zoekWerk, zoekSynopsis, TijdelijkeFout, googleStand, haalPlaatje } from './zoeken.js';
 
@@ -127,7 +127,7 @@ export async function verrijkAlles() {
         if (!actueel.werk && !aanvulling.werk && isbn) aanvulling.werk = (await zoekWerk(isbn)) || '';
         if (mijnGeneratie !== generatie) return;
         // Controle en schrijven in één handeling: alleen velden die nog steeds leeg zijn,
-        // en alleen als het nog hetzelfde boek is. Wat de gebruiker intussen koos, blijft staan.
+        // en alleen als het nog hetzelfde boek is. Wat intussen zelf is gekozen, blijft staan.
         await db.boeken.where('id').equals(boek.id).modify((b) => {
           if (b.titel !== boek.titel || b.toegevoegdOp !== boek.toegevoegdOp) return;
           for (const veld of AANVULLEN) {
@@ -254,7 +254,7 @@ export async function coverStand() {
 
 // Covers die alleen als adres bestaan, alsnog als plaatje bewaren. Google staat dat niet
 // toe; daarvoor zoeken we dezelfde uitgave (zelfde ISBN) bij Open Library. Het adres blijft
-// staan, er komt alleen het plaatje bij. Wat niet lukt, kan de gebruiker zelf kopiëren en plakken.
+// staan, er komt alleen het plaatje bij. Wat niet lukt, kun je zelf kopiëren en plakken.
 export async function legCoversVast(voortgang = () => {}) {
   const lijst = await db.boeken.filter((b) => !(b.cover instanceof Blob) && Boolean(b.coverUrl)).toArray();
   let gelukt = 0;

@@ -115,7 +115,7 @@ export async function leesExcel(bestand) {
 
 // Splitst in: toevoegen, bijwerken, overslaan en (bij een indeellijst) niet gevonden.
 // Bijwerken = het boek staat er al en het bestand vult een leeg veld aan (sterren, categorie).
-// Wat de gebruiker zelf al invulde, blijft altijd staan.
+// Wat al zelf was ingevuld, blijft altijd staan.
 export function planImport(nieuw, bestaand) {
   const toevoegen = [];
   const bijwerken = [];
