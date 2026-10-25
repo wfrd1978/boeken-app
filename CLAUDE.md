@@ -80,5 +80,10 @@ Volgorde en keuzes bepaalt de gebruiker; bij elk idee eerst kort de opties en ko
 - **Lezen interactief maken met andere gebruikers** (samen lezen, elkaars tips, boekenclub). Vraagt om een gedeelde plek voor gegevens; eerst samen nadenken over privacy en kosten.
 - ~~**Nieuws over boeken en schrijvers**~~ — gebouwd: rij Boekennieuws, nieuwspagina met archief, in de app te lezen; elke ochtend via een dagelijkse taak (`nieuws.json`).
 - ~~**Hulp bij het schrijven van een recensie**~~ — gebouwd via de Claude-app (gratis; opdracht ingevuld, tekst terugplakken).
-- **Kleinere ideeën**: citaten bewaren, 'Leen bij de bibliotheek', een zacht leesdoel zonder druk.
+- **Reeksen** (gekozen, 25 okt): bij een boek 'deel 3 van 5' en wanneer het volgende deel verschijnt.
+- **Schrijver en verfilmingen** (gekozen): korte informatie over de schrijver en of er een film of serie van is, via Wikipedia (gratis, zonder sleutel).
+- **Meerdere boeken tegelijk toevoegen** (gekozen): een rijtje titels scannen (Scan tekst van de Kobo-bibliotheek) of plakken, per boek bevestigen.
+- **Synchroniseren met de iPad**: later, samen met fase 3.
+- ~~Zoek uit de balk onderin~~ — niet doen, de gebruiker houdt de balk zo.
+- **Kleinere ideeën**: citaten bewaren, 'Leen bij de bibliotheek', een zacht leesdoel zonder druk, leesjaar-terugblik in december.
 - **Lp-app** (los project, later): aparte repository `lp-app` met een eigen sessie, gestart als kopie van de basis van deze app; bron MusicBrainz + Cover Art Archive (gratis, zonder sleutel). Herinnering staat op 5 december 2026.

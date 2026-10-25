@@ -78,6 +78,34 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Nieuwe versie online? Dan een knop om te vernieuwen, zodat de app niet helemaal dicht hoeft.
+// De app vergelijkt het hoofdbestand van de site met het bestand dat nu draait.
+const HUIDIG_SCRIPT = document.querySelector('script[type="module"][src*="/assets/"]')?.getAttribute('src');
+
+async function kijkNaarNieuweVersie() {
+  if (!HUIDIG_SCRIPT || document.getElementById('nieuwe-versie')) return;
+  try {
+    const html = await (await fetch(import.meta.env.BASE_URL, { cache: 'no-store' })).text();
+    const online = html.match(/<script[^>]+type="module"[^>]+src="([^"]+\/assets\/[^"]+)"/)?.[1];
+    if (!online || online === HUIDIG_SCRIPT) return;
+  } catch {
+    return; // Geen internet: dan later nog eens.
+  }
+  const knop = Object.assign(document.createElement('button'), {
+    id: 'nieuwe-versie',
+    textContent: 'Nieuwe versie klaar · tik om te vernieuwen',
+  });
+  knop.addEventListener('click', async () => {
+    await toonBoek.bewaarOpenstaand?.();
+    location.reload();
+  });
+  document.body.append(knop);
+}
+if (HUIDIG_SCRIPT) {
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && kijkNaarNieuweVersie());
+  setInterval(kijkNaarNieuweVersie, 30 * 60000);
+}
+
 vraagBlijvendeOpslag();
 zetKoboOm()
   .then(() => vulWerkenAan(zoekWerk))
@@ -891,7 +919,8 @@ async function toonInstellingen() {
     </section>
 
     <section class="blok">
-      <h2>Covers en synopsis</h2>
+      <details class="inklap" id="covers-blok" open>
+      <summary><h2>Covers en synopsis</h2><span class="zacht" id="covers-samen"></span></summary>
       <p id="cover-telling" class="zacht">&nbsp;</p>
       <p id="synopsis-telling" class="zacht"></p>
       <p class="verrijk-status" id="verrijk-status" hidden></p>
@@ -899,6 +928,7 @@ async function toonInstellingen() {
       <a class="tweede-knop" id="covers-nalopen" href="#/covers" hidden>Covers zelf nalopen</a>
       <button class="link-knop" id="bronnen-test">Test de verbinding met de boekenbronnen</button>
       <p class="zacht" id="bronnen-uitslag"></p>
+      </details>
     </section>
 
     <section class="blok">
@@ -989,6 +1019,11 @@ async function toonInstellingen() {
   nalopen.hidden = !(stand.geen + stand.internet);
   nalopen.textContent = `Covers zelf nalopen (${stand.geen + stand.internet})`;
   opnieuw.textContent = `Zoek opnieuw naar ontbrekende covers (${zonder})`;
+  // Alles binnen? Dan het blok dicht, met één regel als samenvatting. Tikken klapt het open.
+  if (telling.totaal && !zonder && !syn.open && !(await aantalTeVerrijken())) {
+    document.getElementById('covers-blok').open = false;
+    document.getElementById('covers-samen').textContent = 'Alles binnen ✓';
+  }
   opnieuw.addEventListener('click', async () => {
     opnieuw.disabled = true;
     const n = await zonderCoverOpnieuw();

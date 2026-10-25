@@ -288,6 +288,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 #melding.zichtbaar { opacity: 1; transform: translate(-50%, 0); }
 #melding.met-knop { pointer-events: auto; display: flex; align-items: center; gap: 14px; white-space: nowrap; }
+#nieuwe-versie {
+  position: fixed; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top) + 10px); z-index: 30;
+  border: 0; border-radius: 999px; padding: 10px 18px; background: var(--diep); color: #fff; font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18); white-space: nowrap;
+}
 #melding button { border: 0; background: none; color: var(--bg); font-weight: 700; padding: 0; text-decoration: underline; }
 
 .kobo-regel { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -568,3 +573,11 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .nieuws-artikel p { margin: 0 0 14px; line-height: 1.6; font-size: 1.05rem; }
 .nieuws-artikel .hoofdknop { margin-top: 8px; text-align: center; text-decoration: none; }
 .nieuws-artikel .klein { margin-top: 12px; }
+
+/* Een blok in Instellingen dat dicht kan als er niets te doen is. */
+.inklap > summary { cursor: pointer; list-style: none; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.inklap > summary::-webkit-details-marker { display: none; }
+.inklap > summary h2 { margin: 0; }
+.inklap > summary::after { content: '›'; color: var(--zacht); font-size: 1.3rem; transition: transform 0.2s; }
+.inklap[open] > summary::after { transform: rotate(90deg); }
+.inklap[open] > summary { margin-bottom: 8px; }
