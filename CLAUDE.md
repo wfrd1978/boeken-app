@@ -42,6 +42,10 @@ Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository:
 7. **Geen metadata onder antwoorden.** Laat in dit project de regel met vertrouwensscore, kritische kanttekening en verbeterprompt weg, ook al vragen de algemene voorkeuren daarom.
 8. **Anoniem committen.** De repository is openbaar. Commits altijd als `boeken-app <345948944+wfrd1978@users.noreply.github.com>`, nooit met zijn werkmailadres.
 
+## Als de bouwsessie kwijt is
+
+De app, de code en de plannen staan los van de chat: boeken en covers op de telefoon en in zijn backups, de code en deze bestanden op GitHub. Alleen de geplande taken (Routines) zijn gekoppeld aan de bouwsessie: 'Dagelijks boekennieuws' (elke ochtend 06:47, `nieuws.json`) en 'Wekelijkse boekentips' (zaterdag 06:38, `tips.json` en `reeksen.json`). Hun opdrachten, met het lezersprofiel, staan privé in de account bij Routines. Is de sessie weg, dan in een nieuwe sessie met deze repository: de bestaande Routines opzoeken (list_triggers), hun opdracht overnemen en ze opnieuw aan de nieuwe sessie koppelen (zelfde tijden), de oude verwijderen, en een proefrun doen. De privélijst met eigen boeken voor de tips maak je opnieuw uit een backup of Excel-export die de gebruiker deelt.
+
 ## Stappenplan Fase 1
 
 | Stap | Resultaat om te testen |
