@@ -36,7 +36,7 @@ import {
   coverUitKlembord,
 } from './zoeken.js';
 import { startScanner, geldigIsbn13 } from './scanner.js';
-import { kaal, achternaam, vindDubbel } from './dubbel.js';
+import { kaal, achternaam, eersteAuteur, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
 import { leesRegels, MAX_REGELS, ordenOpPassend } from './meerdere.js';
@@ -44,6 +44,7 @@ import { deelTekst, deelBoek } from './delen.js';
 import { isKoboLink, titelUitKoboLink } from './kobolink.js';
 import { bekendeReeksen, delenInLijst, leesDeel, reeksOpNaam, reeksTekst, volgendDeel } from './reeks.js';
 import { reeksLijst, vulReeksenAan } from './reekslijst.js';
+import { filmsVoorBoek, schrijverGegevens } from './schrijver.js';
 import { haalNieuws, nieuwsArchief, ordenNieuws, overMijnSchrijver } from './nieuws.js';
 import { STEEKWOORDEN, recensieOpdracht, claudeAdres } from './recensie.js';
 import { berekenStatistieken, huidigeMaand, geldigeStartmaand } from './statistieken.js';
@@ -223,7 +224,7 @@ document.addEventListener(
       vlak.textContent = img.dataset.letter;
       img.replaceWith(vlak);
     } else if (img.dataset.bijFout === 'weg') {
-      img.closest('.keuze-cover')?.remove();
+      (img.closest('.keuze-cover') ?? img).remove();
     }
   },
   true
@@ -845,6 +846,7 @@ function overDezeAppHtml() {
       <details>
         <summary>Wat gaat er over internet?</summary>
         <p>Bij zoeken en toevoegen vraagt de app gegevens op bij Open Library, Google Books en de Koninklijke Bibliotheek: de titel, auteur of ISBN waarnaar je zoekt. Op de achtergrond doet de app dat ook voor de boeken in je lijst, om ontbrekende covers, gegevens en de synopsis op te halen; dan gaan per boek de titel, auteur en het ISBN mee, los van elkaar en zonder naam. Je sterren, recensies en profiel gaan nooit mee.</p>
+        <p>Open je een boek, dan vraagt de app bij Wikipedia en Wikidata een korte tekst en foto van de schrijver en de verfilmingen op. Daarvoor gaat alleen de naam van de schrijver mee; het antwoord blijft een maand op je telefoon bewaard.</p>
         <p>De boekentips komen uit een openbare lijst op de site van de app. Die wordt elke zaterdagochtend vernieuwd door een geplande taak van Claude. Wat je met een tip doet, blijft op je telefoon.</p>
         <p>Het boekennieuws komt, net als de tips, uit een openbare lijst; elke ochtend komen er een of twee berichten bij, in het Nederlands samengevat. Alle berichten blijven op je telefoon bewaard. Of een bericht over een schrijver uit je lijst gaat, bekijkt de app op je telefoon zelf.</p>
         <p>Delen gaat alleen als jij op Deel tikt, en dan via het gewone deelmenu van je iPhone.</p>
@@ -2542,6 +2544,7 @@ async function toonBoek(id) {
         .join(' · ')}</p>
       ${boek.opmerking ? `<p class="details">${veilig(boek.opmerking)}</p>` : ''}
       <div class="reeks" id="reeks"></div>
+      <p class="details verfilming" id="verfilming" hidden></p>
       ${
         boek.synopsis
           ? `<p class="label">Over het boek</p>
@@ -2549,6 +2552,8 @@ async function toonBoek(id) {
              <button class="link-knop meer" id="synopsis-meer">Lees meer</button>`
           : ''
       }
+
+      <div class="schrijver" id="schrijver" hidden></div>
 
       <p class="label">Mijn oordeel</p>
       <div class="sterren" id="sterren" role="radiogroup" aria-label="Sterren"></div>
@@ -2645,6 +2650,35 @@ async function toonBoek(id) {
     }
   });
   tekenReeks();
+
+  // Over de schrijver en verfilmingen: op de achtergrond, zonder het scherm op te houden.
+  (async () => {
+    const naam = eersteAuteur(boek);
+    const gegevens = await schrijverGegevens(naam).catch(() => null);
+    if (!gegevens || !reeksVak.isConnected) return;
+    const reeks = reeksOpNaam(boek.reeks, await reeksLijst());
+    const extra = reeks?.delen.find((d) => d.deel === boek.reeksDeel)?.titels ?? [];
+    const films = filmsVoorBoek(boek, gegevens.films ?? [], extra).slice(0, 3);
+    const film = document.getElementById('verfilming');
+    if (films.length) {
+      film.textContent = `Verfilmd: ${films.map((f) => `${f.titel} (${f.serie ? 'serie' : 'film'}${f.jaar ? `, ${f.jaar}` : ''})`).join(' · ')}`;
+      film.hidden = false;
+    }
+    const info = gegevens.info;
+    if (!info) return;
+    const vak = document.getElementById('schrijver');
+    vak.innerHTML = `
+      <p class="label">Over de schrijver</p>
+      <div class="schrijver-kaart">
+        ${info.foto ? `<img class="schrijver-foto" src="${veilig(info.foto)}" alt="" loading="lazy" data-bij-fout="weg" />` : ''}
+        <div>
+          <strong>${veilig(info.naam)}</strong>
+          <p class="schrijver-tekst">${veilig(info.tekst)}</p>
+          ${info.url ? `<a class="link-knop" href="${veilig(info.url)}" target="_blank" rel="noopener">Meer op Wikipedia ↗</a>` : ''}
+        </div>
+      </div>`;
+    vak.hidden = false;
+  })();
 
   document.getElementById('deel').addEventListener('click', async () => {
     // De recensie zoals hij nu in het vak staat, ook als hij nog niet bewaard is.

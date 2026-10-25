@@ -81,7 +81,7 @@ Volgorde en keuzes bepaalt de gebruiker; bij elk idee eerst kort de opties en ko
 - ~~**Nieuws over boeken en schrijvers**~~ — gebouwd: rij Boekennieuws, nieuwspagina met archief, in de app te lezen; elke ochtend via een dagelijkse taak (`nieuws.json`).
 - ~~**Hulp bij het schrijven van een recensie**~~ — gebouwd via de Claude-app (gratis; opdracht ingevuld, tekst terugplakken).
 - ~~**Reeksen**~~ — gebouwd (25 okt): automatisch via `reeksen.json`, wekelijks bijgewerkt.
-- **Schrijver en verfilmingen** (gekozen): korte informatie over de schrijver en of er een film of serie van is, via Wikipedia (gratis, zonder sleutel).
+- ~~**Schrijver en verfilmingen**~~ — gebouwd (25 okt): Wikipedia (tekst en foto) en Wikidata (films en series), gratis en zonder sleutel.
 - ~~**Meerdere boeken tegelijk toevoegen**~~ — gebouwd (25 okt): plakken of Scan tekst, per boek aanvinken.
 - **Synchroniseren met de iPad**: later, samen met fase 3.
 - ~~Zoek uit de balk onderin~~ — niet doen, de gebruiker houdt de balk zo.
