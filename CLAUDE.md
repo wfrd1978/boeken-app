@@ -29,7 +29,7 @@ Werk alleen aan de fase die actief is. Nu actief: **Fase 2** (fase 1 is afgerond
 
 Geen betaalde diensten of API-sleutels zonder expliciete toestemming van de gebruiker.
 
-Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository: die is openbaar. Ze staan in de app en in de backups. Uitzondering met toestemming van de gebruiker: de tiplijst (`tips.json`) en het boekennieuws (`nieuws.json`) staan wel online; de uitleg bij een tip en de nieuwsberichten zijn algemeen en verwijzen niet naar zijn eigen boeken. Het lezersprofiel staat alleen in de opdracht van de wekelijkse taak (privé in zijn account).
+Persoonlijke gegevens (boekenlijst, lezersprofiel) komen nooit in de repository: die is openbaar. Ze staan in de app en in de backups. Uitzondering met toestemming van de gebruiker: de tiplijst (`tips.json`), het boekennieuws (`nieuws.json`) en de algemene reekslijst (`reeksen.json`) staan wel online; de uitleg bij een tip en de nieuwsberichten zijn algemeen en verwijzen niet naar zijn eigen boeken. Het lezersprofiel staat alleen in de opdracht van de wekelijkse taak (privé in zijn account).
 
 ## Werkafspraken
 
@@ -80,7 +80,7 @@ Volgorde en keuzes bepaalt de gebruiker; bij elk idee eerst kort de opties en ko
 - **Lezen interactief maken met andere gebruikers** (samen lezen, elkaars tips, boekenclub). Vraagt om een gedeelde plek voor gegevens; eerst samen nadenken over privacy en kosten.
 - ~~**Nieuws over boeken en schrijvers**~~ — gebouwd: rij Boekennieuws, nieuwspagina met archief, in de app te lezen; elke ochtend via een dagelijkse taak (`nieuws.json`).
 - ~~**Hulp bij het schrijven van een recensie**~~ — gebouwd via de Claude-app (gratis; opdracht ingevuld, tekst terugplakken).
-- **Reeksen** (gekozen, 25 okt): bij een boek 'deel 3 van 5' en wanneer het volgende deel verschijnt.
+- ~~**Reeksen**~~ — gebouwd (25 okt): automatisch via `reeksen.json`, wekelijks bijgewerkt.
 - **Schrijver en verfilmingen** (gekozen): korte informatie over de schrijver en of er een film of serie van is, via Wikipedia (gratis, zonder sleutel).
 - **Meerdere boeken tegelijk toevoegen** (gekozen): een rijtje titels scannen (Scan tekst van de Kobo-bibliotheek) of plakken, per boek bevestigen.
 - **Synchroniseren met de iPad**: later, samen met fase 3.
