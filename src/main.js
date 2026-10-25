@@ -1272,7 +1272,11 @@ function toonToevoegen() {
       <input id="zoekveld" type="search" enterkeyhint="search" placeholder="Titel, auteur, ISBN of Kobo-link" value="${veilig(laatsteZoekterm)}" autocomplete="off" />
       <button type="submit">Zoek</button>
     </form>
-    <a class="link-knop meerdere-link" href="#/meerdere">Meerdere boeken tegelijk ›</a>
+    <a class="meerdere-link" href="#/meerdere">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2v14H4zM8 4h3v16H8zM13 6h2v13h-2zM16.4 6.6l1.9-.6 3.6 12.3-1.9.6z" /></svg>
+      <span><strong>Meerdere boeken tegelijk</strong><small>Plak of scan een rijtje titels</small></span>
+      <span class="pijl" aria-hidden="true">›</span>
+    </a>
     <div id="resultaten"></div>
     <section class="toevoeg-tips" id="toevoeg-tips" hidden></section>
   `;
