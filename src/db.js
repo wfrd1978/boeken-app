@@ -150,17 +150,31 @@ function nieuwBoek(boek, toegevoegdOp = new Date().toISOString()) {
   };
 }
 
-export function boekToevoegen(boek) {
-  return db.boeken.add(nieuwBoek(boek));
+// Telt wijzigingen sinds de laatste backup (nieuwe boeken, sterren, recensie, status,
+// leesdata), zodat de app na een flink aantal om een backup vraagt.
+export const WIJZIGINGEN = 'wijzigingenSindsBackup';
+const TELT_MEE = ['sterren', 'recensie', 'status', 'leesdata', 'leesvorm'];
+
+function telWijziging(n = 1) {
+  try {
+    localStorage.setItem(WIJZIGINGEN, String((Number(localStorage.getItem(WIJZIGINGEN)) || 0) + n));
+  } catch {
+    // Geen opslag: dan alleen de herinnering op tijd.
+  }
+}
+
+export async function boekToevoegen(boek) {
+  const id = await db.boeken.add(nieuwBoek(boek));
+  telWijziging();
+  return id;
 }
 
 // Alle boeken uit een import in één keer: lukt het niet, dan wordt er niets toegevoegd.
 // Elk boek krijgt een eigen tijdstip, zodat de volgorde van het bestand bewaard blijft.
-export function boekenImporteren(boeken) {
+export async function boekenImporteren(boeken) {
   const nu = Date.now();
-  return db.boeken.bulkAdd(
-    boeken.map((b, i) => nieuwBoek({ ...b, verrijkt: false }, new Date(nu - i).toISOString()))
-  );
+  await db.boeken.bulkAdd(boeken.map((b, i) => nieuwBoek({ ...b, verrijkt: false }, new Date(nu - i).toISOString())));
+  telWijziging(boeken.length);
 }
 
 // Sterren of categorie aanvullen bij bestaande boeken, allemaal tegelijk: lukt het niet,
@@ -223,8 +237,10 @@ export function haalBoek(id) {
   return db.boeken.get(id);
 }
 
-export function boekBijwerken(id, wijzigingen) {
-  return db.boeken.update(id, wijzigingen);
+export async function boekBijwerken(id, wijzigingen) {
+  const n = await db.boeken.update(id, wijzigingen);
+  if (n && Object.keys(wijzigingen).some((v) => TELT_MEE.includes(v))) telWijziging();
+  return n;
 }
 
 export function boekVerwijderen(id) {

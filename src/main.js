@@ -58,6 +58,7 @@ import {
   bewaarBackup,
   laatsteBackup,
   dagenSindsBackup,
+  wijzigingenSindsBackup,
   moetHerinneren,
   herinnerLater,
   leesBackup,
@@ -812,10 +813,13 @@ function safariHtml() {
 
 function herinneringHtml() {
   const dagen = dagenSindsBackup();
+  const n = wijzigingenSindsBackup();
   const tekst =
     dagen === null
       ? 'Je hebt nog geen backup van je boeken.'
-      : `Je laatste backup is ${dagen} dagen oud.`;
+      : dagen >= 7
+        ? `Je laatste backup is ${dagen} dagen oud.`
+        : `Sinds je laatste backup heb je ${n} boeken toegevoegd of bijgewerkt.`;
   return `
     <div class="herinnering">
       <p>${tekst}</p>
@@ -883,7 +887,7 @@ function overDezeAppHtml() {
       <details>
         <summary>Wat kan de app niet?</summary>
         <p>Er is geen koppeling met je Kobo of Kobo Plus: daar biedt Kobo geen mogelijkheid voor. Wel kun je een boek markeren als Wacht op Kobo Plus en het met één tik opzoeken bij Kobo. Eens per maand geeft de app een seintje voor de Kobo-check: een lijst van al die boeken, zodat je snel ziet wat er nu te downloaden is. Automatisch kijken kan niet, omdat Kobo dat blokkeert.</p>
-        <p>Er is geen automatische backup naar de cloud: een backup maak je zelf. Na 14 dagen herinnert de app je eraan.</p>
+        <p>Er is geen automatische backup naar de cloud: een backup maak je zelf. Na 7 dagen herinnert de app je eraan, of eerder als je sinds je laatste backup tien boeken hebt toegevoegd of bijgewerkt.</p>
         <p>Je boeken staan niet op meerdere apparaten tegelijk. Op een nieuwe telefoon zet je een backup terug.</p>
       </details>
       <details>

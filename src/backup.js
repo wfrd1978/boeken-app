@@ -1,11 +1,13 @@
 // Backup: alle boeken (met covers) in één JSON-bestand, en weer terugzetten.
-import { db, normaliseerBoek } from './db.js';
+import { db, normaliseerBoek, WIJZIGINGEN } from './db.js';
 import { stopAchtergrond } from './verrijken.js';
 import { normaliseerTip } from './tips.js';
 import { normaliseerBericht } from './nieuws.js';
 
 const SLEUTEL = 'laatsteBackup';
-const HERINNER_NA_DAGEN = 14;
+const HERINNER_NA_DAGEN = 7;
+// Of eerder: na zoveel nieuwe boeken of beoordelingen sinds de laatste backup.
+const HERINNER_NA_WIJZIGINGEN = 10;
 
 function blobNaarTekst(blob) {
   return new Promise((klaar, fout) => {
@@ -98,6 +100,7 @@ export async function bewaarBackup(bestand) {
   }
   try {
     localStorage.setItem(SLEUTEL, new Date().toISOString());
+    localStorage.setItem(WIJZIGINGEN, '0');
   } catch {
     // Dan herinnert de app er later nog eens aan; geen probleem.
   }
@@ -118,8 +121,16 @@ export function dagenSindsBackup() {
   return laatste ? Math.floor((Date.now() - laatste) / 86400000) : null;
 }
 
-// Herinnering: nog nooit een backup, of langer dan 14 dagen geleden.
-// 'Later' stelt de herinnering een dag uit.
+export function wijzigingenSindsBackup() {
+  try {
+    return Number(localStorage.getItem(WIJZIGINGEN)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+// Herinnering: nog nooit een backup, langer dan 7 dagen geleden, of al 10 wijzigingen sinds de
+// laatste backup. 'Later' stelt de herinnering een dag uit.
 export function moetHerinneren() {
   try {
     const uitgesteld = localStorage.getItem('backupLater');
@@ -128,7 +139,7 @@ export function moetHerinneren() {
     // Geen opslag: gewoon herinneren.
   }
   const dagen = dagenSindsBackup();
-  return dagen === null || dagen >= HERINNER_NA_DAGEN;
+  return dagen === null || dagen >= HERINNER_NA_DAGEN || wijzigingenSindsBackup() >= HERINNER_NA_WIJZIGINGEN;
 }
 
 export function herinnerLater() {
