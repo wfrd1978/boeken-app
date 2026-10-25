@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { filmsVoorBoek, leesFilms, wikiNaarInfo } from '../src/schrijver.js';
+import { filmsVoorBoek, leesFilms, wikiNaarInfo, zinnenUitExtract } from '../src/schrijver.js';
 
 describe('Over de schrijver', () => {
   it('neemt alleen een pagina over een schrijver', () => {
@@ -21,5 +21,15 @@ describe('Over de schrijver', () => {
     expect(filmsVoorBoek({ titel: 'De Da Vinci Code' }, films).map((f) => f.titel)).toEqual(['The Da Vinci Code']);
     expect(filmsVoorBoek({ titel: 'De vrouw in de kooi' }, films, ['Kvinden i buret', 'The Keeper of Lost Causes'])[0].titel).toBe('De vrouw in de kooi');
     expect(filmsVoorBoek({ titel: 'Inferno' }, films)).toEqual([]);
+  });
+});
+
+describe('Langere tekst over de schrijver', () => {
+  it('haalt kopjes weg en zet alinea\'s achter elkaar', () => {
+    expect(zinnenUitExtract('James B. Patterson is een Amerikaans auteur.\n\n\nBiografie\nPatterson werkte in de reclame. Hij schreef meer dan 200 boeken.')).toBe(
+      'James B. Patterson is een Amerikaans auteur. Patterson werkte in de reclame. Hij schreef meer dan 200 boeken.'
+    );
+    expect(zinnenUitExtract('Eerste zin.\n== Leven ==\nTweede zin.')).toBe('Eerste zin. Tweede zin.');
+    expect(zinnenUitExtract(undefined)).toBe('');
   });
 });

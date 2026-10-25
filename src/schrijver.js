@@ -6,6 +6,10 @@ import { kaal } from './dubbel.js';
 import { veiligeUrl } from './veilig.js';
 
 const BEWAARDAGEN = 30;
+// Hoger zetten als de opgeslagen gegevens anders worden: dan wordt alles opnieuw opgehaald.
+const VERSIE = 2;
+// Korter dan dit (vaak één zin): dan de eerste drie zinnen van het artikel erbij halen.
+const KORT = 220;
 const WACHTTIJD = 12000;
 
 // Is dit een pagina over een schrijver? Anders liever niets dan de verkeerde persoon.
@@ -36,11 +40,36 @@ export function wikiNaarInfo(d, taal) {
   };
 }
 
+// De eerste zinnen van een artikel (de samenvatting is soms maar één zin).
+async function eersteZinnen(titel, taal) {
+  const d = await haal(
+    `https://${taal}.wikipedia.org/w/api.php?action=query&prop=extracts&exsentences=3&explaintext=1&redirects=1&format=json&origin=*&titles=${encodeURIComponent(titel)}`
+  ).catch(() => null);
+  const pagina = Object.values(d?.query?.pages ?? {})[0];
+  return zinnenUitExtract(pagina?.extract);
+}
+
+// Platte tekst van Wikipedia: kopjes ('Biografie', '== Leven ==') eruit, alinea's achter elkaar.
+export function zinnenUitExtract(tekst) {
+  if (typeof tekst !== 'string') return '';
+  return tekst
+    .split('\n')
+    .map((r) => r.trim())
+    .filter((r) => r && !/^=+.*=+$/.test(r) && /[.!?]["')]?$/.test(r))
+    .join(' ')
+    .trim();
+}
+
 async function wikipedia(naam) {
   const pad = encodeURIComponent(naam.trim().replace(/\s+/g, '_'));
   for (const taal of ['nl', 'en']) {
     const info = wikiNaarInfo(await haal(`https://${taal}.wikipedia.org/api/rest_v1/page/summary/${pad}`).catch(() => null), taal);
-    if (info) return info;
+    if (!info) continue;
+    if (info.tekst.length < KORT) {
+      const langer = await eersteZinnen(info.naam, taal);
+      if (langer.length > info.tekst.length) info.tekst = langer;
+    }
+    return info;
   }
   return null;
 }
@@ -102,12 +131,12 @@ export async function schrijverGegevens(naam) {
   const sleutel = kaal(naam).trim();
   const alle = (await db.instellingen.get('schrijvers'))?.waarde ?? {};
   const bewaard = alle[sleutel];
-  if (bewaard && Date.now() - Date.parse(bewaard.op) < BEWAARDAGEN * 86400000) return bewaard;
+  if (bewaard?.v === VERSIE && Date.now() - Date.parse(bewaard.op) < BEWAARDAGEN * 86400000) return bewaard;
   if (!navigator.onLine) return bewaard ?? null;
   const [info, films] = await Promise.all([wikipedia(naam).catch(() => null), wikidata(naam).catch(() => null)]);
   // Mislukt allebei (geen verbinding), dan niets bewaren: de volgende keer opnieuw proberen.
   if (info === null && films === null && !bewaard) return null;
-  const nieuw = { op: new Date().toISOString(), info: info ?? bewaard?.info ?? null, films: films ?? bewaard?.films ?? [] };
+  const nieuw = { v: VERSIE, op: new Date().toISOString(), info: info ?? bewaard?.info ?? null, films: films ?? bewaard?.films ?? [] };
   alle[sleutel] = nieuw;
   await db.instellingen.put({ sleutel: 'schrijvers', waarde: alle });
   return nieuw;

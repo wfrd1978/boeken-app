@@ -607,4 +607,4 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .schrijver-kaart { display: flex; gap: 12px; align-items: flex-start; }
 .schrijver-foto { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex: none; background: var(--lijn); }
 .schrijver-kaart strong { display: block; margin-bottom: 2px; }
-.schrijver-tekst { margin: 0 0 4px; color: var(--zacht); font-size: 0.9rem; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.schrijver-tekst { margin: 0 0 4px; color: var(--zacht); font-size: 0.9rem; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
