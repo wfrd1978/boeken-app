@@ -1,6 +1,6 @@
 // Een Excel-lijst inlezen en klaarzetten voor import.
 import { kaal, vindDubbel } from './dubbel.js';
-import { STATUSSEN } from './db.js';
+import { STATUSSEN, echteDatum } from './db.js';
 import { leesKoboOpmerking } from './kobo.js';
 import { leesCategorie } from './categorie.js';
 
@@ -41,10 +41,9 @@ function leesLeesdatum(waarde) {
   const maand = tekst.match(/^([a-z]+)\s+(\d{4})$/);
   if (maand && MAANDEN.includes(maand[1])) return `${maand[2]}-${tweeCijfers(MAANDEN.indexOf(maand[1]) + 1)}`;
   const nl = tekst.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
-  if (nl) return `${nl[3]}-${tweeCijfers(nl[2])}-${tweeCijfers(nl[1])}`;
-  if (/^\d{4}-\d{2}(-\d{2})?$/.test(tekst)) return tekst;
-  if (/^\d{4}$/.test(tekst)) return '';
-  return '';
+  // Een datum die niet bestaat (31-2-2025, of Amerikaans 1/13/2025) wordt niet bewaard.
+  const datum = nl ? `${nl[3]}-${tweeCijfers(nl[2])}-${tweeCijfers(nl[1])}` : /^\d{4}-\d{2}(-\d{2})?$/.test(tekst) ? tekst : '';
+  return echteDatum(datum) ? datum : '';
 }
 
 function leesSterren(waarde) {
@@ -62,7 +61,12 @@ function leesStatus(waarde) {
 
 export async function leesExcel(bestand) {
   // SheetJS pas laden als het nodig is, zodat de app zelf snel blijft.
-  const XLSX = await import('xlsx');
+  let XLSX;
+  try {
+    XLSX = await import('xlsx');
+  } catch {
+    throw new Error('Het Excel-onderdeel laadt niet. Sluit de app helemaal af, open hem opnieuw en probeer het nog eens.');
+  }
   let werkmap;
   try {
     werkmap = XLSX.read(await bestand.arrayBuffer(), { cellDates: true });

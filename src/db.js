@@ -54,7 +54,7 @@ export function alleBoeken() {
 const DATUM = /^\d{4}-\d{2}(-\d{2})?$/;
 
 // '2025-10' of '2025-10-14', en een datum die echt bestaat (geen 31 februari).
-function echteDatum(d) {
+export function echteDatum(d) {
   if (typeof d !== 'string' || !DATUM.test(d)) return false;
   const [j, m, dag = '1'] = d.split('-').map(Number);
   const datum = new Date(j, m - 1, dag);

@@ -4,10 +4,14 @@ export function kaal(tekst) {
   return (tekst || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
+// De eerste schrijver, ook als er twee in één veld staan ("Lars Kepler & X" -> "Lars Kepler").
+export function eersteAuteur(boek) {
+  return (boek.auteurs?.[0] || '').split('&')[0].trim();
+}
+
 // Achternaam = laatste woord van de eerste auteur ("Michel van Egmond" -> "egmond").
 export function achternaam(boek) {
-  const naam = (boek.auteurs?.[0] || '').split('&')[0].trim();
-  return kaal(naam.split(/\s+/).pop());
+  return kaal(eersteAuteur(boek).split(/\s+/).pop());
 }
 
 // Alleen letters en cijfers, zodat leestekens en hoofdletters niet uitmaken.

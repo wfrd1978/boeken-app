@@ -1,5 +1,6 @@
 // Een boek delen via het deelmenu (WhatsApp, Berichten, LinkedIn, mail).
 
+import { eersteAuteur } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 
 export const OPENING = 'Hé, hier een leuke boekentip voor je:';
@@ -14,7 +15,7 @@ function inkorten(tekst, max) {
 }
 
 export function bolZoekUrl(boek) {
-  const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
+  const auteur = eersteAuteur(boek);
   const zoek = boek.isbn || `${boek.titel} ${auteur}`.trim();
   return `https://www.bol.com/nl/nl/s/?searchtext=${encodeURIComponent(zoek)}`;
 }

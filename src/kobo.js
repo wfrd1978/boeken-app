@@ -1,4 +1,5 @@
 // 'Wacht op Kobo Plus': een boek dat de gebruiker wil lezen, maar dat nog niet in zijn abonnement zit.
+import { eersteAuteur } from './dubbel.js';
 
 // Haalt "Kobo Plus: ja/nee" uit een opmerking (zo staat het in de Excel-lijst van de
 // verlanglijst) en geeft de opgeschoonde opmerking terug.
@@ -16,6 +17,6 @@ export function leesKoboOpmerking(opmerking = '') {
 
 // Zoeken op de Nederlandse Kobo-site, met titel en auteur al ingevuld.
 export function koboZoekUrl(boek) {
-  const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
+  const auteur = eersteAuteur(boek);
   return `https://www.kobo.com/nl/nl/search?query=${encodeURIComponent(`${boek.titel} ${auteur}`.trim())}`;
 }

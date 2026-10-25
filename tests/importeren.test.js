@@ -26,6 +26,18 @@ describe('Excel inlezen', () => {
     expect(boeken[2]).toMatchObject({ leesdata: ['2026-10-14'], sterren: 4, status: 'Bezig' });
   });
 
+  it('bewaart geen leesdatum die niet bestaat', async () => {
+    const boeken = await leesExcel(
+      excelBestand([
+        ['Auteur', 'Titel', 'Gelezen (maand)'],
+        ['A', 'Een', '31-2-2025'],
+        ['B', 'Twee', '1/13/2025'],
+        ['C', 'Drie', '28-2-2025'],
+      ])
+    );
+    expect(boeken.map((b) => b.leesdata)).toEqual([[], [], ['2025-02-28']]);
+  });
+
   it('geeft een duidelijke fout zonder kolom Titel', async () => {
     await expect(leesExcel(excelBestand([['Naam'], ['iets']]))).rejects.toThrow(/Titel/);
   });

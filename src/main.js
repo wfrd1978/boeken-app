@@ -107,7 +107,7 @@ opVoortgang(({ soort = 'covers', klaar, totaal, gestopt, wacht, laatsteFout, goo
     if (soort === 'covers' && (location.hash === '' || location.hash === '#/')) {
       if (document.activeElement?.id !== 'lijst-zoek') {
         const y = window.scrollY;
-        toonLijst().then(() => window.scrollTo(0, y));
+        herteken().then(() => window.scrollTo(0, y));
       }
     }
   }
@@ -811,7 +811,7 @@ function overDezeAppHtml() {
       </details>
       <details>
         <summary>Wat gaat er over internet?</summary>
-        <p>Bij zoeken en toevoegen vraagt de app gegevens op bij Open Library, Google Books en de Koninklijke Bibliotheek: alleen de titel, auteur of ISBN waarnaar je zoekt. Je lijst, sterren en recensies gaan nooit mee.</p>
+        <p>Bij zoeken en toevoegen vraagt de app gegevens op bij Open Library, Google Books en de Koninklijke Bibliotheek: de titel, auteur of ISBN waarnaar je zoekt. Op de achtergrond doet de app dat ook voor de boeken in je lijst, om ontbrekende covers, gegevens en de synopsis op te halen; dan gaan per boek de titel, auteur en het ISBN mee, los van elkaar en zonder naam. Je sterren, recensies en profiel gaan nooit mee.</p>
         <p>De boekentips komen uit een openbare lijst op de site van de app. Die wordt elke zaterdagochtend vernieuwd door een geplande taak van Claude. Wat je met een tip doet, blijft op je telefoon.</p>
         <p>Het boekennieuws komt, net als de tips, uit een openbare lijst; elke ochtend komen er een of twee berichten bij, in het Nederlands samengevat. Alle berichten blijven op je telefoon bewaard. Of een bericht over een schrijver uit je lijst gaat, bekijkt de app op je telefoon zelf.</p>
         <p>Delen gaat alleen als jij op Deel tikt, en dan via het gewone deelmenu van je iPhone.</p>
@@ -930,7 +930,15 @@ async function toonInstellingen() {
     if (!bestand) {
       maakKnop.disabled = true;
       maakKnop.textContent = 'Backup klaarmaken…';
-      bestand = await maakBackupBestand();
+      try {
+        bestand = await maakBackupBestand();
+      } catch {
+        bestand = null;
+        maakKnop.disabled = false;
+        maakKnop.textContent = 'Backup maken';
+        melding('Backup klaarmaken lukte niet. Probeer het nog eens.');
+        return;
+      }
       maakKnop.disabled = false;
       maakKnop.textContent = `Bewaar backup (${aantal} ${aantal === 1 ? 'boek' : 'boeken'})`;
       return;
@@ -1132,6 +1140,18 @@ async function toonInstellingen() {
       return;
     }
     const gemaakt = new Date(inhoud.gemaakt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+    // Terugzetten vervangt alles. Staat er al een lijst, dan eerst een verse backup daarvan,
+    // zodat een verkeerd gekozen bestand nooit je werk van de laatste tijd kost.
+    if (backupNodig(aantal)) {
+      vak.innerHTML = `
+        <div class="waarschuwing">
+          <p><strong>Backup van ${gemaakt} met ${inhoud.boeken.length} boeken</strong><br />
+          Terugzetten vervangt je huidige lijst van ${aantal === 1 ? '1 boek' : `${aantal} boeken`}. Maak daarom eerst hierboven een backup van je huidige lijst en kies daarna dit bestand opnieuw.</p>
+          <button class="link-knop" id="annuleer">Sluiten</button>
+        </div>`;
+      document.getElementById('annuleer').addEventListener('click', () => (vak.innerHTML = ''));
+      return;
+    }
     vak.innerHTML = `
       <div class="waarschuwing">
         <p><strong>Backup van ${gemaakt} met ${inhoud.boeken.length} boeken</strong><br />
@@ -1147,6 +1167,8 @@ async function toonInstellingen() {
         const n = await zetBackupTerug(inhoud);
         location.hash = '#/';
         melding(`${n} boeken teruggezet`);
+        // Wat de teruggezette lijst nog mist (covers, gegevens, synopsis) meteen aanvullen.
+        verrijkAlles();
       } catch {
         vak.innerHTML = '<div class="waarschuwing"><p>Terugzetten is mislukt. Je lijst is niet veranderd.</p></div>';
       }
@@ -1251,6 +1273,12 @@ async function zoekGescandBoek(isbn, bron) {
   } catch (fout) {
     if (!(fout instanceof GoogleWeigert)) {
       melding('Geen verbinding. Probeer het zo nog eens.');
+      const vak = document.getElementById('resultaten');
+      if (vak) {
+        vak.innerHTML = `<p class="leeg">Opzoeken lukt nu niet. Controleer je internetverbinding.</p>${zelfInvullenKnop()}`;
+        laatsteZoekterm = '';
+        koppelZelfInvullen();
+      }
       return;
     }
     reden = 'google';
@@ -1260,10 +1288,13 @@ async function zoekGescandBoek(isbn, bron) {
 }
 
 let zoekBron = 'getypt';
+// Telt elke zoekopdracht; een tragere, oudere zoekopdracht toont dan niets meer.
+let zoekNr = 0;
 
 async function zoek(tekst, bron = 'getypt') {
   zoekBron = bron;
   if (!tekst) return;
+  const nr = ++zoekNr;
   // Een geplakte Kobo-link: zoeken op de titel die in de link staat.
   if (isKoboLink(tekst)) {
     const titel = titelUitKoboLink(tekst);
@@ -1287,9 +1318,12 @@ async function zoek(tekst, bron = 'getypt') {
   const vak = document.getElementById('resultaten');
   vak.innerHTML = `<p class="bezig">Zoeken…</p>`;
   try {
-    laatsteResultaten = await zoekBoeken(tekst);
+    const resultaten = await zoekBoeken(tekst);
+    if (nr !== zoekNr) return;
+    laatsteResultaten = resultaten;
     await toonResultaten(laatsteResultaten);
   } catch {
+    if (nr !== zoekNr || !vak.isConnected) return;
     vak.innerHTML = `
       <p class="leeg">Zoeken lukt nu niet. Controleer je internetverbinding.</p>
       ${zelfInvullenKnop()}`;
@@ -1337,9 +1371,11 @@ async function toonResultaten(resultaten) {
 }
 
 async function toonBevestigen(boek) {
+  const nr = schermNr;
   ruimCoversOp();
   let status = 'Wil ik lezen';
   const mijnBoeken = await alleBoeken();
+  if (nr !== schermNr) return;
   // Een voorstel, op basis van je andere boeken van deze schrijver of de onderwerpen.
   let categorie = raadCategorie(boek, mijnBoeken);
   const dubbel = boek.handmatig ? null : vindDubbel(boek, mijnBoeken);
@@ -1882,7 +1918,7 @@ async function vulTipCovers(vak, tips, klasse = 'rij-cover') {
   }
 }
 
-function toonTip(tip, boeken, opnieuw = toonLijst) {
+function toonTip(tip, boeken, opnieuw = herteken) {
   document.body.insertAdjacentHTML(
     'beforeend',
     `<div class="laag" id="tip-laag">
@@ -1915,15 +1951,22 @@ function toonTip(tip, boeken, opnieuw = toonLijst) {
     if (!knop) return;
     laag.querySelectorAll('[data-reactie]').forEach((k) => (k.disabled = true));
     const reactie = knop.dataset.reactie;
-    await zetTipReactie(tip, reactie);
-    if (reactie === 'nee') {
+    let id;
+    try {
+      await zetTipReactie(tip, reactie);
+      if (reactie === 'nee') {
+        sluit();
+        melding('Deze tip zie je niet meer');
+        opnieuw();
+        return;
+      }
+      knop.textContent = 'Bezig…';
+      id = await voegTipToe(tip, reactie, boeken);
+    } catch {
       sluit();
-      melding('Deze tip zie je niet meer');
-      opnieuw();
+      melding('Dat lukte niet. Probeer het nog eens.');
       return;
     }
-    knop.textContent = 'Bezig…';
-    const id = await voegTipToe(tip, reactie, boeken);
     sluit();
     if (reactie === 'gelezen') {
       // Meteen naar het boek, om sterren te geven.
@@ -2262,7 +2305,14 @@ async function toonCoversNalopen() {
       const invoer = e.target.closest('[data-foto]');
       const bestand = invoer?.files?.[0];
       if (!bestand) return;
-      await bewaarCover(invoer.closest('li'), Number(invoer.dataset.foto), { cover: await verkleinFoto(bestand), coverUrl: '' });
+      let cover;
+      try {
+        cover = await verkleinFoto(bestand);
+      } catch {
+        melding('Deze foto kan de app niet lezen. Probeer een andere.');
+        return;
+      }
+      await bewaarCover(invoer.closest('li'), Number(invoer.dataset.foto), { cover, coverUrl: '' });
     });
   });
 }
@@ -2379,7 +2429,13 @@ async function toonBoek(id) {
   document.getElementById('cover-foto').addEventListener('change', async (e) => {
     const bestand = e.target.files?.[0];
     if (!bestand) return;
-    const cover = await verkleinFoto(bestand);
+    let cover;
+    try {
+      cover = await verkleinFoto(bestand);
+    } catch {
+      melding('Deze foto kan de app niet lezen. Probeer een andere.');
+      return;
+    }
     await bewaar({ cover, coverUrl: '' });
     toonNieuweCover();
     melding('Cover bewaard');
@@ -2508,6 +2564,13 @@ let vorigeHash = location.hash || '#/';
 
 // Elk nieuw scherm krijgt een volgnummer; een trager, ouder scherm tekent dan niet meer.
 let schermNr = 0;
+
+// Het startscherm opnieuw tekenen (na aanvullen of een tip). Met een nieuw volgnummer,
+// zodat een tekenbeurt die nog bezig was niet ook nog eens tekent.
+function herteken() {
+  schermNr += 1;
+  return toonLijst();
+}
 
 async function route({ naarBoven = false } = {}) {
   schermNr += 1;

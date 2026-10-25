@@ -1,4 +1,4 @@
-import { vindDubbel, kaal } from './dubbel.js';
+import { vindDubbel, kaal, eersteAuteur } from './dubbel.js';
 import { kbOpIsbn, kbZoek } from './kb.js';
 
 // Boekgegevens ophalen bij Open Library en Google Books (gratis).
@@ -177,7 +177,7 @@ export function schoneTekst(html) {
 // uitgave), anders de beschrijving van het werk bij Open Library.
 // Geeft '' als niemand er een heeft; een TijdelijkeFout als Google even weigert.
 export async function zoekSynopsis(boek) {
-  const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
+  const auteur = eersteAuteur(boek);
   let google = [];
   // Zoeken op ISBN geeft bij Google vaak een storing; dan gewoon door op titel en auteur.
   if (boek.isbn) {
@@ -266,7 +266,6 @@ export class TijdelijkeFout extends Error {
   }
 }
 
-// Een boek opzoeken met een gescand of getypt ISBN. Geeft null als geen bron het kent.
 // Google Books gaf geen antwoord (bijvoorbeeld de daglimiet) en Open Library kende het boek niet.
 export class GoogleWeigert extends Error {}
 
@@ -347,7 +346,7 @@ export async function testBronnen() {
 // de Excel-lijst). Alleen een resultaat dat echt hetzelfde boek is, telt; Nederlandse
 // uitgaven eerst. Geeft null als niets past, en een fout als geen bron bereikbaar is.
 export async function zoekBijpassend(boek, { heeftCover = false } = {}) {
-  const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
+  const auteur = eersteAuteur(boek);
   // Zonder auteur en ISBN is een gelijke titel te weinig zekerheid: dan niets aanvullen.
   if (!auteur && !boek.isbn) return null;
   // Heeft het boek al een cover, dan zijn alleen de gegevens nodig (ISBN, uitgever, jaar):
@@ -445,7 +444,7 @@ export async function zoekCover(boek, { opTitel = true } = {}) {
 
 // Alle covers die de bronnen van dit boek kennen, van verschillende uitgaven, om uit te kiezen.
 export async function zoekCoverKeuzes(boek) {
-  const auteur = boek.auteurs?.[0]?.split('&')[0].trim() ?? '';
+  const auteur = eersteAuteur(boek);
   const vragen = [
     haalJson(googleUrl(`intitle:${boek.titel}${auteur ? ` inauthor:${auteur}` : ''}`, '&maxResults=20')).then((d) =>
       (d.items ?? [])
@@ -484,7 +483,10 @@ export async function verkleinFoto(bestand) {
   canvas.width = Math.round(bitmap.width * schaal);
   canvas.height = Math.round(bitmap.height * schaal);
   canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  return new Promise((klaar) => canvas.toBlob(klaar, 'image/jpeg', 0.85));
+  // Lukt het omzetten niet, dan een fout, zodat een bestaande cover nooit leeg wordt gemaakt.
+  return new Promise((klaar, fout) =>
+    canvas.toBlob((blob) => (blob ? klaar(blob) : fout(new Error('Foto niet te lezen'))), 'image/jpeg', 0.85)
+  );
 }
 
 // Een profielfoto: vierkant uit het midden, 400 bij 400 pixels. Via een gewoon plaatje
