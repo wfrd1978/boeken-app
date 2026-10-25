@@ -183,6 +183,18 @@ function coverHtml(boek, klasse, links = coverLinks) {
   return `<div class="${klasse} geen-cover">${letter}</div>`;
 }
 
+// Een tekstvak dat meegroeit met de tekst, zodat je er niet in hoeft te scrollen
+// en vegen over het vak gewoon de pagina laat scrollen.
+function laatMeegroeien(vak) {
+  const pas = () => {
+    vak.style.height = 'auto';
+    vak.style.height = `${vak.scrollHeight + 2}px`;
+  };
+  vak.addEventListener('input', pas);
+  requestAnimationFrame(pas);
+  return pas;
+}
+
 function sterrenTekst(aantal) {
   return aantal ? '★'.repeat(aantal) + '☆'.repeat(5 - aantal) : '';
 }
@@ -2586,9 +2598,10 @@ async function toonBoek(id) {
       <div class="keuzes" id="bezit">
         ${Object.values(BEZIT).map((x) => `<button class="keuze${boek[x.veld] ? ' actief' : ''}" data-veld="${x.veld}">${x.naam}</button>`).join('')}
       </div>
-      <div class="kobo-regel">
-        <a class="link-knop" href="${koboZoekUrl(boek)}" target="_blank" rel="noopener">Zoek bij Kobo ↗</a>
-      </div>
+      <a class="kobo-zoek" href="${koboZoekUrl(boek)}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 1 0 3.7 10.7l4.8 4.8 1.4-1.4-4.8-4.8A6 6 0 0 0 10 4zm0 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8z" /></svg>
+        Zoek dit boek bij Kobo ↗
+      </a>
 
       <p class="label">Gelezen op</p>
       <ul class="leesdata" id="leesdata"></ul>
@@ -2835,6 +2848,7 @@ async function toonBoek(id) {
   // Recensie bewaart vanzelf, kort nadat je stopt met typen.
   const recensie = document.getElementById('recensie');
   const opgeslagen = document.getElementById('opgeslagen');
+  const pasRecensieAan = laatMeegroeien(recensie);
   let timer;
   const bewaarRecensie = async () => {
     clearTimeout(timer);
@@ -2854,6 +2868,7 @@ async function toonBoek(id) {
     await bewaarRecensie();
     toonRecensieHulp(boek, async (tekst) => {
       recensie.value = tekst;
+      pasRecensieAan();
       await bewaarRecensie();
     });
   });
