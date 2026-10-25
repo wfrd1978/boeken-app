@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { delenInLijst, leesDeel, reeksTekst } from '../src/reeks.js';
+import { delenInLijst, herkenReeks, leesDeel, normaliseerReeks, reeksTekst, volgendDeel } from '../src/reeks.js';
 
 describe('Reeksen', () => {
   it('leest een deelnummer', () => {
@@ -21,5 +21,26 @@ describe('Reeksen', () => {
       { id: 3, titel: 'X', reeks: 'Iets anders', reeksDeel: 2 },
     ];
     expect(delenInLijst(boeken[0], boeken).map((b) => b.id)).toEqual([2, 1]);
+  });
+});
+
+describe('Reekslijst', () => {
+  const lijst = [
+    { naam: 'Afdeling Q', schrijvers: ['Jussi Adler-Olsen'], delen: [{ deel: 1, titels: ['De vrouw in de kooi', 'Kvinden i buret'] }, { deel: 2, titels: ['Fazantenmoordenaars'] }, { deel: 3, titels: ['Het bericht in de fles'] }], volgende: '' },
+    { naam: 'Kapot', schrijvers: [], delen: [] },
+  ]
+    .map(normaliseerReeks)
+    .filter(Boolean);
+  it('houdt alleen geldige reeksen over', () => {
+    expect(lijst).toHaveLength(1);
+  });
+  it('herkent een boek op titel en schrijver', () => {
+    expect(herkenReeks({ titel: 'De vrouw in de kooi', auteurs: ['Jussi Adler-Olsen'] }, lijst)).toMatchObject({ reeks: 'Afdeling Q', reeksDeel: 1, reeksTotaal: 3 });
+    expect(herkenReeks({ titel: 'Vrouw in de kooi', auteurs: ['Adler-Olsen, Jussi'] }, lijst)).toBe(null);
+    expect(herkenReeks({ titel: 'De vrouw in de kooi', auteurs: ['Iemand Anders'] }, lijst)).toBe(null);
+  });
+  it('noemt het eerstvolgende deel dat nog niet in je lijst staat', () => {
+    const boeken = [{ id: 1, titel: 'De vrouw in de kooi', reeks: 'Afdeling Q', reeksDeel: 1 }, { id: 2, titel: 'Fazantenmoordenaars', reeks: 'Afdeling Q', reeksDeel: 2 }];
+    expect(volgendDeel(boeken[0], lijst[0], boeken)?.deel).toBe(3);
   });
 });

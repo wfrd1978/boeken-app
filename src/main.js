@@ -41,7 +41,8 @@ import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
 import { deelTekst, deelBoek } from './delen.js';
 import { isKoboLink, titelUitKoboLink } from './kobolink.js';
-import { bekendeReeksen, delenInLijst, leesDeel, reeksTekst } from './reeks.js';
+import { bekendeReeksen, delenInLijst, leesDeel, reeksOpNaam, reeksTekst, volgendDeel } from './reeks.js';
+import { reeksLijst, vulReeksenAan } from './reekslijst.js';
 import { haalNieuws, nieuwsArchief, ordenNieuws, overMijnSchrijver } from './nieuws.js';
 import { STEEKWOORDEN, recensieOpdracht, claudeAdres } from './recensie.js';
 import { berekenStatistieken, huidigeMaand, geldigeStartmaand } from './statistieken.js';
@@ -111,6 +112,8 @@ vraagBlijvendeOpslag();
 zetKoboOm()
   .then(() => vulWerkenAan(zoekWerk))
   .then(verrijkAlles);
+// Reeksen herkennen met de lijst van de site (ook bij elke start: dan komen nieuwe delen mee).
+vulReeksenAan().catch(() => {});
 
 // Voortgang van het ophalen van covers tonen waar dat kan.
 opVoortgang(({ soort = 'covers', klaar, totaal, gestopt, wacht, laatsteFout, googleOp }) => {
@@ -1167,7 +1170,10 @@ async function toonInstellingen() {
       zoekterm = '';
       location.hash = '#/';
       melding([n && `${boekTekst(n)} toegevoegd`, m && `${velden} bij ${boekTekst(m)}`].filter(Boolean).join(', '));
-      if (n) verrijkAlles();
+      if (n) {
+        verrijkAlles();
+        vulReeksenAan().catch(() => {});
+      }
     });
   });
 
@@ -1212,8 +1218,9 @@ async function toonInstellingen() {
         const n = await zetBackupTerug(inhoud);
         location.hash = '#/';
         melding(`${n} boeken teruggezet`);
-        // Wat de teruggezette lijst nog mist (covers, gegevens, synopsis) meteen aanvullen.
+        // Wat de teruggezette lijst nog mist (covers, gegevens, synopsis, reeksen) meteen aanvullen.
         verrijkAlles();
+        vulReeksenAan().catch(() => {});
       } catch {
         vak.innerHTML = '<div class="waarschuwing"><p>Terugzetten is mislukt. Je lijst is niet veranderd.</p></div>';
       }
@@ -1520,6 +1527,7 @@ async function toonBevestigen(boek) {
     // Zelf ingevuld zonder cover: later op de achtergrond nog eens zoeken.
     const verrijkt = !(boek.handmatig && !cover.cover && !cover.coverUrl);
     await boekToevoegen({ ...gegevens, ...cover, status, categorie, bron: boek.bron ?? 'getypt', verrijkt });
+    vulReeksenAan().catch(() => {});
     if (!verrijkt) verrijkAlles();
     laatsteZoekterm = '';
     laatsteResultaten = [];
@@ -2449,7 +2457,7 @@ async function toonBoek(id) {
   // Reeks: één regel, de delen uit je lijst als kleine knopjes, en zelf aan te passen.
   const reeksVak = document.getElementById('reeks');
   const tekenReeks = async () => {
-    const boeken = await alleBoeken();
+    const [boeken, reeksen] = await Promise.all([alleBoeken(), reeksLijst()]);
     if (!reeksVak.isConnected) return;
     if (!boek.reeks) {
       reeksVak.innerHTML = '<button class="link-knop" id="reeks-wijzig">+ Reeks toevoegen</button>';
@@ -2459,7 +2467,12 @@ async function toonBoek(id) {
     const teken = { Gelezen: '✓', Bezig: '◐', Gestopt: '×' };
     reeksVak.innerHTML = `
       <p class="reeks-regel"><span>${veilig(reeksTekst(boek))}</span> <button class="link-knop" id="reeks-wijzig">Wijzig</button></p>
-      ${boek.reeksVolgende ? `<p class="details">Volgende: ${veilig(boek.reeksVolgende)}</p>` : ''}
+      ${(() => {
+        // Eén korte regel: het volgende deel dat je nog niet hebt, of anders wat er is aangekondigd.
+        const volgend = volgendDeel(boek, reeksOpNaam(boek.reeks, reeksen), boeken);
+        if (volgend) return `<p class="details">Volgende: deel ${volgend.deel} · ${veilig(volgend.titels[0])}</p>`;
+        return boek.reeksVolgende ? `<p class="details">Aangekondigd: ${veilig(boek.reeksVolgende)}</p>` : '';
+      })()}
       ${
         delen.length > 1
           ? `<div class="reeks-delen" aria-label="Delen in je lijst">${delen
