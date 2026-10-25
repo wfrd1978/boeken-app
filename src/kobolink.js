@@ -24,8 +24,11 @@ export function titelUitKoboLink(tekst) {
   }
   const slug = pad.match(/\/(?:ebook|audiobook|boek|book)\/([^/?#]+)/i)?.[1];
   if (!slug) return '';
-  return slug
-    .replace(/-\d+$/, '') // Kobo zet een volgnummer achter dubbele titels
+  const titel = slug
+    // Kobo zet een volgnummer achter dubbele titels (de-prijs-3). Alleen één cijfer weghalen:
+    // een jaartal hoort vaak bij de titel (claude-ai-beheersing-2026).
+    .replace(/-\d$/, '')
     .replace(/[-_]+/g, ' ')
     .trim();
+  return titel.charAt(0).toUpperCase() + titel.slice(1);
 }

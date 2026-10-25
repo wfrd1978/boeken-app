@@ -1274,6 +1274,7 @@ async function zoek(tekst, bron = 'getypt') {
     }
     if (veld) veld.value = titel;
     tekst = titel;
+    zoekBron = 'kobo';
   }
   // Een getypt ISBN direct opzoeken.
   const cijfers = tekst.replace(/[\s-]/g, '');
@@ -1311,7 +1312,7 @@ async function toonResultaten(resultaten) {
   if (!vak) return;
   const mijnBoeken = await alleBoeken();
   vak.innerHTML = `
-    ${resultaten.length ? '' : '<p class="leeg">Niets gevonden. Probeer andere woorden.</p>'}
+    ${resultaten.length ? '' : zoekBron === 'kobo' ? '<p class="leeg">Open Library, Google Books en de Koninklijke Bibliotheek kennen dit boek niet; dat gebeurt vaker bij e-books die alleen bij Kobo verschijnen. Vul het zelf in: de titel staat al klaar.</p>' : '<p class="leeg">Niets gevonden. Probeer andere woorden.</p>'}
     <ul class="lijst">
       ${resultaten
         .map(
