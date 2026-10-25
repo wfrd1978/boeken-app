@@ -1871,12 +1871,12 @@ async function toonTipsRij(boeken, verversen = true) {
   vulTipCovers(vak, tips);
 }
 
-async function vulTipCovers(vak, tips) {
+async function vulTipCovers(vak, tips, klasse = 'rij-cover') {
   for (const t of tips) {
     const url = await tipCover(t);
     const plek = vak.querySelector(`[data-cover-voor="${CSS.escape(t.id)}"]`);
     if (url && plek) {
-      plek.outerHTML = `<img class="rij-cover" src="${veilig(url)}" alt="" data-letter="${veilig(t.titel.charAt(0))}" data-bij-fout="letter" />`;
+      plek.outerHTML = `<img class="${klasse}" src="${veilig(url)}" alt="" data-letter="${veilig(t.titel.charAt(0))}" data-bij-fout="letter" />`;
       t.coverUrl = url;
     }
   }
@@ -2013,14 +2013,7 @@ async function toonToevoegTips(verversen = true) {
     const knop = e.target.closest('[data-tip]');
     if (knop) toonTip(vind(knop.dataset.tip), boeken, () => toonToevoegTips(false));
   };
-  for (const t of tips) {
-    const url = await tipCover(t);
-    const plek = vak.querySelector(`[data-cover-voor="${CSS.escape(t.id)}"]`);
-    if (url && plek) {
-      plek.outerHTML = `<img class="cover-klein" src="${veilig(url)}" alt="" data-letter="${veilig(t.titel.charAt(0))}" data-bij-fout="letter" />`;
-      t.coverUrl = url;
-    }
-  }
+  await vulTipCovers(vak, tips, 'cover-klein');
 }
 
 // --- Hulp bij de recensie (via de Claude-app) ---
