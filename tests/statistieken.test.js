@@ -40,3 +40,18 @@ describe('statistieken vanaf een startmaand', () => {
     expect(lang.gelezen).toBe(0);
   });
 });
+
+describe('Gelezen als', () => {
+  it('telt papier, e-book en luisterboek', () => {
+    const boeken = [
+      { titel: 'A', leesdata: ['2026-10-01'], leesvorm: 'ebook' },
+      { titel: 'B', leesdata: ['2026-10-02'], leesvorm: 'ebook' },
+      { titel: 'C', leesdata: ['2026-10-03'], leesvorm: 'papier' },
+      { titel: 'D', leesdata: ['2026-10-04'], leesvorm: '' },
+    ];
+    expect(berekenStatistieken(boeken, '2026-10', new Date(2026, 9, 25)).perVorm).toEqual([
+      { vorm: 'ebook', aantal: 2 },
+      { vorm: 'papier', aantal: 1 },
+    ]);
+  });
+});

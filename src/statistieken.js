@@ -38,6 +38,10 @@ export function berekenStatistieken(boeken, vanaf, nu = new Date()) {
   const perCategorie = {};
   for (const b of gelezen) (perCategorie[b.categorie || 'Nog geen categorie'] ??= []).push(b);
 
+  // Papier, e-book of luisterboek; zonder keuze telt niet mee.
+  const perVorm = {};
+  for (const b of gelezen) if (b.leesvorm) perVorm[b.leesvorm] = (perVorm[b.leesvorm] ?? 0) + 1;
+
   const perSchrijver = {};
   for (const b of gelezen) for (const a of b.auteurs ?? []) perSchrijver[a] = (perSchrijver[a] ?? 0) + 1;
 
@@ -54,6 +58,9 @@ export function berekenStatistieken(boeken, vanaf, nu = new Date()) {
       .map(([categorie, lijst]) => ({ categorie, aantal: lijst.length, gemiddeld: gemiddelde(lijst.filter((b) => b.sterren)) }))
       // 'Nog geen categorie' altijd onderaan.
       .sort((a, b) => (a.categorie === 'Nog geen categorie') - (b.categorie === 'Nog geen categorie') || b.aantal - a.aantal),
+    perVorm: Object.entries(perVorm)
+      .map(([vorm, aantal]) => ({ vorm, aantal }))
+      .sort((a, b) => b.aantal - a.aantal),
     schrijvers: Object.entries(perSchrijver)
       .filter(([, aantal]) => aantal >= 2)
       .map(([naam, aantal]) => ({ naam, aantal }))

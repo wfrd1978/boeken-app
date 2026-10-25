@@ -16,6 +16,16 @@ db.version(2).stores({
 
 export const STATUSSEN = ['Wil ik lezen', 'Bezig', 'Gelezen', 'Gestopt'];
 
+// Hoe je het boek las. Leeg = nog niet gekozen.
+export const LEESVORMEN = { papier: 'Papier', ebook: 'E-book', luisterboek: 'Luisterboek' };
+
+// Een voorstel op basis van de labels: gedownload in Kobo = e-book, papieren boek = papier.
+export function leesvormUitLabels(b) {
+  if (b.koboGedownload && !b.papierGekocht) return 'ebook';
+  if (b.papierGekocht && !b.koboGedownload) return 'papier';
+  return '';
+}
+
 // Zo heet een status in beeld. In de opslag blijft de oorspronkelijke naam staan,
 // zodat bestaande boeken en backups gewoon blijven werken.
 const STATUS_IN_BEELD = { Bezig: 'Aan het lezen' };
@@ -91,6 +101,7 @@ export function normaliseerBoek(b) {
     koboGedownload: b.koboGedownload === true,
     papierGekocht: b.papierGekocht === true,
     categorie: CATEGORIEEN.includes(b.categorie) ? b.categorie : '',
+    leesvorm: Object.hasOwn(LEESVORMEN, b.leesvorm ?? '') ? b.leesvorm : b.leesvorm === undefined ? leesvormUitLabels(b) : '',
     reeks: tekst(b.reeks).trim(),
     reeksDeel: getal(b.reeksDeel, 1, 999),
     reeksTotaal: getal(b.reeksTotaal, 1, 999),
@@ -127,6 +138,7 @@ function nieuwBoek(boek, toegevoegdOp = new Date().toISOString()) {
     koboGedownload: boek.koboGedownload ?? false,
     papierGekocht: boek.papierGekocht ?? false,
     categorie: boek.categorie ?? '',
+    leesvorm: Object.hasOwn(LEESVORMEN, boek.leesvorm ?? '') ? boek.leesvorm : leesvormUitLabels(boek),
     reeks: boek.reeks ?? '',
     reeksDeel: boek.reeksDeel ?? null,
     reeksTotaal: boek.reeksTotaal ?? null,
@@ -167,6 +179,16 @@ export function boekenAanvullen(lijst) {
       )
     )
   );
+}
+
+// Eenmalig: boeken van vóór 'Gelezen als' krijgen het veld, met een voorstel uit de labels.
+// Alleen boeken die het veld nog helemaal niet hebben; een keuze blijft altijd staan.
+export function vulLeesvormAan() {
+  return db.boeken
+    .filter((b) => b.leesvorm === undefined)
+    .modify((b) => {
+      b.leesvorm = leesvormUitLabels(b);
+    });
 }
 
 // Oudere boeken krijgen op de achtergrond hun Open Library-werk erbij, zodat

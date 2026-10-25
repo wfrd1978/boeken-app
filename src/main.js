@@ -11,6 +11,9 @@ import {
   CATEGORIEEN,
   vraagBlijvendeOpslag,
   vulWerkenAan,
+  vulLeesvormAan,
+  LEESVORMEN,
+  leesvormUitLabels,
   zetKoboOm,
   STATUSSEN,
   statusNaam,
@@ -112,6 +115,7 @@ if (HUIDIG_SCRIPT) {
 
 vraagBlijvendeOpslag();
 zetKoboOm()
+  .then(vulLeesvormAan)
   .then(() => vulWerkenAan(zoekWerk))
   .then(verrijkAlles);
 // Reeksen herkennen met de lijst van de site (ook bij elke start: dan komen nieuwe delen mee).
@@ -1792,6 +1796,13 @@ function statistiekenHtml(st, vanaf) {
       ${stavenHtml(st.perCategorie.map((c) => ({ label: c.categorie, aantal: c.aantal, extra: c.gemiddeld ? `${komma(c.gemiddeld)}★` : '' })))}
 
       ${
+        st.perVorm.length
+          ? `<h2 class="stat-kop">Gelezen als</h2>
+             ${stavenHtml(st.perVorm.map((v) => ({ label: LEESVORMEN[v.vorm], aantal: v.aantal })))}`
+          : ''
+      }
+
+      ${
         st.schrijvers.length
           ? `<h2 class="stat-kop">Schrijvers die je het vaakst las</h2>
              ${stavenHtml(st.schrijvers.map((a) => ({ label: a.naam, aantal: a.aantal })))}`
@@ -2558,6 +2569,11 @@ async function toonBoek(id) {
       <p class="label">Mijn oordeel</p>
       <div class="sterren" id="sterren" role="radiogroup" aria-label="Sterren"></div>
 
+      <p class="label">Gelezen als</p>
+      <div class="keuzes" id="leesvorm">
+        ${Object.entries(LEESVORMEN).map(([k, naam]) => `<button class="keuze" data-vorm="${k}">${naam}</button>`).join('')}
+      </div>
+
       <p class="label">Status</p>
       <div class="keuzes" id="statussen">
         ${STATUSSEN.map((s) => `<button class="keuze" data-s="${s}">${statusNaam(s)}</button>`).join('')}
@@ -2769,8 +2785,22 @@ async function toonBoek(id) {
     const wijziging = { [veld]: !boek[veld] };
     if (veld === 'koboGedownload' && wijziging.koboGedownload) wijziging.koboWacht = false;
     if (veld === 'koboWacht' && wijziging.koboWacht) wijziging.koboGedownload = false;
+    // Nog niet gekozen hoe je het leest? Dan alvast een voorstel uit het label.
+    if (!boek.leesvorm && wijziging[veld]) wijziging.leesvorm = leesvormUitLabels({ ...boek, ...wijziging });
     await bewaar(wijziging);
     document.querySelectorAll('#bezit .keuze').forEach((k) => k.classList.toggle('actief', Boolean(boek[k.dataset.veld])));
+    tekenVorm();
+  });
+
+  const tekenVorm = () =>
+    document.querySelectorAll('#leesvorm .keuze').forEach((k) => k.classList.toggle('actief', k.dataset.vorm === boek.leesvorm));
+  tekenVorm();
+  document.getElementById('leesvorm').addEventListener('click', async (e) => {
+    const knop = e.target.closest('[data-vorm]');
+    if (!knop) return;
+    // Nog een keer tikken haalt de keuze weg.
+    await bewaar({ leesvorm: boek.leesvorm === knop.dataset.vorm ? '' : knop.dataset.vorm });
+    tekenVorm();
   });
 
   const tekenLeesdata = () => {
