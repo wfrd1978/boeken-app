@@ -40,6 +40,7 @@ import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
 import { deelTekst, deelBoek } from './delen.js';
+import { isKoboLink, titelUitKoboLink } from './kobolink.js';
 import { haalNieuws, nieuwsArchief, ordenNieuws, overMijnSchrijver } from './nieuws.js';
 import { STEEKWOORDEN, recensieOpdracht, claudeAdres } from './recensie.js';
 import { berekenStatistieken, huidigeMaand, geldigeStartmaand } from './statistieken.js';
@@ -1169,9 +1170,9 @@ function toonToevoegen() {
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h2v14H3zM7 5h1v14H7zM10 5h2v14h-2zM14 5h1v14h-1zM17 5h1v14h-1zM20 5h1v14h-1z" /></svg>
       Scan streepjescode
     </button>
-    <p class="of">of zoek op titel, auteur of ISBN</p>
+    <p class="of">of zoek op titel, auteur of ISBN, of plak een Kobo-link</p>
     <form class="zoekbalk" id="zoekform">
-      <input id="zoekveld" type="search" enterkeyhint="search" placeholder="Titel, auteur of ISBN" value="${veilig(laatsteZoekterm)}" autocomplete="off" />
+      <input id="zoekveld" type="search" enterkeyhint="search" placeholder="Titel, auteur, ISBN of Kobo-link" value="${veilig(laatsteZoekterm)}" autocomplete="off" />
       <button type="submit">Zoek</button>
     </form>
     <div id="resultaten"></div>
@@ -1184,6 +1185,14 @@ function toonToevoegen() {
     e.preventDefault();
     veld.blur();
     zoek(veld.value.trim());
+  });
+  // Een Kobo-link plakken is genoeg: dan meteen zoeken.
+  veld.addEventListener('paste', (e) => {
+    const geplakt = e.clipboardData?.getData('text') ?? '';
+    if (!isKoboLink(geplakt)) return;
+    e.preventDefault();
+    veld.blur();
+    zoek(geplakt.trim());
   });
   if (laatsteResultaten.length) toonResultaten(laatsteResultaten);
 }
@@ -1255,6 +1264,17 @@ let zoekBron = 'getypt';
 async function zoek(tekst, bron = 'getypt') {
   zoekBron = bron;
   if (!tekst) return;
+  // Een geplakte Kobo-link: zoeken op de titel die in de link staat.
+  if (isKoboLink(tekst)) {
+    const titel = titelUitKoboLink(tekst);
+    const veld = document.getElementById('zoekveld');
+    if (!titel) {
+      document.getElementById('resultaten').innerHTML = `<p class="leeg">In deze link staat geen titel. Typ de titel even zelf.</p>`;
+      return;
+    }
+    if (veld) veld.value = titel;
+    tekst = titel;
+  }
   // Een getypt ISBN direct opzoeken.
   const cijfers = tekst.replace(/[\s-]/g, '');
   if (geldigIsbn13(cijfers) || /^\d{9}[\dX]$/i.test(cijfers)) {
