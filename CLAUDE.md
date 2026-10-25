@@ -81,3 +81,4 @@ Volgorde en keuzes bepaalt de gebruiker; bij elk idee eerst kort de opties en ko
 - ~~**Nieuws over boeken en schrijvers**~~ — gebouwd: rij Boekennieuws, nieuwspagina met archief, in de app te lezen; elke ochtend via een dagelijkse taak (`nieuws.json`).
 - ~~**Hulp bij het schrijven van een recensie**~~ — gebouwd via de Claude-app (gratis; opdracht ingevuld, tekst terugplakken).
 - **Kleinere ideeën**: citaten bewaren, 'Leen bij de bibliotheek', een zacht leesdoel zonder druk.
+- **Lp-app** (los project, later): aparte repository `lp-app` met een eigen sessie, gestart als kopie van de basis van deze app; bron MusicBrainz + Cover Art Archive (gratis, zonder sleutel). Herinnering staat op 5 december 2026.
