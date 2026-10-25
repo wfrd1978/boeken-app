@@ -39,6 +39,7 @@ import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
+import { leesRegels, MAX_REGELS, ordenOpPassend } from './meerdere.js';
 import { deelTekst, deelBoek } from './delen.js';
 import { isKoboLink, titelUitKoboLink } from './kobolink.js';
 import { bekendeReeksen, delenInLijst, leesDeel, reeksOpNaam, reeksTekst, volgendDeel } from './reeks.js';
@@ -1249,6 +1250,7 @@ function toonToevoegen() {
       <input id="zoekveld" type="search" enterkeyhint="search" placeholder="Titel, auteur, ISBN of Kobo-link" value="${veilig(laatsteZoekterm)}" autocomplete="off" />
       <button type="submit">Zoek</button>
     </form>
+    <a class="link-knop meerdere-link" href="#/meerdere">Meerdere boeken tegelijk ›</a>
     <div id="resultaten"></div>
     <section class="toevoeg-tips" id="toevoeg-tips" hidden></section>
   `;
@@ -1269,6 +1271,137 @@ function toonToevoegen() {
     zoek(geplakt.trim());
   });
   if (laatsteResultaten.length) toonResultaten(laatsteResultaten);
+}
+
+// --- Meerdere boeken tegelijk ---
+
+let meerdereTekst = '';
+
+async function toonMeerdere() {
+  const nr = schermNr;
+  ruimCoversOp();
+  app.innerHTML = `
+    <header class="kop">
+      <a class="terug" href="#/toevoegen">‹ Toevoegen</a>
+      <h1>Meerdere boeken</h1>
+    </header>
+    <p class="zacht">Plak of scan een rijtje titels, één per regel. "Titel – schrijver" mag ook. Scannen: tik in het vak, tik nog eens en kies Scan tekst, en richt op het bibliotheekscherm van je ereader.</p>
+    <textarea id="meer-tekst" rows="7" placeholder="De vrouw in de kooi&#10;Inferno – Dan Brown">${veilig(meerdereTekst)}</textarea>
+    <button class="hoofdknop" id="meer-zoek">Zoek deze boeken</button>
+    <div id="meer-uitslag"></div>`;
+  const veld = document.getElementById('meer-tekst');
+  veld.addEventListener('input', () => (meerdereTekst = veld.value));
+  document.getElementById('meer-zoek').addEventListener('click', async (e) => {
+    const regels = leesRegels(veld.value);
+    const vak = document.getElementById('meer-uitslag');
+    if (!regels.length) {
+      vak.innerHTML = '<p class="leeg">Geen titels gevonden. Zet elke titel op een eigen regel.</p>';
+      return;
+    }
+    const knop = e.currentTarget;
+    knop.disabled = true;
+    const mijnBoeken = await alleBoeken();
+    // Eén voor één zoeken, zodat de bronnen niet overbelast raken; je ziet de voortgang.
+    const rijen = [];
+    for (const [i, regel] of regels.entries()) {
+      if (nr !== schermNr) return;
+      knop.textContent = `Zoeken… ${i + 1} van ${regels.length}`;
+      let gevonden = [];
+      try {
+        gevonden = ordenOpPassend(regel, await zoekBoeken(regel.auteur ? `${regel.titel} ${regel.auteur}` : regel.titel)).slice(0, 5);
+      } catch {
+        // Geen antwoord: deze regel als 'niet gevonden'.
+      }
+      rijen.push({ regel, gevonden, keuze: 0, aan: Boolean(gevonden[0]) && !vindDubbel(gevonden[0], mijnBoeken) });
+    }
+    if (nr !== schermNr) return;
+    knop.disabled = false;
+    knop.textContent = 'Zoek opnieuw';
+    tekenMeerdere(rijen, mijnBoeken, nr);
+  });
+}
+
+function tekenMeerdere(rijen, mijnBoeken, nr) {
+  const vak = document.getElementById('meer-uitslag');
+  if (!vak) return;
+  ruimOp(lijstLinks);
+  let status = 'Wil ik lezen';
+  const aantal = () => rijen.filter((r) => r.aan).length;
+  vak.innerHTML = `
+    <p class="label">Gevonden</p>
+    <ul class="lijst meer-lijst">
+      ${rijen
+        .map((r, i) => {
+          const b = r.gevonden[r.keuze];
+          if (!b) {
+            return `<li class="meer-rij"><label class="meer-kies"><input type="checkbox" data-i="${i}" ${r.aan ? 'checked' : ''} /></label>
+              <div class="cover-klein geen-cover">?</div>
+              <div class="boek-tekst"><strong>${veilig(r.regel.titel)}</strong><span class="zacht">Niet gevonden · aanvinken voegt hem toe zoals getypt</span></div></li>`;
+          }
+          const dubbel = vindDubbel(b, mijnBoeken);
+          return `<li class="meer-rij"><label class="meer-kies"><input type="checkbox" data-i="${i}" ${r.aan ? 'checked' : ''} /></label>
+            ${coverHtml(b, 'cover-klein', lijstLinks)}
+            <div class="boek-tekst">
+              <strong>${veilig(b.titel)}</strong>
+              <span>${veilig(auteurTekst(b))}${b.jaar ? ` · ${veilig(b.jaar)}` : ''}</span>
+              ${dubbel ? `<span class="al-in-lijst">Staat al in je lijst · ${veilig(statusNaam(dubbel.status))}</span>` : ''}
+              ${r.gevonden.length > 1 ? `<button class="link-knop meer-ander" data-ander="${i}">Ander resultaat (${r.keuze + 1}/${r.gevonden.length}) ›</button>` : ''}
+            </div></li>`;
+        })
+        .join('')}
+    </ul>
+    <p class="label">Zet ze op</p>
+    <div class="keuzes" id="meer-status">
+      ${['Wil ik lezen', 'Bezig', 'Gelezen'].map((s) => `<button class="keuze${s === status ? ' actief' : ''}" data-s="${s}">${statusNaam(s)}</button>`).join('')}
+    </div>
+    <button class="hoofdknop" id="meer-voeg">Voeg ${aantal()} ${aantal() === 1 ? 'boek' : 'boeken'} toe</button>`;
+  const voegKnop = document.getElementById('meer-voeg');
+  const zetKnop = () => {
+    voegKnop.textContent = `Voeg ${aantal()} ${aantal() === 1 ? 'boek' : 'boeken'} toe`;
+    voegKnop.disabled = !aantal();
+  };
+  zetKnop();
+  // Via onchange (niet addEventListener): bij opnieuw tekenen komt er dan geen tweede bij.
+  vak.onchange = (e) => {
+    const vink = e.target.closest('input[data-i]');
+    if (!vink) return;
+    rijen[Number(vink.dataset.i)].aan = vink.checked;
+    zetKnop();
+  };
+  vak.querySelectorAll('[data-ander]').forEach((k) =>
+    k.addEventListener('click', () => {
+      const r = rijen[Number(k.dataset.ander)];
+      r.keuze = (r.keuze + 1) % r.gevonden.length;
+      r.aan = !vindDubbel(r.gevonden[r.keuze], mijnBoeken);
+      tekenMeerdere(rijen, mijnBoeken, nr);
+    })
+  );
+  document.getElementById('meer-status').addEventListener('click', (e) => {
+    const k = e.target.closest('.keuze');
+    if (!k) return;
+    status = k.dataset.s;
+    document.querySelectorAll('#meer-status .keuze').forEach((x) => x.classList.toggle('actief', x === k));
+  });
+  voegKnop.addEventListener('click', async () => {
+    voegKnop.disabled = true;
+    voegKnop.textContent = 'Bezig met toevoegen…';
+    const gekozen = rijen.filter((r) => r.aan);
+    try {
+      for (const r of gekozen) {
+        const b = r.gevonden[r.keuze] ?? { titel: r.regel.titel, auteurs: r.regel.auteur ? [r.regel.auteur] : [] };
+        // Cover, gegevens, synopsis en reeks komen daarna vanzelf op de achtergrond.
+        await boekToevoegen({ ...b, status, categorie: raadCategorie(b, mijnBoeken), bron: 'meerdere', verrijkt: false });
+      }
+    } catch {
+      melding('Toevoegen lukte niet helemaal. Kijk even in je lijst wat er al staat.');
+      return;
+    }
+    meerdereTekst = '';
+    verrijkAlles();
+    vulReeksenAan().catch(() => {});
+    if (nr === schermNr) location.hash = '#/';
+    melding(`${gekozen.length} ${gekozen.length === 1 ? 'boek' : 'boeken'} toegevoegd`);
+  });
 }
 
 // --- Scannen ---
@@ -2697,10 +2830,11 @@ async function route({ naarBoven = false } = {}) {
   }
   window.scrollTo(0, 0);
   const boekId = location.hash.match(/^#\/boek\/(\d+)$/);
-  const plek = { '#/toevoegen': 'toevoegen', '#/instellingen': 'instellingen', '#/covers': 'instellingen', '#/zoek': 'zoek' }[location.hash] || 'lijst';
+  const plek = { '#/toevoegen': 'toevoegen', '#/meerdere': 'toevoegen', '#/instellingen': 'instellingen', '#/covers': 'instellingen', '#/zoek': 'zoek' }[location.hash] || 'lijst';
   document.querySelectorAll('.balk a').forEach((a) => a.classList.toggle('actief', a.dataset.plek === plek));
   if (location.hash === '#/toevoegen') toonToevoegen();
   else if (location.hash === '#/instellingen') toonInstellingen();
+  else if (location.hash === '#/meerdere') toonMeerdere();
   else if (location.hash === '#/profiel') toonProfiel();
   else if (location.hash === '#/covers') toonCoversNalopen();
   else if (location.hash === '#/nieuws') toonNieuwsPagina();

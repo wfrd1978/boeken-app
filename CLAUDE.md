@@ -82,7 +82,7 @@ Volgorde en keuzes bepaalt de gebruiker; bij elk idee eerst kort de opties en ko
 - ~~**Hulp bij het schrijven van een recensie**~~ — gebouwd via de Claude-app (gratis; opdracht ingevuld, tekst terugplakken).
 - ~~**Reeksen**~~ — gebouwd (25 okt): automatisch via `reeksen.json`, wekelijks bijgewerkt.
 - **Schrijver en verfilmingen** (gekozen): korte informatie over de schrijver en of er een film of serie van is, via Wikipedia (gratis, zonder sleutel).
-- **Meerdere boeken tegelijk toevoegen** (gekozen): een rijtje titels scannen (Scan tekst van de Kobo-bibliotheek) of plakken, per boek bevestigen.
+- ~~**Meerdere boeken tegelijk toevoegen**~~ — gebouwd (25 okt): plakken of Scan tekst, per boek aanvinken.
 - **Synchroniseren met de iPad**: later, samen met fase 3.
 - ~~Zoek uit de balk onderin~~ — niet doen, de gebruiker houdt de balk zo.
 - **Kleinere ideeën**: citaten bewaren, 'Leen bij de bibliotheek', een zacht leesdoel zonder druk, leesjaar-terugblik in december.
