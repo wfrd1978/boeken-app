@@ -7,10 +7,12 @@ import { veiligeUrl } from './veilig.js';
 
 const BEWAARDAGEN = 30;
 // Hoger zetten als de opgeslagen gegevens anders worden: dan wordt alles opnieuw opgehaald.
-const VERSIE = 2;
+const VERSIE = 3;
+// Lukte het ophalen (deels) niet, bijvoorbeeld door een trage verbinding: na een uur opnieuw.
+const OPNIEUW_NA = 3600000;
 // Korter dan dit (vaak één zin): dan de eerste drie zinnen van het artikel erbij halen.
 const KORT = 220;
-const WACHTTIJD = 12000;
+const WACHTTIJD = 20000;
 
 // Is dit een pagina over een schrijver? Anders liever niets dan de verkeerde persoon.
 const SCHRIJVERWOORDEN = /schrijver|schrijfster|auteur|romancier|journalist|columnist|dichter|biograaf|writer|novelist|author|journalist/i;
@@ -20,7 +22,9 @@ async function haal(url) {
   const timer = setTimeout(() => ctrl.abort(), WACHTTIJD);
   try {
     const res = await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json' } });
-    if (!res.ok) return null;
+    // Niet gevonden is een antwoord; elke andere fout (te druk, storing) telt als 'mislukt'.
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`fout ${res.status}`);
     return await res.json();
   } finally {
     clearTimeout(timer);
@@ -60,10 +64,20 @@ export function zinnenUitExtract(tekst) {
     .trim();
 }
 
+// Geeft de info, null als Wikipedia geen schrijver met deze naam kent, of undefined als het
+// ophalen mislukte (dan later opnieuw proberen).
 async function wikipedia(naam) {
   const pad = encodeURIComponent(naam.trim().replace(/\s+/g, '_'));
+  let mislukt = false;
   for (const taal of ['nl', 'en']) {
-    const info = wikiNaarInfo(await haal(`https://${taal}.wikipedia.org/api/rest_v1/page/summary/${pad}`).catch(() => null), taal);
+    let pagina;
+    try {
+      pagina = await haal(`https://${taal}.wikipedia.org/api/rest_v1/page/summary/${pad}`);
+    } catch {
+      mislukt = true;
+      continue;
+    }
+    const info = wikiNaarInfo(pagina, taal);
     if (!info) continue;
     if (info.tekst.length < KORT) {
       const langer = await eersteZinnen(info.naam, taal);
@@ -71,7 +85,7 @@ async function wikipedia(naam) {
     }
     return info;
   }
-  return null;
+  return mislukt ? undefined : null;
 }
 
 // Films en series op basis van werken van deze schrijver, met de titels van het boek (nl en en).
@@ -131,12 +145,21 @@ export async function schrijverGegevens(naam) {
   const sleutel = kaal(naam).trim();
   const alle = (await db.instellingen.get('schrijvers'))?.waarde ?? {};
   const bewaard = alle[sleutel];
-  if (bewaard?.v === VERSIE && Date.now() - Date.parse(bewaard.op) < BEWAARDAGEN * 86400000) return bewaard;
+  const houdbaar = bewaard?.onvolledig ? OPNIEUW_NA : BEWAARDAGEN * 86400000;
+  if (bewaard?.v === VERSIE && Date.now() - Date.parse(bewaard.op) < houdbaar) return bewaard;
   if (!navigator.onLine) return bewaard ?? null;
-  const [info, films] = await Promise.all([wikipedia(naam).catch(() => null), wikidata(naam).catch(() => null)]);
+  const [info, films] = await Promise.all([wikipedia(naam).catch(() => undefined), wikidata(naam).catch(() => null)]);
+  const infoMislukt = info === undefined;
+  const filmsMislukt = films === null;
   // Mislukt allebei (geen verbinding), dan niets bewaren: de volgende keer opnieuw proberen.
-  if (info === null && films === null && !bewaard) return null;
-  const nieuw = { v: VERSIE, op: new Date().toISOString(), info: info ?? bewaard?.info ?? null, films: films ?? bewaard?.films ?? [] };
+  if (infoMislukt && filmsMislukt && !bewaard) return null;
+  const nieuw = {
+    v: VERSIE,
+    op: new Date().toISOString(),
+    info: infoMislukt ? (bewaard?.info ?? null) : info,
+    films: filmsMislukt ? (bewaard?.films ?? []) : films,
+    onvolledig: infoMislukt || filmsMislukt,
+  };
   alle[sleutel] = nieuw;
   await db.instellingen.put({ sleutel: 'schrijvers', waarde: alle });
   return nieuw;
