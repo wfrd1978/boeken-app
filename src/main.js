@@ -2581,6 +2581,13 @@ async function toonBoek(id) {
       <p class="label">Mijn oordeel</p>
       <div class="sterren" id="sterren" role="radiogroup" aria-label="Sterren"></div>
 
+      <p class="label">Recensie</p>
+      <textarea id="recensie" rows="6" placeholder="Wat vond je ervan?">${veilig(boek.recensie)}</textarea>
+      <div class="recensie-regel">
+        <button class="link-knop" id="recensie-hulp">✎ Hulp van Claude</button>
+        <p class="opgeslagen" id="opgeslagen">&nbsp;</p>
+      </div>
+
       <p class="label">Gelezen als</p>
       <div class="keuzes" id="leesvorm">
         ${Object.entries(LEESVORMEN).map(([k, naam]) => `<button class="keuze" data-vorm="${k}">${naam}</button>`).join('')}
@@ -2591,9 +2598,17 @@ async function toonBoek(id) {
         ${STATUSSEN.map((s) => `<button class="keuze" data-s="${s}">${statusNaam(s)}</button>`).join('')}
       </div>
 
+      <p class="label">Gelezen op</p>
+      <ul class="leesdata" id="leesdata"></ul>
+      <div class="datum-toevoegen">
+        <input type="date" id="nieuwe-datum" value="${vandaag()}" max="${vandaag()}" />
+        <button class="keuze" id="datum-knop">Toevoegen</button>
+      </div>
+
       <p class="label">Categorie</p>
       <div class="keuzes" id="categorieen">${categorieKnoppen()}</div>
 
+      <div id="kobo-blok">
       <p class="label">Kobo en boek</p>
       <div class="keuzes" id="bezit">
         ${Object.values(BEZIT).map((x) => `<button class="keuze${boek[x.veld] ? ' actief' : ''}" data-veld="${x.veld}">${x.naam}</button>`).join('')}
@@ -2602,19 +2617,6 @@ async function toonBoek(id) {
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 1 0 3.7 10.7l4.8 4.8 1.4-1.4-4.8-4.8A6 6 0 0 0 10 4zm0 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8z" /></svg>
         Zoek dit boek bij Kobo ↗
       </a>
-
-      <p class="label">Gelezen op</p>
-      <ul class="leesdata" id="leesdata"></ul>
-      <div class="datum-toevoegen">
-        <input type="date" id="nieuwe-datum" value="${vandaag()}" max="${vandaag()}" />
-        <button class="keuze" id="datum-knop">Toevoegen</button>
-      </div>
-
-      <p class="label">Recensie</p>
-      <textarea id="recensie" rows="6" placeholder="Wat vond je ervan?">${veilig(boek.recensie)}</textarea>
-      <div class="recensie-regel">
-        <button class="link-knop" id="recensie-hulp">✎ Hulp van Claude</button>
-        <p class="opgeslagen" id="opgeslagen">&nbsp;</p>
       </div>
 
       <button class="verwijder" id="verwijder">Boek verwijderen</button>
@@ -2768,8 +2770,11 @@ async function toonBoek(id) {
     tekenSterren();
   });
 
-  const tekenStatus = () =>
+  const tekenStatus = () => {
     document.querySelectorAll('#statussen .keuze').forEach((k) => k.classList.toggle('actief', k.dataset.s === boek.status));
+    // Kobo en boek is alleen handig zolang je het boek nog moet lezen.
+    document.getElementById('kobo-blok').hidden = boek.status === 'Gelezen';
+  };
   tekenStatus();
   document.getElementById('statussen').addEventListener('click', async (e) => {
     const knop = e.target.closest('.keuze');

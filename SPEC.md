@@ -188,3 +188,4 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-25 | Meerdere boeken tegelijk toevoegen (plakken of Scan tekst) |
 | 2026-10-25 | Over de schrijver (Wikipedia, met foto) en verfilmingen (Wikidata) op de boekpagina |
 | 2026-10-25 | Gelezen als: papier, e-book of luisterboek, met statistiek |
+| 2026-10-25 | Boekpagina: volgorde sterren, recensie, gelezen als, status, gelezen op, categorie, Kobo en boek; Kobo en boek verborgen bij Gelezen; recensieveld groeit mee |
