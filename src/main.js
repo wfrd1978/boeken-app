@@ -179,7 +179,8 @@ function coverHtml(boek, klasse, links = coverLinks) {
   const letter = veilig((boek.titel || '?').charAt(0));
   // Laadt een cover niet (bijvoorbeeld offline bij een Google-cover), dan het vlak met de beginletter.
   if (src) {
-    return `<img class="${klasse}" src="${veilig(src)}" alt="" loading="lazy" data-letter="${letter}" data-bij-fout="letter" />`;
+    const id = Number.isInteger(boek.id) ? ` data-boek="${boek.id}"` : '';
+    return `<img class="${klasse}" src="${veilig(src)}" alt="" loading="lazy" data-letter="${letter}" data-bij-fout="letter"${id} />`;
   }
   return `<div class="${klasse} geen-cover">${letter}</div>`;
 }
@@ -234,6 +235,17 @@ document.addEventListener(
         }, 2000);
         return;
       }
+    }
+    // Een eigen cover (plaatje op de telefoon) die niet laadt, bijvoorbeeld na terugkomen uit
+    // een andere app: het plaatje opnieuw uit de opslag halen en nog één keer proberen.
+    if (img.src.startsWith('blob:') && img.dataset.boek && !img.dataset.opnieuw) {
+      img.dataset.opnieuw = '1';
+      haalBoek(Number(img.dataset.boek)).then((boek) => {
+        const nieuw = boek && coverSrc(boek);
+        if (nieuw && img.isConnected) img.src = nieuw;
+        else if (img.isConnected) img.dispatchEvent(new Event('error'));
+      });
+      return;
     }
     if (img.dataset.bijFout === 'letter') {
       const vlak = document.createElement('div');
