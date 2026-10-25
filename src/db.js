@@ -91,6 +91,10 @@ export function normaliseerBoek(b) {
     koboGedownload: b.koboGedownload === true,
     papierGekocht: b.papierGekocht === true,
     categorie: CATEGORIEEN.includes(b.categorie) ? b.categorie : '',
+    reeks: tekst(b.reeks).trim(),
+    reeksDeel: getal(b.reeksDeel, 1, 999),
+    reeksTotaal: getal(b.reeksTotaal, 1, 999),
+    reeksVolgende: tekst(b.reeksVolgende).trim(),
     synopsis: typeof b.synopsis === 'string' ? b.synopsis : undefined,
     toegevoegdOp: typeof b.toegevoegdOp === 'string' && !isNaN(Date.parse(b.toegevoegdOp)) ? b.toegevoegdOp : new Date().toISOString(),
     bron: tekst(b.bron) || 'backup',
@@ -123,6 +127,10 @@ function nieuwBoek(boek, toegevoegdOp = new Date().toISOString()) {
     koboGedownload: boek.koboGedownload ?? false,
     papierGekocht: boek.papierGekocht ?? false,
     categorie: boek.categorie ?? '',
+    reeks: boek.reeks ?? '',
+    reeksDeel: boek.reeksDeel ?? null,
+    reeksTotaal: boek.reeksTotaal ?? null,
+    reeksVolgende: boek.reeksVolgende ?? '',
     toegevoegdOp,
     bron: boek.bron ?? 'getypt',
     // false = cover en gegevens moeten nog op de achtergrond worden opgehaald.
@@ -145,12 +153,16 @@ export function boekenImporteren(boeken) {
 
 // Sterren of categorie aanvullen bij bestaande boeken, allemaal tegelijk: lukt het niet,
 // dan verandert er niets. Alleen lege velden worden gevuld, ook als er intussen iets veranderde.
+// Hoeveel delen een reeks heeft en wat het volgende deel is, verandert met de tijd:
+// die twee mag een nieuwe import bijwerken. Al het andere vult alleen lege velden.
+const BIJ_TE_WERKEN = ['reeksTotaal', 'reeksVolgende'];
+
 export function boekenAanvullen(lijst) {
   return db.transaction('rw', db.boeken, () =>
     Promise.all(
       lijst.map(({ id, wijzigingen }) =>
         db.boeken.where('id').equals(id).modify((b) => {
-          for (const [veld, waarde] of Object.entries(wijzigingen)) if (!b[veld]) b[veld] = waarde;
+          for (const [veld, waarde] of Object.entries(wijzigingen)) if (!b[veld] || BIJ_TE_WERKEN.includes(veld)) b[veld] = waarde;
         })
       )
     )

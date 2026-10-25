@@ -3,6 +3,7 @@ import { kaal, vindDubbel } from './dubbel.js';
 import { STATUSSEN, echteDatum } from './db.js';
 import { leesKoboOpmerking } from './kobo.js';
 import { leesCategorie } from './categorie.js';
+import { leesDeel } from './reeks.js';
 
 const MAANDEN = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
 
@@ -16,6 +17,10 @@ const KOLOMMEN = {
   status: ['status'],
   isbn: ['isbn'],
   categorie: ['categorie', 'categorieen', 'genre'],
+  reeks: ['reeks'],
+  deel: ['deel', 'deel in reeks'],
+  delen: ['delen', 'delen in reeks', 'aantal delen'],
+  volgende: ['volgende deel', 'volgende'],
 };
 
 function kolomSoort(kop) {
@@ -104,12 +109,17 @@ export async function leesExcel(bestand) {
       opmerking: kobo ? kobo.opmerking : opmerking,
       koboWacht: kobo?.koboWacht ?? false,
       categorie: leesCategorie(kolom(rij, 'categorie')),
+      reeks: String(kolom(rij, 'reeks')).trim(),
+      reeksDeel: leesDeel(kolom(rij, 'deel')),
+      reeksTotaal: leesDeel(kolom(rij, 'delen')),
+      reeksVolgende: String(kolom(rij, 'volgende')).trim(),
       bron: 'excel',
     });
   }
-  // Alleen auteur, titel en categorie: dat is een lijst om bestaande boeken in te delen,
+  // Alleen auteur, titel en categorie of reeks: dat is een lijst om bestaande boeken in te delen,
   // geen lijst met nieuwe boeken. Dan wordt er niets toegevoegd.
-  const alleenIndelen = soorten.includes('categorie') && !['gelezen', 'sterren', 'status', 'opmerking'].some((s) => soorten.includes(s));
+  const alleenIndelen =
+    (soorten.includes('categorie') || soorten.includes('reeks')) && !['gelezen', 'sterren', 'status', 'opmerking'].some((s) => soorten.includes(s));
   return Object.assign(boeken, { alleenIndelen });
 }
 
@@ -126,6 +136,11 @@ export function planImport(nieuw, bestaand) {
     const wijzigingen = {};
     if (al && boek.sterren && !al.sterren) wijzigingen.sterren = boek.sterren;
     if (al && boek.categorie && !al.categorie) wijzigingen.categorie = boek.categorie;
+    // Reeks en deel alleen als ze nog leeg zijn; aantal delen en volgende deel mogen bijgewerkt.
+    if (al && boek.reeks && !al.reeks) wijzigingen.reeks = boek.reeks;
+    if (al && boek.reeksDeel && !al.reeksDeel) wijzigingen.reeksDeel = boek.reeksDeel;
+    if (al && boek.reeksTotaal && boek.reeksTotaal !== al.reeksTotaal) wijzigingen.reeksTotaal = boek.reeksTotaal;
+    if (al && boek.reeksVolgende && boek.reeksVolgende !== al.reeksVolgende) wijzigingen.reeksVolgende = boek.reeksVolgende;
     if (Object.keys(wijzigingen).length && !bijwerken.some((b) => b.al === al)) bijwerken.push({ boek, al, wijzigingen });
     else if (al || vindDubbel(boek, toevoegen)) overslaan.push({ boek, al: al || vindDubbel(boek, toevoegen) });
     else if (nieuw.alleenIndelen) nietGevonden.push(boek);

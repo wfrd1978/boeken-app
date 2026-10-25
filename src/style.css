@@ -581,3 +581,15 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .inklap > summary::after { content: '›'; color: var(--zacht); font-size: 1.3rem; transition: transform 0.2s; }
 .inklap[open] > summary::after { transform: rotate(90deg); }
 .inklap[open] > summary { margin-bottom: 8px; }
+
+/* Reeks op de boekpagina: één regel en kleine knopjes per deel. */
+.reeks { margin: 6px 0 4px; text-align: center; }
+.reeks-regel { margin: 0; font-weight: 600; color: var(--tekst); display: flex; align-items: baseline; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.reeks .details { margin: 2px 0 0; }
+.reeks-delen { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 8px; }
+.reeks-deel { min-width: 34px; text-align: center; padding: 4px 9px; border: 1px solid var(--lijn); border-radius: 999px; font-size: 0.85rem; color: var(--tekst); text-decoration: none; }
+.reeks-deel.dit { background: var(--diep); border-color: var(--diep); color: #fff; }
+.reeks-invul { display: flex; gap: 8px; }
+.reeks-invul #reeks-naam { flex: 1; min-width: 0; }
+.reeks-invul #reeks-nr { width: 76px; }
+.reeks-knoppen { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 8px; }

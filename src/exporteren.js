@@ -21,6 +21,10 @@ export async function maakExcel() {
     Auteur: (b.auteurs ?? []).join(' & '),
     Status: statusNaam(b.status),
     Categorie: b.categorie ?? '',
+    Reeks: b.reeks ?? '',
+    Deel: b.reeksDeel ?? '',
+    Delen: b.reeksTotaal ?? '',
+    'Volgende deel': b.reeksVolgende ?? '',
     Sterren: b.sterren ?? '',
     // Bij herlezen staan alle leesdata in één cel.
     Gelezen: (b.leesdata ?? []).map(datumTekst).join('; '),
@@ -38,7 +42,7 @@ export async function maakExcel() {
     'Toegevoegd op': b.toegevoegdOp ? b.toegevoegdOp.slice(0, 10).split('-').reverse().join('-') : '',
   }));
   const blad = XLSX.utils.json_to_sheet(rijen);
-  blad['!cols'] = [40, 30, 14, 24, 8, 24, 50, 60, 24, 10, 10, 10, 15, 22, 6, 8, 6, 13].map((wch) => ({ wch }));
+  blad['!cols'] = [40, 30, 14, 24, 22, 6, 6, 26, 8, 24, 50, 60, 24, 10, 10, 10, 15, 22, 6, 8, 6, 13].map((wch) => ({ wch }));
   blad['!autofilter'] = { ref: blad['!ref'] };
   const werkmap = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(werkmap, blad, 'Boeken');

@@ -33,6 +33,7 @@ https://wfrd1978.github.io/boeken-app/
 | Gedownload in Kobo | Aan/uit: het boek staat al op de Kobo. Zet *Wacht op Kobo Plus* uit (en andersom) | nee |
 | Papieren boek gekocht | Aan/uit: het boek ligt als papieren boek klaar | nee |
 | Categorie | Eén van: Thriller & spanning, Oorlog & geschiedenis, Sport, Biografie & levensverhaal, Journalistiek & samenleving, Roman & humor, Geloof & zingeving, Overig. Bij toevoegen doet de app een voorstel (eerst op basis van andere boeken van dezelfde schrijver, anders de onderwerpen bij Google Books of Open Library); de gebruiker kiest zelf | nee |
+| Reeks | Naam van de reeks, deel (1–999), aantal delen en een korte regel over het volgende deel (bijvoorbeeld 'deel 27 · maart 2027'). Op de boekpagina één regel ('Afdeling Q · deel 4 van 10'), daaronder de delen uit de eigen lijst als knopjes (✓ gelezen, ◐ aan het lezen). Zelf aan te passen met *Wijzig*; Claude vult ze voor bestaande boeken in via een Excel-import met de kolommen Reeks, Deel, Delen en Volgende deel (een indeellijst: voegt niets toe). Reeks en deel vullen alleen lege velden; aantal delen en volgende deel mogen worden bijgewerkt. Geen gratis bron kent reeksen goed (getest: KB, Wikidata, Open Library) | nee |
 | Synopsis | Korte beschrijving (achterflaptekst), automatisch opgehaald bij Google Books of Open Library; een bestaande synopsis wordt nooit overschreven | nee |
 | Opmerking | Korte toevoeging uit de Excel-lijst, bijvoorbeeld de serie ("Amos Decker 1") | nee |
 | Toegevoegd op | Automatisch | ja |
@@ -180,3 +181,4 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-25 | Toevoegen: Kobo-link plakken zoekt op de titel uit de link |
 | 2026-10-25 | Controle en onderhoud: terugzetten vraagt eerst een verse backup, Excel-import weigert niet-bestaande datums, foutafhandeling bij backup, foto en tips, geen dubbel tekenen van het startscherm, eerlijkere uitleg over wat over internet gaat |
 | 2026-10-25 | Instellingen: blok Covers en synopsis klapt dicht als alles binnen is; knop bij een nieuwe versie |
+| 2026-10-25 | Reeksen: reeks, deel, aantal delen en volgende deel per boek; zichtbaar en aan te passen op de boekpagina; import en export met kolommen Reeks, Deel, Delen, Volgende deel |

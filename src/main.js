@@ -41,6 +41,7 @@ import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
 import { deelTekst, deelBoek } from './delen.js';
 import { isKoboLink, titelUitKoboLink } from './kobolink.js';
+import { bekendeReeksen, delenInLijst, leesDeel, reeksTekst } from './reeks.js';
 import { haalNieuws, nieuwsArchief, ordenNieuws, overMijnSchrijver } from './nieuws.js';
 import { STEEKWOORDEN, recensieOpdracht, claudeAdres } from './recensie.js';
 import { berekenStatistieken, huidigeMaand, geldigeStartmaand } from './statistieken.js';
@@ -1104,9 +1105,17 @@ async function toonInstellingen() {
     const velden = [
       bijwerken.some((b) => b.wijzigingen.sterren) && 'sterren',
       bijwerken.some((b) => b.wijzigingen.categorie) && 'categorie',
-    ].filter(Boolean).join(' en ');
+      bijwerken.some((b) => b.wijzigingen.reeks || b.wijzigingen.reeksDeel || b.wijzigingen.reeksTotaal || b.wijzigingen.reeksVolgende) && 'reeks',
+    ].filter(Boolean).join(' en ').replace(/ en (?=.* en )/, ', ');
     const knopTekst = [n && `importeer ${boekTekst(n)}`, m && `vul ${velden} aan bij ${boekTekst(m)}`].filter(Boolean).join(' en ');
-    const aanvulling = ({ sterren, categorie }) => [sterren && sterrenTekst(sterren), categorie && veilig(categorie)].filter(Boolean).join(' · ');
+    const aanvulling = ({ sterren, categorie, reeks, reeksDeel }, al) =>
+      [
+        sterren && sterrenTekst(sterren),
+        categorie && veilig(categorie),
+        (reeks || reeksDeel) && veilig(reeksTekst({ reeks: reeks || al.reeks, reeksDeel: reeksDeel || al.reeksDeel })),
+      ]
+        .filter(Boolean)
+        .join(' · ') || 'reeks bijgewerkt';
     vak.innerHTML = `
       <div class="waarschuwing">
         ${
@@ -1120,7 +1129,7 @@ async function toonInstellingen() {
           m
             ? `<details${n ? '' : ' open'}><summary><strong>Bij ${boekTekst(m)} die je al hebt, wordt ${velden === 'sterren' ? 'het aantal sterren' : velden} aangevuld</strong></summary>
                  <ul class="overslaan">${bijwerken
-                   .map(({ al, wijzigingen }) => `<li>${veilig(al.titel)} <span class="zacht">→ ${aanvulling(wijzigingen)}</span></li>`)
+                   .map(({ al, wijzigingen }) => `<li>${veilig(al.titel)} <span class="zacht">→ ${aanvulling(wijzigingen, al)}</span></li>`)
                    .join('')}</ul></details>`
             : ''
         }
@@ -2391,6 +2400,7 @@ async function toonBoek(id) {
         .map(veilig)
         .join(' · ')}</p>
       ${boek.opmerking ? `<p class="details">${veilig(boek.opmerking)}</p>` : ''}
+      <div class="reeks" id="reeks"></div>
       ${
         boek.synopsis
           ? `<p class="label">Over het boek</p>
@@ -2435,6 +2445,60 @@ async function toonBoek(id) {
       <button class="verwijder" id="verwijder">Boek verwijderen</button>
     </section>
   `;
+
+  // Reeks: één regel, de delen uit je lijst als kleine knopjes, en zelf aan te passen.
+  const reeksVak = document.getElementById('reeks');
+  const tekenReeks = async () => {
+    const boeken = await alleBoeken();
+    if (!reeksVak.isConnected) return;
+    if (!boek.reeks) {
+      reeksVak.innerHTML = '<button class="link-knop" id="reeks-wijzig">+ Reeks toevoegen</button>';
+      return;
+    }
+    const delen = delenInLijst(boek, boeken);
+    const teken = { Gelezen: '✓', Bezig: '◐', Gestopt: '×' };
+    reeksVak.innerHTML = `
+      <p class="reeks-regel"><span>${veilig(reeksTekst(boek))}</span> <button class="link-knop" id="reeks-wijzig">Wijzig</button></p>
+      ${boek.reeksVolgende ? `<p class="details">Volgende: ${veilig(boek.reeksVolgende)}</p>` : ''}
+      ${
+        delen.length > 1
+          ? `<div class="reeks-delen" aria-label="Delen in je lijst">${delen
+              .map(
+                (b) =>
+                  `<a class="reeks-deel${b.id === boek.id ? ' dit' : ''}" href="#/boek/${b.id}" title="${veilig(`${b.titel} (${statusNaam(b.status)})`)}">${
+                    b.reeksDeel ?? veilig(b.titel.slice(0, 12))
+                  }${teken[b.status] ? ` ${teken[b.status]}` : ''}</a>`
+              )
+              .join('')}</div>`
+          : ''
+      }`;
+  };
+  reeksVak.addEventListener('click', async (e) => {
+    if (e.target.closest('#reeks-wijzig')) {
+      const namen = bekendeReeksen(await alleBoeken());
+      reeksVak.innerHTML = `
+        <div class="reeks-invul">
+          <input id="reeks-naam" list="reeks-namen" placeholder="Naam van de reeks" value="${veilig(boek.reeks)}" autocomplete="off" />
+          <datalist id="reeks-namen">${namen.map((n) => `<option value="${veilig(n)}"></option>`).join('')}</datalist>
+          <input id="reeks-nr" type="number" inputmode="numeric" min="1" max="999" placeholder="Deel" value="${boek.reeksDeel ?? ''}" />
+        </div>
+        <div class="reeks-knoppen">
+          <button class="keuze" id="reeks-bewaar">Bewaar</button>
+          <button class="link-knop" id="reeks-annuleer">Annuleren</button>
+        </div>`;
+      document.getElementById('reeks-naam').focus();
+    } else if (e.target.closest('#reeks-annuleer')) {
+      tekenReeks();
+    } else if (e.target.closest('#reeks-bewaar')) {
+      const reeks = document.getElementById('reeks-naam').value.trim();
+      const reeksDeel = reeks ? leesDeel(document.getElementById('reeks-nr').value) : null;
+      // Een andere reeks: dan horen het aantal delen en het volgende deel er niet meer bij.
+      const anders = reeks !== boek.reeks;
+      await bewaar({ reeks, reeksDeel, ...(anders || !reeks ? { reeksTotaal: null, reeksVolgende: '' } : {}) });
+      tekenReeks();
+    }
+  });
+  tekenReeks();
 
   document.getElementById('deel').addEventListener('click', async () => {
     // De recensie zoals hij nu in het vak staat, ook als hij nog niet bewaard is.
