@@ -190,3 +190,4 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-25 | Gelezen als: papier, e-book of luisterboek, met statistiek |
 | 2026-10-25 | Boekpagina: volgorde sterren, recensie, gelezen als, status, gelezen op, categorie, Kobo en boek; Kobo en boek verborgen bij Gelezen; recensieveld groeit mee |
 | 2026-10-25 | Backup-herinnering na 7 dagen of na 10 wijzigingen |
+| 2026-10-26 | Synopsis bij storing in Google-zoeken: boeken met een Google-cover rechtstreeks opvragen (dat werkt nog), anders een Nederlandse tekst van Open Library; tijdens een storing een half uur niet zoeken bij Google (spaart vragen) |

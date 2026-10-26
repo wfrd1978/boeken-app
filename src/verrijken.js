@@ -1,7 +1,7 @@
 // Op de achtergrond covers en gegevens ophalen voor geïmporteerde boeken.
 // Titel en auteur uit de lijst blijven altijd zoals ze zijn ingevuld.
 import { db } from './db.js';
-import { zoekBijpassend, zoekCover, zoekWerk, zoekSynopsis, TijdelijkeFout, googleStand, haalPlaatje } from './zoeken.js';
+import { zoekBijpassend, zoekCover, zoekWerk, zoekSynopsis, TijdelijkeFout, googleStand, haalPlaatje, googleId } from './zoeken.js';
 
 const AANVULLEN = ['isbn', 'werk', 'coverUrl', 'uitgever', 'jaar', 'paginas', 'taal', 'synopsis'];
 // Rustig tempo: Google heeft naast een daglimiet ook een limiet per minuut.
@@ -171,7 +171,10 @@ export async function vulSynopsisAan() {
   const mijnGeneratie = generatie;
   try {
     // Elke keer in een andere volgorde, zodat een paar lastige boeken de rest niet ophouden.
-    const zonder = schud(await db.boeken.filter((b) => b.synopsis === undefined).toArray());
+    // Boeken met een Google-cover eerst: die kunnen rechtstreeks, ook bij een storing in het zoeken.
+    const zonder = schud(await db.boeken.filter((b) => b.synopsis === undefined).toArray()).sort(
+      (a, b) => Boolean(googleId(b.coverUrl)) - Boolean(googleId(a.coverUrl))
+    );
     let totaal = zonder.length;
     let overgeslagen = 0;
     let klaar = 0;

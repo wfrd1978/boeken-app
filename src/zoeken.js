@@ -173,44 +173,90 @@ export function schoneTekst(html) {
     .trim();
 }
 
+// Het nummer van het boek bij Google, uit een Google-cover: books.google.com/books/content?id=…
+export function googleId(coverUrl) {
+  try {
+    const url = new URL(coverUrl);
+    if (!/(^|\.)google(usercontent)?\.com$/.test(url.hostname)) return '';
+    const id = url.searchParams.get('id') ?? '';
+    return /^[\w-]{6,20}$/.test(id) ? id : '';
+  } catch {
+    return '';
+  }
+}
+
+// Heeft het zoeken bij Google een storing (fout 503), dan een half uur niet meer zoeken voor
+// de synopsis: dat spaart vragen. Rechtstreeks opvragen (met het Google-nummer) gaat wel door.
+let googleZoekenStoringTot = 0;
+
+// Lijkt deze tekst Nederlands? Telt een paar heel gewone Nederlandse woorden.
+export function lijktNederlands(tekst) {
+  const woorden = kaal(tekst).split(/[^a-z']+/).filter(Boolean);
+  if (woorden.length < 12) return false;
+  const nl = woorden.filter((w) => ['de', 'het', 'een', 'en', 'van', 'is', 'dat', 'zijn', 'met', 'op', 'niet', 'hij', 'zij', 'wordt'].includes(w)).length;
+  const en = woorden.filter((w) => ['the', 'and', 'of', 'is', 'to', 'his', 'her', 'with', 'that', 'he', 'she', 'was'].includes(w)).length;
+  return nl > en && nl / woorden.length > 0.06;
+}
+
 // Synopsis zoeken: eerst Google Books (meestal de achterflaptekst van de Nederlandse
 // uitgave), anders de beschrijving van het werk bij Open Library.
 // Geeft '' als niemand er een heeft; een TijdelijkeFout als Google even weigert.
 export async function zoekSynopsis(boek) {
   const auteur = eersteAuteur(boek);
-  let google = [];
-  // Zoeken op ISBN geeft bij Google vaak een storing; dan gewoon door op titel en auteur.
-  if (boek.isbn) {
+  // Komt de cover van Google, dan dat boek rechtstreeks opvragen: één vraag, en dat werkt
+  // ook als het zoeken bij Google een storing heeft.
+  const id = googleId(boek.coverUrl);
+  if (id) {
     try {
-      google = await zoekGoogleBooks(`isbn:${boek.isbn}`, false, 3);
+      const v = (await haalJson(`https://www.googleapis.com/books/v1/volumes/${id}?country=NL&key=${GOOGLE_SLEUTEL}`)).volumeInfo ?? {};
+      const tekst = schoneTekst(v.description);
+      if (tekst) return tekst;
     } catch {
-      google = [];
+      // Dan gewoon verder met zoeken.
     }
   }
-  if (!google.some((k) => k.synopsis)) {
+  let google = [];
+  let storing = Date.now() < googleZoekenStoringTot ? { status: 503 } : null;
+  // Zoeken op ISBN geeft bij Google vaak een storing; dan gewoon door op titel en auteur.
+  if (boek.isbn && !storing) {
+    try {
+      google = await zoekGoogleBooks(`isbn:${boek.isbn}`, false, 3);
+    } catch (fout) {
+      google = [];
+      if (fout.status === 503) googleZoekenStoringTot = Date.now() + 30 * 60000;
+    }
+  }
+  if (!storing && !google.some((k) => k.synopsis)) {
     try {
       const opTitel = await zoekGoogleBooks(`intitle:${boek.titel}${auteur ? ` inauthor:${auteur}` : ''}`, false, 10);
       google = google.concat(opTitel.filter((k) => vindDubbel(boek, [k])));
     } catch (fout) {
-      if (tijdelijk(fout)) throw new TijdelijkeFout('Google weigert even', fout.status ?? 0);
+      if (tijdelijk(fout)) storing = fout;
+      if (fout.status === 503) googleZoekenStoringTot = Date.now() + 30 * 60000;
     }
   }
   // Liefst een Nederlandse beschrijving.
   const metTekst = google.filter((k) => k.synopsis);
   const nl = metTekst.find((k) => k.taal === 'nl');
   if (nl || metTekst[0]) return (nl || metTekst[0]).synopsis;
+  let werkTekst = '';
   if (boek.werk) {
     try {
       const werk = await haalJson(`https://openlibrary.org${boek.werk}.json`);
       const d = werk.description;
-      return schoneTekst(typeof d === 'string' ? d : d?.value);
+      werkTekst = schoneTekst(typeof d === 'string' ? d : d?.value);
     } catch (fout) {
       // Een storing is geen 'geen synopsis': dan later opnieuw proberen.
       if (tijdelijk(fout)) throw new TijdelijkeFout('Open Library tijdelijk niet bereikbaar', fout.status ?? 0);
-      return '';
     }
   }
-  return '';
+  // Heeft Google een storing, dan alleen een Nederlandse tekst van Open Library nemen;
+  // anders later bij Google opnieuw proberen.
+  if (storing) {
+    if (werkTekst && lijktNederlands(werkTekst)) return werkTekst;
+    throw new TijdelijkeFout('Google weigert even', storing.status ?? 0);
+  }
+  return werkTekst;
 }
 
 function sleutel(boek) {

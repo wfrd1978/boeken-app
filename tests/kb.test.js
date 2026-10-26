@@ -30,3 +30,17 @@ describe('Koninklijke Bibliotheek', () => {
     });
   });
 });
+
+import { googleId, lijktNederlands } from '../src/zoeken.js';
+
+describe('Synopsis zonder Google-zoeken', () => {
+  it('haalt het Google-nummer uit een cover', () => {
+    expect(googleId('https://books.google.com/books/content?id=zyTCAlFPjgYC&printsec=frontcover&img=1&zoom=1')).toBe('zyTCAlFPjgYC');
+    expect(googleId('https://covers.openlibrary.org/b/id/1-M.jpg')).toBe('');
+    expect(googleId('')).toBe('');
+  });
+  it('herkent Nederlandse tekst', () => {
+    expect(lijktNederlands('Wanneer een bekende expert overlijdt tijdens een conferentie, is het voor de club gedaan met de rust. Het spoor leidt naar Amsterdam en de leden van de club moeten opnieuw in actie komen.')).toBe(true);
+    expect(lijktNederlands('When a renowned expert dies during a conference, the club is drawn back into the world of espionage and the trail leads to Amsterdam where he was last seen.')).toBe(false);
+  });
+});
