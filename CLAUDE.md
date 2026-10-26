@@ -80,7 +80,7 @@ Volgorde en keuzes bepaalt de gebruiker; bij elk idee eerst kort de opties en ko
 - ~~**Toevoegen-pagina aankleden** met de tips~~ — gebouwd (oktober 2026).
 - ~~**Profielfoto** uploaden bij het profiel~~ — gebouwd (oktober 2026).
 - **Gelezen boeken delen** met zijn netwerk: knop 'Deel' is gebouwd (deelmenu met titel, sterren, zin uit de recensie). Nog open: deelkaart als afbeelding, 'Mijn leesmaand/-jaar'.
-- **De app delen met anderen**: welkomstscherm, tips per persoon of uit, Kobo optioneel.
+- **De app delen met anderen** (de gebruiker denkt erover na, 26 okt): als aparte app in een eigen repository, gestart als kopie. Persoonlijke onderdelen eruit, welkomstscherm in vier stappen (naam, categorieën, hoe je leest/Kobo, lijst importeren), algemene tiplijst waaruit de app op de telefoon kiest, eigen Google-sleutel, covers sneller (scannen voorop, vastleggen, foto-knop; eventueel later een gratis tussenstation). Eerst een proefgroep van twee of drie mensen. Open keuzes: voor wie, naam, wat erin (tips/nieuws).
 - **Lezen interactief maken met andere gebruikers** (samen lezen, elkaars tips, boekenclub). Vraagt om een gedeelde plek voor gegevens; eerst samen nadenken over privacy en kosten.
 - ~~**Nieuws over boeken en schrijvers**~~ — gebouwd: rij Boekennieuws, nieuwspagina met archief, in de app te lezen; elke ochtend via een dagelijkse taak (`nieuws.json`).
 - ~~**Hulp bij het schrijven van een recensie**~~ — gebouwd via de Claude-app (gratis; opdracht ingevuld, tekst terugplakken).
