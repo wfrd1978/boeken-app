@@ -110,6 +110,8 @@ async function kijkNaarNieuweVersie() {
   document.body.append(knop);
 }
 if (HUIDIG_SCRIPT) {
+  // De app start uit de opslag op; kijk daarom kort na het opstarten of er iets nieuws is.
+  setTimeout(kijkNaarNieuweVersie, 4000);
   document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && kijkNaarNieuweVersie());
   setInterval(kijkNaarNieuweVersie, 30 * 60000);
 }

@@ -2,7 +2,7 @@
 // Geen gratis bron kent reeksen goed. Daarom een eigen lijst (reeksen.json op de site, elke week
 // bijgehouden door een geplande taak); de app herkent op de telefoon zelf welke boeken erin staan.
 // Zelf aanpassen kan altijd.
-import { kaal, vindDubbel } from './dubbel.js';
+import { achternaam, kaal, titelSleutels } from './dubbel.js';
 
 // Een deelnummer: een heel getal van 1 tot 999, anders leeg.
 export function leesDeel(waarde) {
@@ -51,14 +51,40 @@ export function normaliseerReeks(r) {
 
 // Bij welke reeks hoort dit boek volgens de lijst? Titel (ook vertaald of oorspronkelijk)
 // en achternaam van de schrijver moeten kloppen. Geeft de reeksvelden, of null.
-export function herkenReeks(boek, reeksen) {
-  for (const r of reeksen) {
-    for (const d of r.delen) {
-      const gevonden = d.titels.some((titel) => r.schrijvers.some((s) => vindDubbel({ titel, auteurs: [s], isbn: '' }, [boek])));
-      if (gevonden) {
-        return { reeks: r.naam, reeksDeel: d.deel, reeksTotaal: Math.max(...r.delen.map((x) => x.deel)), reeksVolgende: r.volgende };
+// Snel opzoeken: één keer per lijst een register maken van titel + achternaam naar het deel,
+// in plaats van elk boek met alle 455 delen te vergelijken (dat maakte het opstarten traag).
+const registers = new WeakMap();
+
+function register(reeksen) {
+  let r = registers.get(reeksen);
+  if (r) return r;
+  r = new Map();
+  for (const reeks of reeksen) {
+    const totaal = Math.max(...reeks.delen.map((x) => x.deel));
+    const namen = reeks.schrijvers.map((s) => achternaam({ auteurs: [s] }));
+    for (const d of reeks.delen) {
+      const uitkomst = { reeks: reeks.naam, reeksDeel: d.deel, reeksTotaal: totaal, reeksVolgende: reeks.volgende };
+      for (const titel of d.titels) {
+        for (const t of titelSleutels(titel)) {
+          for (const naam of [...namen, '']) {
+            const k = `${t}|${naam}`;
+            // Het eerste deel met deze titel wint (zoals bij de volgorde in de lijst).
+            if (!r.has(k)) r.set(k, uitkomst);
+          }
+        }
       }
     }
+  }
+  registers.set(reeksen, r);
+  return r;
+}
+
+export function herkenReeks(boek, reeksen) {
+  const r = register(reeksen);
+  const naam = achternaam(boek);
+  for (const t of titelSleutels(boek.titel)) {
+    const gevonden = r.get(`${t}|${naam}`);
+    if (gevonden) return gevonden;
   }
   return null;
 }

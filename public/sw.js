@@ -55,6 +55,24 @@ async function netwerkEerst(request) {
   return Promise.race([netwerk.then((a) => (a.ok ? a : bewaard)).catch(() => bewaard), teLaat]);
 }
 
+// De app zelf openen (de pagina, thema.js, het manifest): meteen uit de opslag, zodat de app
+// direct opstart, ook bij traag internet. Op de achtergrond wordt de nieuwste versie opgehaald;
+// de app meldt dan 'Nieuwe versie klaar'. Nog niets bewaard: gewoon van internet.
+async function snelOpenen(request, event) {
+  const cache = await caches.open(CACHE);
+  const bewaard = (await cache.match(request)) || (request.mode === 'navigate' ? await cache.match('./') : undefined);
+  const netwerk = fetch(request, { cache: 'no-cache' }).then((antwoord) => {
+    if (antwoord.ok) {
+      cache.put(request, antwoord.clone());
+      if (request.mode === 'navigate') cache.put('./', antwoord.clone());
+    }
+    return antwoord;
+  });
+  if (!bewaard) return netwerk;
+  event.waitUntil(netwerk.catch(() => {}));
+  return bewaard;
+}
+
 // Is er genoeg ruimte? De boeken zelf gaan altijd voor: bij twijfel geen cover bewaren.
 async function ruimteVoorCovers(cache) {
   try {
@@ -94,5 +112,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   if (url.origin !== self.location.origin) return;
-  event.respondWith(url.pathname.includes('/assets/') ? opslagEerst(request) : netwerkEerst(request));
+  if (url.pathname.includes('/assets/')) event.respondWith(opslagEerst(request));
+  else if (request.mode === 'navigate' || /\/(thema\.js|manifest\.webmanifest)$/.test(url.pathname)) event.respondWith(snelOpenen(request, event));
+  // Lijsten (tips, nieuws, reeksen) en de rest: eerst internet, zodat ze vers zijn.
+  else event.respondWith(netwerkEerst(request));
 });

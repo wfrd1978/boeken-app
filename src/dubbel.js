@@ -31,6 +31,12 @@ function hoofdtitel(titel) {
   return kern(zonderLidwoord((titel || '').split(/[:(]/)[0]));
 }
 
+// De twee vormen van een titel waarop boeken als gelijk gelden (hele titel en hoofdtitel),
+// voor snel opzoeken in een lijst.
+export function titelSleutels(titel) {
+  return [...new Set([kern(zonderLidwoord(titel)), hoofdtitel(titel)].filter(Boolean))];
+}
+
 function isbnKern(isbn) {
   return (isbn || '').replace(/[^0-9x]/gi, '');
 }
