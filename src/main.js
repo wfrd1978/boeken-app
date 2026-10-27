@@ -240,12 +240,25 @@ document.addEventListener(
     }
     // Een eigen cover (plaatje op de telefoon) die niet laadt, bijvoorbeeld na terugkomen uit
     // een andere app: het plaatje opnieuw uit de opslag halen en nog één keer proberen.
+    // De iPhone kan zo'n plaatje na terugkomen soms niet meer rechtstreeks lezen; een kopie in
+    // het geheugen lukt dan vaak wel. Anders de cover van internet (als het boek die heeft).
     if (img.src.startsWith('blob:') && img.dataset.boek && !img.dataset.opnieuw) {
       img.dataset.opnieuw = '1';
-      haalBoek(Number(img.dataset.boek)).then((boek) => {
-        const nieuw = boek && coverSrc(boek);
-        if (nieuw && img.isConnected) img.src = nieuw;
-        else if (img.isConnected) img.dispatchEvent(new Event('error'));
+      haalBoek(Number(img.dataset.boek)).then(async (boek) => {
+        let nieuw = '';
+        if (boek?.cover instanceof Blob) {
+          try {
+            const kopie = new Blob([await boek.cover.arrayBuffer()], { type: boek.cover.type || 'image/jpeg' });
+            nieuw = URL.createObjectURL(kopie);
+            coverLinks.add(nieuw);
+          } catch {
+            // Het plaatje zelf is niet meer te lezen.
+          }
+        }
+        if (!nieuw) nieuw = veiligeUrl(boek?.coverUrl) || '';
+        if (!img.isConnected) return;
+        if (nieuw) img.src = nieuw;
+        else img.dispatchEvent(new Event('error'));
       });
       return;
     }
