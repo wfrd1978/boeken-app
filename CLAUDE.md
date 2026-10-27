@@ -87,6 +87,7 @@ Volgorde en keuzes bepaalt de gebruiker; bij elk idee eerst kort de opties en ko
 - ~~**Reeksen**~~ — gebouwd (25 okt): automatisch via `reeksen.json`, wekelijks bijgewerkt.
 - ~~**Schrijver en verfilmingen**~~ — gebouwd (25 okt): Wikipedia (tekst en foto) en Wikidata (films en series), gratis en zonder sleutel.
 - ~~**Meerdere boeken tegelijk toevoegen**~~ — gebouwd (25 okt): plakken of Scan tekst, per boek aanvinken.
+- **Meer als een echte app** (de gebruiker wil hier later op terugkomen; herinnering 14 november 2026): startscherm met logo bij het openen, deelpagina met QR-code en installatie-uitleg, eventueel eigen domein (~€10–15 per jaar). Geen App Store (Apple €99 per jaar, Mac, keuring).
 - **Synchroniseren met de iPad**: later, samen met fase 3.
 - ~~Zoek uit de balk onderin~~ — niet doen, de gebruiker houdt de balk zo.
 - **Kleinere ideeën**: citaten bewaren, 'Leen bij de bibliotheek', een zacht leesdoel zonder druk, leesjaar-terugblik in december.
