@@ -104,7 +104,7 @@ Inspiratie: de apps van de Volkskrant, Trouw en NOS. Simpel en strak, zoals een 
 4. **Eén accentkleur.** Zoals rood bij NOS en blauw bij Trouw. Gebruikt voor kleine labels (status, zoals "ANALYSE" bij de Volkskrant) en de actieve knop.
 5. **Woordmerk in het midden.** "Boeken" als titel bovenaan in het midden.
 6. **Tabjes bovenaan** met een streep onder de actieve: Alles · Aan het lezen · Gelezen · Wil ik lezen.
-7. **Zwevende balk onderin** met de belangrijkste plekken: Boeken, Toevoegen, Zoek. Instellingen zit onder een tandwiel rechtsboven op het startscherm; de profielknop staat linksboven.
+7. **Zwevende balk onderin** met de belangrijkste plekken: Boeken, Zoek, Toevoegen. Instellingen zit onder een tandwiel rechtsboven op het startscherm; de profielknop staat linksboven.
 
 Gekozen: accentkleur donkergroen (#1F4D3F), de lijst als rijtje (kleine cover links). Titels in de schreefletter van de iPhone (New York), de rest in de systeemletter. De lijst heeft tabjes per status; de balk onderin vervangt de losse +-knop en de link naar Instellingen.
 
