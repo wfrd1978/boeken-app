@@ -1,6 +1,6 @@
 // Meerdere boeken tegelijk: een rijtje titels (geplakt of met Scan tekst van het scherm van
 // je ereader) omzetten in zoekopdrachten, en per regel het best passende resultaat kiezen.
-import { achternaam, kaal } from './dubbel.js';
+import { achternaam, kaal, titelKern as kern } from './dubbel.js';
 
 export const MAX_REGELS = 30;
 
@@ -47,10 +47,6 @@ export function leesRegels(tekst) {
       return true;
     })
     .slice(0, MAX_REGELS);
-}
-
-function kern(tekst) {
-  return kaal(tekst).replace(/^(de|het|een|the|a|an)\s+/, '').replace(/[^a-z0-9]/g, '');
 }
 
 // Het resultaat dat het best past bij de regel: zelfde titel, zelfde schrijver,

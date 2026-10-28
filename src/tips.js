@@ -1,6 +1,7 @@
 // Boekentips: een wekelijkse lijst (tips.json op de eigen site) en de reacties erop.
 import { db } from './db.js';
 import { vindDubbel } from './dubbel.js';
+import { veiligeUrl } from './veilig.js';
 
 export async function haalTips() {
   try {
@@ -76,7 +77,8 @@ export function normaliseerTip(t) {
     isbn: tekst(t.isbn),
     jaar: Number.isInteger(t.jaar) ? t.jaar : undefined,
     uitgever: tekst(t.uitgever),
-    coverUrl: tekst(t.coverUrl),
+    // Alleen een echt https-plaatje; al het andere zoekt de app zelf.
+    coverUrl: veiligeUrl(tekst(t.coverUrl))?.startsWith('https://') ? tekst(t.coverUrl) : '',
     reden: tekst(t.reden) ?? '',
     synopsis: tekst(t.synopsis),
     categorie: tekst(t.categorie),

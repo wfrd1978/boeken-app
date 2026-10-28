@@ -19,15 +19,6 @@ self.addEventListener('activate', (event) => {
 });
 
 // Bestanden in assets/ hebben een unieke naam per versie: die veranderen nooit, dus eerst uit de opslag.
-// Bij elke nieuwe versie komen er nieuwe bestanden bij; de oudste ruimen we op,
-// zodat de opslag niet ongemerkt volloopt. Wat nog nodig is, wordt gewoon opnieuw gehaald.
-const MAX_BESTANDEN = 40;
-
-async function ruimOudeBestandenOp(cache) {
-  const bestanden = (await cache.keys()).filter((r) => new URL(r.url).pathname.includes('/assets/'));
-  for (const oud of bestanden.slice(0, Math.max(0, bestanden.length - MAX_BESTANDEN))) await cache.delete(oud);
-}
-
 async function opslagEerst(request) {
   const bewaard = await caches.match(request);
   if (bewaard) return bewaard;
@@ -35,9 +26,38 @@ async function opslagEerst(request) {
   if (antwoord.ok) {
     const cache = await caches.open(CACHE);
     await cache.put(request, antwoord.clone());
-    ruimOudeBestandenOp(cache).catch(() => {});
   }
   return antwoord;
+}
+
+// Een nieuwe versie van de pagina pas bewaren als álle bestanden van die versie binnen zijn:
+// de bestanden die de pagina noemt, en de onderdelen die later worden geladen (Excel, scanner).
+// Zo start de app ook zonder internet altijd met een complete versie. Daarna gaan de
+// bestanden van oudere versies weg, zodat de opslag niet volloopt.
+async function bewaarVersie(cache, antwoord) {
+  const html = await antwoord.clone().text();
+  const basis = self.registration.scope;
+  const nodig = new Set([...html.matchAll(/(?:src|href)="([^"]*\/assets\/[^"]+)"/g)].map((m) => new URL(m[1], basis).href));
+  for (const adres of [...nodig]) {
+    if (!adres.endsWith('.js')) continue;
+    const bewaard = await cache.match(adres);
+    const code = await (bewaard ?? (await fetch(adres))).clone().text();
+    for (const m of code.matchAll(/["'`]\.\/([\w.-]+\.(?:js|css))["'`]/g)) nodig.add(new URL(m[1], adres).href);
+  }
+  for (const adres of nodig) {
+    if (await cache.match(adres)) continue;
+    const bestand = await fetch(adres);
+    if (!bestand.ok) throw new Error(`Bestand ontbreekt: ${adres}`);
+    await cache.put(adres, bestand);
+  }
+  await cache.put(basis, antwoord);
+  for (const oud of await cache.keys()) {
+    if (new URL(oud.url).pathname.includes('/assets/') && !nodig.has(oud.url)) await cache.delete(oud);
+  }
+}
+
+function isPagina(url) {
+  return url.href === self.registration.scope || url.pathname.endsWith('/index.html');
 }
 
 // De rest (de pagina zelf, tips.json): eerst internet, zodat je de nieuwste versie krijgt.
@@ -60,17 +80,31 @@ async function netwerkEerst(request) {
 // de app meldt dan 'Nieuwe versie klaar'. Nog niets bewaard: gewoon van internet.
 async function snelOpenen(request, event) {
   const cache = await caches.open(CACHE);
-  const bewaard = (await cache.match(request)) || (request.mode === 'navigate' ? await cache.match('./') : undefined);
-  const netwerk = fetch(request, { cache: 'no-cache' }).then((antwoord) => {
-    if (antwoord.ok) {
-      cache.put(request, antwoord.clone());
-      if (request.mode === 'navigate') cache.put('./', antwoord.clone());
-    }
+  const pagina = request.mode === 'navigate';
+  const bewaard = pagina ? await cache.match(self.registration.scope) : await cache.match(request);
+  // Opslaan gebeurt op de achtergrond: de pagina hoeft daar niet op te wachten.
+  let opslaan = null;
+  const netwerk = fetch(pagina ? self.registration.scope : request, { cache: 'no-cache' }).then((antwoord) => {
+    if (antwoord.ok) opslaan = pagina ? bewaarVersie(cache, antwoord.clone()) : cache.put(request, antwoord.clone());
     return antwoord;
   });
+  event.waitUntil(netwerk.then(() => opslaan).catch(() => {}));
   if (!bewaard) return netwerk;
-  event.waitUntil(netwerk.catch(() => {}));
+  netwerk.catch(() => {});
   return bewaard;
+}
+
+// De app vraagt de pagina op om te zien of er een nieuwe versie is: altijd van internet,
+// en een nieuwe versie meteen compleet klaarzetten voor de volgende keer.
+async function paginaVanInternet(request, event) {
+  const cache = await caches.open(CACHE);
+  try {
+    const antwoord = await fetch(request, { cache: 'no-store' });
+    if (antwoord.ok) bewaarVersie(cache, antwoord.clone()).catch(() => {});
+    return antwoord;
+  } catch {
+    return (await cache.match(self.registration.scope)) ?? Response.error();
+  }
 }
 
 // Is er genoeg ruimte? De boeken zelf gaan altijd voor: bij twijfel geen cover bewaren.
@@ -114,6 +148,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.includes('/assets/')) event.respondWith(opslagEerst(request));
   else if (request.mode === 'navigate' || /\/(thema\.js|manifest\.webmanifest)$/.test(url.pathname)) event.respondWith(snelOpenen(request, event));
+  else if (isPagina(url)) event.respondWith(paginaVanInternet(request, event));
   // Lijsten (tips, nieuws, reeksen) en de rest: eerst internet, zodat ze vers zijn.
   else event.respondWith(netwerkEerst(request));
 });

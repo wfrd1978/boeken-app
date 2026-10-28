@@ -2,7 +2,7 @@
 // series die op een boek zijn gebaseerd). Gratis en zonder sleutel. Alleen de naam van de
 // schrijver gaat naar Wikipedia en Wikidata; per schrijver een maand op de telefoon bewaard.
 import { db } from './db.js';
-import { kaal } from './dubbel.js';
+import { kaal, titelKern as kern } from './dubbel.js';
 import { veiligeUrl } from './veilig.js';
 
 const BEWAARDAGEN = 30;
@@ -124,10 +124,6 @@ export function leesFilms(rijen) {
   return [...perTitel.values()];
 }
 
-function kern(tekst) {
-  return kaal(tekst).replace(/^(de|het|een|the|a|an)\s+/, '').replace(/[^a-z0-9]/g, '');
-}
-
 // Verfilmingen van dit boek: het werk heeft dezelfde titel als het boek, of als een andere
 // titel van hetzelfde deel in de reekslijst (zo vinden we ook de oorspronkelijke titel).
 export function filmsVoorBoek(boek, films, extraTitels = []) {
@@ -160,7 +156,11 @@ export async function schrijverGegevens(naam) {
     films: filmsMislukt ? (bewaard?.films ?? []) : films,
     onvolledig: infoMislukt || filmsMislukt,
   };
-  alle[sleutel] = nieuw;
-  await db.instellingen.put({ sleutel: 'schrijvers', waarde: alle });
+  // Opnieuw lezen vlak voor het schrijven (een ander boek kan intussen een schrijver hebben
+  // bewaard), en wat ouder is dan de bewaartijd weggooien, zodat de lijst niet blijft groeien.
+  const nu = (await db.instellingen.get('schrijvers'))?.waarde ?? {};
+  for (const [k, v] of Object.entries(nu)) if (!(Date.now() - Date.parse(v?.op) < BEWAARDAGEN * 86400000)) delete nu[k];
+  nu[sleutel] = nieuw;
+  await db.instellingen.put({ sleutel: 'schrijvers', waarde: nu });
   return nieuw;
 }

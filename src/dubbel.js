@@ -26,6 +26,11 @@ function zonderLidwoord(titel) {
   return kaal(titel).trim().replace(LIDWOORDEN, '');
 }
 
+// Een titel om mee te vergelijken: kleine letters, zonder lidwoord vooraan, zonder leestekens.
+export function titelKern(tekst) {
+  return kaal(tekst).replace(/^(de|het|een|the|a|an)\s+/, '').replace(/[^a-z0-9]/g, '');
+}
+
 // Titel zonder ondertitel: "Derksen: het verhaal" -> "derksen".
 function hoofdtitel(titel) {
   return kern(zonderLidwoord((titel || '').split(/[:(]/)[0]));

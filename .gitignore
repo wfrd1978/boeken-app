@@ -1,3 +1,7 @@
 node_modules
 dist
 .DS_Store
+# Persoonlijke bestanden nooit in de (openbare) repository
+*.xlsx
+boeken-backup-*.json
+*-backup*.json

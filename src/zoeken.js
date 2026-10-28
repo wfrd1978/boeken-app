@@ -15,6 +15,12 @@ function googleUrl(zoekvraag, extra = '') {
 
 const WACHTTIJD = 10000;
 
+// Alleen een echt Open Library-adres ('/works/OL123W', '/authors/OL45A') achter openlibrary.org
+// plakken; iets anders zou de vraag naar een andere site kunnen sturen.
+function olPad(sleutel) {
+  return /^\/(works|authors|books)\/OL\d+[WAM]$/.test(String(sleutel ?? '')) ? sleutel : '';
+}
+
 // --- Zuinig met Google ---
 // De sleutel mag 1.000 vragen per dag doen. De teller gaat op nul om middernacht in
 // Californië (in Nederland 9:00 of 10:00). Het werk op de achtergrond mag er hooguit 600
@@ -240,9 +246,9 @@ export async function zoekSynopsis(boek) {
   const nl = metTekst.find((k) => k.taal === 'nl');
   if (nl || metTekst[0]) return (nl || metTekst[0]).synopsis;
   let werkTekst = '';
-  if (boek.werk) {
+  if (olPad(boek.werk)) {
     try {
-      const werk = await haalJson(`https://openlibrary.org${boek.werk}.json`);
+      const werk = await haalJson(`https://openlibrary.org${olPad(boek.werk)}.json`);
       const d = werk.description;
       werkTekst = schoneTekst(typeof d === 'string' ? d : d?.value);
     } catch (fout) {
@@ -320,7 +326,7 @@ async function openLibraryUitgave(isbn) {
   const uitgave = await haalJson(`https://openlibrary.org/isbn/${encodeURIComponent(isbn)}.json`);
   const namen = await Promise.all(
     (uitgave.authors ?? []).slice(0, 3).map((a) =>
-      haalJson(`https://openlibrary.org${a.key}.json`).then((x) => x.name).catch(() => '')
+      (olPad(a.key) ? haalJson(`https://openlibrary.org${olPad(a.key)}.json`).then((x) => x.name) : Promise.resolve('')).catch(() => '')
     )
   );
   const cover = uitgave.covers?.find((c) => c > 0);
@@ -502,8 +508,8 @@ export async function zoekCoverKeuzes(boek) {
       : [],
     zoekOpenLibrary({ titel: boek.titel, auteur }, 5).then((r) => r.filter((k) => vindDubbel(boek, [k])).map((k) => k.coverUrl)),
     // Bij Open Library hangen alle uitgaven (en hun covers) aan het werk.
-    boek.werk
-      ? haalJson(`https://openlibrary.org${boek.werk}/editions.json?limit=60`).then((d) =>
+    olPad(boek.werk)
+      ? haalJson(`https://openlibrary.org${olPad(boek.werk)}/editions.json?limit=60`).then((d) =>
           (d.entries ?? []).flatMap((e) => (e.covers ?? []).filter((c) => c > 0).slice(0, 1)).map((c) => `https://covers.openlibrary.org/b/id/${c}-M.jpg`)
         )
       : [],

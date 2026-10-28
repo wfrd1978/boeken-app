@@ -66,7 +66,7 @@ function register(reeksen) {
       const uitkomst = { reeks: reeks.naam, reeksDeel: d.deel, reeksTotaal: totaal, reeksVolgende: reeks.volgende };
       for (const titel of d.titels) {
         for (const t of titelSleutels(titel)) {
-          for (const naam of [...namen, '']) {
+          for (const naam of namen) {
             const k = `${t}|${naam}`;
             // Het eerste deel met deze titel wint (zoals bij de volgorde in de lijst).
             if (!r.has(k)) r.set(k, uitkomst);
@@ -82,6 +82,8 @@ function register(reeksen) {
 export function herkenReeks(boek, reeksen) {
   const r = register(reeksen);
   const naam = achternaam(boek);
+  // Zonder schrijver geen herkenning: alleen een titel ('Inferno', 'Wraak') is te weinig.
+  if (!naam) return null;
   for (const t of titelSleutels(boek.titel)) {
     const gevonden = r.get(`${t}|${naam}`);
     if (gevonden) return gevonden;

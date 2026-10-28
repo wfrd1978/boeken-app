@@ -44,3 +44,11 @@ describe('Reekslijst', () => {
     expect(volgendDeel(boeken[0], lijst[0], boeken)?.deel).toBe(3);
   });
 });
+
+describe('Reekslijst zonder schrijver', () => {
+  it('herkent geen boek op alleen de titel', () => {
+    const lijst = [normaliseerReeks({ naam: 'Robert Langdon', schrijvers: ['Dan Brown'], delen: [{ deel: 4, titels: ['Inferno'] }] })];
+    expect(herkenReeks({ titel: 'Inferno', auteurs: [] }, lijst)).toBe(null);
+    expect(herkenReeks({ titel: 'Inferno', auteurs: ['Dan Brown'] }, lijst)).toMatchObject({ reeksDeel: 4 });
+  });
+});

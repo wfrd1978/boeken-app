@@ -2,6 +2,7 @@ import './style.css';
 import {
   alleBoeken,
   boekToevoegen,
+  telWijziging,
   haalBoek,
   boekBijwerken,
   boekVerwijderen,
@@ -42,7 +43,7 @@ import { startScanner, geldigIsbn13 } from './scanner.js';
 import { kaal, achternaam, eersteAuteur, vindDubbel } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
-import { leesRegels, MAX_REGELS, ordenOpPassend } from './meerdere.js';
+import { leesRegels, ordenOpPassend } from './meerdere.js';
 import { deelTekst, deelBoek } from './delen.js';
 import { isKoboLink, titelUitKoboLink } from './kobolink.js';
 import { bekendeReeksen, delenInLijst, leesDeel, reeksOpNaam, reeksTekst, volgendDeel } from './reeks.js';
@@ -191,8 +192,11 @@ function coverHtml(boek, klasse, links = coverLinks) {
 // en vegen over het vak gewoon de pagina laat scrollen.
 function laatMeegroeien(vak) {
   const pas = () => {
+    // Even 'auto' maakt de pagina korter; de plek op de pagina houden we vast, zodat hij niet verspringt.
+    const y = window.scrollY;
     vak.style.height = 'auto';
     vak.style.height = `${vak.scrollHeight + 2}px`;
+    if (window.scrollY !== y) window.scrollTo(0, y);
   };
   vak.addEventListener('input', pas);
   requestAnimationFrame(pas);
@@ -618,7 +622,10 @@ async function toonKoboCheck() {
   document.getElementById('kobo-lijst')?.addEventListener('click', async (e) => {
     const knop = e.target.closest('[data-gedownload]');
     if (!knop) return;
-    await boekBijwerken(Number(knop.dataset.gedownload), { koboWacht: false, koboGedownload: true });
+    const id = Number(knop.dataset.gedownload);
+    const boek = await haalBoek(id);
+    // Net als op de boekpagina: gedownload in Kobo = e-book, als je nog niets had gekozen.
+    await boekBijwerken(id, { koboWacht: false, koboGedownload: true, ...(boek && !boek.leesvorm ? { leesvorm: 'ebook' } : {}) });
     const li = knop.closest('li');
     li.classList.add('klaar');
     li.querySelector('.nalopen-knoppen').innerHTML = '<span class="keuze actief">Gedownload ✓</span>';
@@ -1443,9 +1450,13 @@ function tekenMeerdere(rijen, mijnBoeken, nr) {
     voegKnop.disabled = true;
     voegKnop.textContent = 'Bezig met toevoegen…';
     const gekozen = rijen.filter((r) => r.aan);
+    // Twee regels die op hetzelfde boek uitkomen ('Inferno' en 'Inferno – Dan Brown'): één keer toevoegen.
+    const toegevoegd = [];
     try {
       for (const r of gekozen) {
         const b = r.gevonden[r.keuze] ?? { titel: r.regel.titel, auteurs: r.regel.auteur ? [r.regel.auteur] : [] };
+        if (vindDubbel(b, toegevoegd)) continue;
+        toegevoegd.push(b);
         // Cover, gegevens, synopsis en reeks komen daarna vanzelf op de achtergrond.
         await boekToevoegen({ ...b, status, categorie: raadCategorie(b, mijnBoeken), bron: 'meerdere', verrijkt: false });
       }
@@ -1457,7 +1468,7 @@ function tekenMeerdere(rijen, mijnBoeken, nr) {
     verrijkAlles();
     vulReeksenAan().catch(() => {});
     if (nr === schermNr) location.hash = '#/';
-    melding(`${gekozen.length} ${gekozen.length === 1 ? 'boek' : 'boeken'} toegevoegd`);
+    melding(`${toegevoegd.length} ${toegevoegd.length === 1 ? 'boek' : 'boeken'} toegevoegd`);
   });
 }
 
@@ -2206,15 +2217,17 @@ function toonTip(tip, boeken, opnieuw = herteken) {
     const reactie = knop.dataset.reactie;
     let id;
     try {
-      await zetTipReactie(tip, reactie);
       if (reactie === 'nee') {
+        await zetTipReactie(tip, reactie);
         sluit();
         melding('Deze tip zie je niet meer');
         opnieuw();
         return;
       }
       knop.textContent = 'Bezig…';
+      // Eerst het boek, dan pas de reactie: mislukt het toevoegen, dan blijft de tip staan.
       id = await voegTipToe(tip, reactie, boeken);
+      await zetTipReactie(tip, reactie);
     } catch {
       sluit();
       melding('Dat lukte niet. Probeer het nog eens.');
@@ -2299,8 +2312,14 @@ async function toonToevoegTips(verversen = true) {
     if (plus) {
       plus.disabled = true;
       const tip = vind(plus.dataset.plus);
-      await zetTipReactie(tip, 'wil');
-      await voegTipToe(tip, 'wil', boeken);
+      try {
+        await voegTipToe(tip, 'wil', boeken);
+        await zetTipReactie(tip, 'wil');
+      } catch {
+        plus.disabled = false;
+        melding('Dat lukte niet. Probeer het nog eens.');
+        return;
+      }
       plus.closest('li').classList.add('weg');
       melding(`"${tip.titel}" op je lijst gezet: Wil ik lezen`);
       setTimeout(() => toonToevoegTips(false), 250);
@@ -2718,7 +2737,7 @@ async function toonBoek(id) {
       const reeksDeel = reeks ? leesDeel(document.getElementById('reeks-nr').value) : null;
       // Een andere reeks: dan horen het aantal delen en het volgende deel er niet meer bij.
       const anders = reeks !== boek.reeks;
-      await bewaar({ reeks, reeksDeel, ...(anders || !reeks ? { reeksTotaal: null, reeksVolgende: '' } : {}) });
+      await bewaar({ reeks, reeksDeel, reeksZelf: true, ...(anders || !reeks ? { reeksTotaal: null, reeksVolgende: '' } : {}) });
       tekenReeks();
     }
   });
@@ -2897,10 +2916,15 @@ async function toonBoek(id) {
   const opgeslagen = document.getElementById('opgeslagen');
   const pasRecensieAan = laatMeegroeien(recensie);
   let timer;
+  let recensieGeteld = false;
   const bewaarRecensie = async () => {
     clearTimeout(timer);
     if (recensie.value === boek.recensie) return;
     await bewaar({ recensie: recensie.value });
+    if (!recensieGeteld) {
+      recensieGeteld = true;
+      telWijziging();
+    }
     opgeslagen.textContent = 'Opgeslagen';
   };
   recensie.addEventListener('input', () => {
@@ -2951,8 +2975,10 @@ async function route({ naarBoven = false } = {}) {
   sluitScanner();
   // Een recensie die nog niet bewaard is, eerst opslaan.
   if (toonBoek.bewaarOpenstaand) {
-    await toonBoek.bewaarOpenstaand();
+    const bewaarNog = toonBoek.bewaarOpenstaand;
     toonBoek.bewaarOpenstaand = null;
+    // Lukt bewaren niet, dan toch verder: anders blijft de app op dit scherm hangen.
+    await bewaarNog().catch(() => melding('Je recensie kon niet worden bewaard.'));
   }
   window.scrollTo(0, 0);
   const boekId = location.hash.match(/^#\/boek\/(\d+)$/);
@@ -2965,7 +2991,15 @@ async function route({ naarBoven = false } = {}) {
   else if (location.hash === '#/covers') toonCoversNalopen();
   else if (location.hash === '#/nieuws') toonNieuwsPagina();
   else if (location.hash === '#/kobo') toonKoboCheck();
-  else if (location.hash.startsWith('#/nieuws/')) toonNieuwsBericht(decodeURIComponent(location.hash.slice('#/nieuws/'.length)));
+  else if (location.hash.startsWith('#/nieuws/')) {
+    let id = '';
+    try {
+      id = decodeURIComponent(location.hash.slice('#/nieuws/'.length));
+    } catch {
+      // Een kapot adres: dan gewoon de nieuwspagina.
+    }
+    toonNieuwsBericht(id);
+  }
   else if (boekId) toonBoek(Number(boekId[1]));
   else if (location.hash === '#/zoek') {
     // Zoeken = de lijst met de cursor in het zoekveld.

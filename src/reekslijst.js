@@ -31,7 +31,7 @@ export async function vulReeksenAan() {
   let n = 0;
   for (const boek of await db.boeken.toArray()) {
     let wijziging = null;
-    if (!boek.reeks) {
+    if (!boek.reeks && !boek.reeksZelf) {
       wijziging = herkenReeks(boek, reeksen);
     } else {
       const r = reeksOpNaam(boek.reeks, reeksen);
@@ -42,7 +42,7 @@ export async function vulReeksenAan() {
     // Alleen als het nog hetzelfde boek is en de reeks intussen niet zelf is ingevuld.
     await db.boeken.where('id').equals(boek.id).modify((b) => {
       if (b.titel !== boek.titel || b.toegevoegdOp !== boek.toegevoegdOp) return;
-      if (wijziging.reeks && b.reeks) return;
+      if (wijziging.reeks && (b.reeks || b.reeksZelf)) return;
       Object.assign(b, wijziging);
     });
     n += 1;

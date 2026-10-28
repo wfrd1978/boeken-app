@@ -79,7 +79,11 @@ export async function maakBackupBestand() {
     voorkeuren: leesVoorkeuren(),
   };
   const datum = nu.toISOString().slice(0, 10);
-  return new File([JSON.stringify(inhoud)], `boeken-backup-${datum}.json`, { type: 'application/json' });
+  const bestand = new File([JSON.stringify(inhoud)], `boeken-backup-${datum}.json`, { type: 'application/json' });
+  // Het moment van de momentopname, en hoeveel wijzigingen er toen waren: wat je daarna nog
+  // verandert (vóór je op Bewaar tikt), zit niet in de backup en telt dus gewoon door.
+  bestand.momentopname = { tijd: nu.toISOString(), wijzigingen: wijzigingenSindsBackup() };
+  return bestand;
 }
 
 // Via het deelmenu (iPhone: 'Bewaar in Bestanden'), anders als download.
@@ -99,8 +103,9 @@ export async function bewaarBackup(bestand) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   try {
-    localStorage.setItem(SLEUTEL, new Date().toISOString());
-    localStorage.setItem(WIJZIGINGEN, '0');
+    const opname = bestand.momentopname ?? { tijd: new Date().toISOString(), wijzigingen: wijzigingenSindsBackup() };
+    localStorage.setItem(SLEUTEL, opname.tijd);
+    localStorage.setItem(WIJZIGINGEN, String(Math.max(0, wijzigingenSindsBackup() - opname.wijzigingen)));
   } catch {
     // Dan herinnert de app er later nog eens aan; geen probleem.
   }

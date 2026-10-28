@@ -106,6 +106,7 @@ export function normaliseerBoek(b) {
     reeksDeel: getal(b.reeksDeel, 1, 999),
     reeksTotaal: getal(b.reeksTotaal, 1, 999),
     reeksVolgende: tekst(b.reeksVolgende).trim(),
+    reeksZelf: b.reeksZelf === true,
     synopsis: typeof b.synopsis === 'string' ? b.synopsis : undefined,
     toegevoegdOp: typeof b.toegevoegdOp === 'string' && !isNaN(Date.parse(b.toegevoegdOp)) ? b.toegevoegdOp : new Date().toISOString(),
     bron: tekst(b.bron) || 'backup',
@@ -143,6 +144,8 @@ function nieuwBoek(boek, toegevoegdOp = new Date().toISOString()) {
     reeksDeel: boek.reeksDeel ?? null,
     reeksTotaal: boek.reeksTotaal ?? null,
     reeksVolgende: boek.reeksVolgende ?? '',
+    // true = zelf ingevuld of weggehaald: dan vult de reekslijst niets meer in.
+    reeksZelf: boek.reeksZelf ?? false,
     toegevoegdOp,
     bron: boek.bron ?? 'getypt',
     // false = cover en gegevens moeten nog op de achtergrond worden opgehaald.
@@ -153,9 +156,11 @@ function nieuwBoek(boek, toegevoegdOp = new Date().toISOString()) {
 // Telt wijzigingen sinds de laatste backup (nieuwe boeken, sterren, recensie, status,
 // leesdata), zodat de app na een flink aantal om een backup vraagt.
 export const WIJZIGINGEN = 'wijzigingenSindsBackup';
-const TELT_MEE = ['sterren', 'recensie', 'status', 'leesdata', 'leesvorm'];
+// De recensie telt hier niet: die wordt tijdens het typen steeds bewaard. De boekpagina telt
+// hem één keer per bezoek (telWijziging).
+const TELT_MEE = ['sterren', 'status', 'leesdata', 'leesvorm'];
 
-function telWijziging(n = 1) {
+export function telWijziging(n = 1) {
   try {
     localStorage.setItem(WIJZIGINGEN, String((Number(localStorage.getItem(WIJZIGINGEN)) || 0) + n));
   } catch {
