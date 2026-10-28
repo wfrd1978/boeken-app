@@ -1346,6 +1346,7 @@ async function toonMeerdere() {
     <button class="hoofdknop" id="meer-zoek">Zoek deze boeken</button>
     <div id="meer-uitslag"></div>`;
   const veld = document.getElementById('meer-tekst');
+  laatMeegroeien(veld);
   veld.addEventListener('input', () => (meerdereTekst = veld.value));
   document.getElementById('meer-zoek').addEventListener('click', async (e) => {
     const regels = leesRegels(veld.value);
@@ -1914,6 +1915,9 @@ async function toonProfiel() {
 
   // Vanzelf bewaren, kort nadat je stopt met typen.
   const velden = { naam: 'p-naam', overMij: 'p-over', lezersprofiel: 'p-profiel' };
+  // De tekstvakken groeien mee, zodat vegen over je tekst gewoon de pagina laat scrollen.
+  laatMeegroeien(document.getElementById('p-over'));
+  laatMeegroeien(document.getElementById('p-profiel'));
   const opgeslagen = document.getElementById('p-opgeslagen');
   let timer;
   const bewaar = async () => {
