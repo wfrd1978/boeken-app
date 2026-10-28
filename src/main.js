@@ -672,6 +672,9 @@ async function toonLijst() {
   if (nr !== schermNr) return;
   app.innerHTML = `
     <header class="woordmerk">
+      <a class="instellingen-icoon" href="#/instellingen" aria-label="Instellingen">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1l-.4-2.7h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L4.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1l.4 2.7h4l.4-2.7a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" /></svg>
+      </a>
       <h1>Boeken</h1>
       <a class="profiel-icoon${foto ? ' met-foto' : ''}" href="#/profiel" aria-label="Mijn profiel">${
         foto

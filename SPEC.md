@@ -104,7 +104,7 @@ Inspiratie: de apps van de Volkskrant, Trouw en NOS. Simpel en strak, zoals een 
 4. **Eén accentkleur.** Zoals rood bij NOS en blauw bij Trouw. Gebruikt voor kleine labels (status, zoals "ANALYSE" bij de Volkskrant) en de actieve knop.
 5. **Woordmerk in het midden.** "Boeken" als titel bovenaan in het midden.
 6. **Tabjes bovenaan** met een streep onder de actieve: Alles · Aan het lezen · Gelezen · Wil ik lezen.
-7. **Zwevende balk onderin** met de belangrijkste plekken: Boeken, Toevoegen, Zoek, Instellingen.
+7. **Zwevende balk onderin** met de belangrijkste plekken: Boeken, Toevoegen, Zoek. Instellingen zit onder een tandwiel linksboven op het startscherm (tegenover de profielknop), zoals in veel apps.
 
 Gekozen: accentkleur donkergroen (#1F4D3F), de lijst als rijtje (kleine cover links). Titels in de schreefletter van de iPhone (New York), de rest in de systeemletter. De lijst heeft tabjes per status; de balk onderin vervangt de losse +-knop en de link naar Instellingen.
 
@@ -192,3 +192,4 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-10-25 | Backup-herinnering na 7 dagen of na 10 wijzigingen |
 | 2026-10-26 | Synopsis bij storing in Google-zoeken: boeken met een Google-cover rechtstreeks opvragen (dat werkt nog), anders een Nederlandse tekst van Open Library; tijdens een storing een half uur niet zoeken bij Google (spaart vragen) |
 | 2026-10-27 | Sneller opstarten: reeksen herkennen via een register (was seconden rekenwerk bij elke start), de app zelf opent direct uit de opslag en haalt een nieuwe versie op de achtergrond (melding 'Nieuwe versie klaar', ook kort na het opstarten) |
+| 2026-10-28 | Instellingen als tandwiel linksboven op het startscherm; balk onderin met drie plekken |
