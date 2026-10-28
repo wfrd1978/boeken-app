@@ -20,7 +20,9 @@ self.addEventListener('activate', (event) => {
 
 // Bestanden in assets/ hebben een unieke naam per versie: die veranderen nooit, dus eerst uit de opslag.
 async function opslagEerst(request) {
-  const bewaard = await caches.match(request);
+  // ignoreVary: de pagina vraagt scripts op met een 'Origin' erbij, het klaarzetten niet;
+  // zonder dit zou een klaargezet bestand soms niet gevonden worden.
+  const bewaard = await caches.match(request, { ignoreVary: true });
   if (bewaard) return bewaard;
   const antwoord = await fetch(request);
   if (antwoord.ok) {
