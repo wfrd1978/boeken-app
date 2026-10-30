@@ -1321,20 +1321,24 @@ function toonToevoegen() {
       <a class="terug" href="#/">‹ Terug</a>
       <h1>Toevoegen</h1>
     </header>
-    <button class="hoofdknop scan-knop" id="scan">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h2v14H3zM7 5h1v14H7zM10 5h2v14h-2zM14 5h1v14h-1zM17 5h1v14h-1zM20 5h1v14h-1z" /></svg>
-      Scan streepjescode
-    </button>
-    <p class="of">of zoek op titel, auteur of ISBN, of plak een Kobo-link</p>
-    <form class="zoekbalk" id="zoekform">
-      <input id="zoekveld" type="search" enterkeyhint="search" placeholder="Titel, auteur, ISBN of Kobo-link" value="${veilig(laatsteZoekterm)}" autocomplete="off" />
+    <div class="toevoeg-tegels">
+      <button class="toevoeg-tegel hoofd" id="scan">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h2v14H3zM7 5h1v14H7zM10 5h2v14h-2zM14 5h1v14h-1zM17 5h1v14h-1zM20 5h1v14h-1z" /></svg>
+        <strong>Scan</strong>
+        <small>de streepjescode</small>
+      </button>
+      <a class="toevoeg-tegel" href="#/meerdere">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2v14H4zM8 4h3v16H8zM13 6h2v13h-2zM16.4 6.6l1.9-.6 3.6 12.3-1.9.6z" /></svg>
+        <strong>Meerdere</strong>
+        <small>boeken tegelijk</small>
+      </a>
+    </div>
+    <form class="toevoeg-zoek" id="zoekform" role="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 0 1 5.2 10.4l4.4 4.4-1.4 1.4-4.4-4.4A6.5 6.5 0 1 1 10.5 4zm0 2a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z" /></svg>
+      <input id="zoekveld" type="search" enterkeyhint="search" placeholder="Titel, auteur of ISBN" aria-label="Zoek op titel, auteur of ISBN" value="${veilig(laatsteZoekterm)}" autocomplete="off" />
       <button type="submit">Zoek</button>
     </form>
-    <a class="meerdere-link" href="#/meerdere">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2v14H4zM8 4h3v16H8zM13 6h2v13h-2zM16.4 6.6l1.9-.6 3.6 12.3-1.9.6z" /></svg>
-      <span><strong>Meerdere boeken tegelijk</strong><small>Plak of scan een rijtje titels</small></span>
-      <span class="pijl" aria-hidden="true">›</span>
-    </a>
+    <p class="toevoeg-hint">Een Kobo-link plakken in het zoekveld kan ook.</p>
     <div id="resultaten"></div>
     <section class="toevoeg-tips" id="toevoeg-tips" hidden></section>
   `;
