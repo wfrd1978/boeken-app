@@ -12,8 +12,9 @@ self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
+      // Alleen eigen opslag opruimen: de app Boeken (/boeken/) op hetzelfde adres heeft zijn eigen deel-…
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k !== COVERS).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => /^(boeken|covers)-v\d+$/.test(k) && k !== CACHE && k !== COVERS).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
