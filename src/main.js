@@ -74,7 +74,6 @@ import {
   zonderCoverOpnieuw,
   coverTelling,
   coverStand,
-  legCoversVast,
   synopsisTelling,
 } from './verrijken.js';
 
@@ -898,7 +897,7 @@ function overDezeAppHtml() {
         <p>Alles wat je invult staat alleen op deze telefoon, in de app op je beginscherm: je boeken, covers, sterren, recensies, je profiel en je foto. Er is geen account en geen server. Niemand anders kan erbij, ook Claude niet.</p>
         <p>Safari en de app op je beginscherm bewaren elk hun eigen gegevens. Gebruik daarom altijd de app op je beginscherm.</p>
         <p>Een backup is één bestand met alles erin. Jij bepaalt waar het staat, bijvoorbeeld in iCloud Drive. Verlies je je telefoon, dan zet je met dat bestand alles terug.</p>
-        <p>Naar een andere telefoon: maak een backup, zet de app op het beginscherm van de nieuwe telefoon, open hem vanaf het beginscherm en kies Backup terugzetten. Bij Backup zie je wat er meegaat. Covers die alleen als internetadres bestaan, kun je daar eerst als plaatje vastleggen.</p>
+        <p>Naar een andere telefoon: maak een backup, zet de app op het beginscherm van de nieuwe telefoon, open hem vanaf het beginscherm en kies Backup terugzetten. Bij Backup zie je wat er meegaat. Covers legt de app vanzelf als plaatje vast, zodat ze meegaan.</p>
       </details>
       <details>
         <summary>Wat gaat er over internet?</summary>
@@ -2509,31 +2508,11 @@ async function toonVerhuis() {
     }${st.geen ? `, ${st.geen} zonder cover` : ''}. Ook je profiel, profielfoto, reacties op tips en je keuzes in de lijst.</p>
     ${
       st.internet
-        ? `<p class="zacht">Covers met alleen een internetadres komen op een nieuwe telefoon opnieuw van internet. Leg ze vast als plaatje, dan zitten ze echt in je backup.</p>
-           <button class="tweede-knop" id="leg-vast">Covers als plaatje vastleggen (${st.internet})</button>
-           <p class="zacht" id="leg-vast-stand"></p>`
+        ? `<p class="zacht">De app legt covers vanzelf als plaatje vast, zodat ze echt in je backup zitten. Lukt dat bij een boek niet, dan kun je die cover zelf vastleggen via Covers zelf nalopen.</p>`
         : st.plaatje
           ? '<p class="zacht">Alle covers zitten als plaatje in je backup.</p>'
           : ''
     }`;
-  document.getElementById('leg-vast')?.addEventListener('click', async (e) => {
-    const knop = e.currentTarget;
-    const stand = document.getElementById('leg-vast-stand');
-    knop.disabled = true;
-    const { gelukt, over } = await legCoversVast(({ klaar, totaal }) => {
-      knop.textContent = `Bezig… ${klaar} van ${totaal}`;
-    });
-    knop.remove();
-    const nu = await coverStand();
-    const nalopen = document.getElementById('covers-nalopen');
-    if (nalopen) {
-      nalopen.hidden = !(nu.geen + nu.internet);
-      nalopen.textContent = `Covers zelf nalopen (${nu.geen + nu.internet})`;
-    }
-    stand.innerHTML = over
-      ? `${n(gelukt, 'cover', 'covers')} vastgelegd. ${n(over, 'cover kon', 'covers konden')} niet automatisch: <a href="#/covers">leg die zelf vast</a> (houd de cover vast, kies Kopieer en tik op Plak).`
-      : `Klaar: ${n(gelukt, 'cover', 'covers')} vastgelegd. Maak nu een nieuwe backup.`;
-  });
 }
 
 // --- Covers nalopen: alle boeken zonder cover op een rij ---

@@ -142,10 +142,23 @@ async function zoekOpenLibrary(zoekvraag, limiet = 10) {
   });
 }
 
+// Het zoeken bij Google geeft soms zomaar een storing (503), afgewisseld met goede antwoorden.
+// Daarom bij een storing na een korte pauze nog twee keer proberen.
+const GOOGLE_POGINGEN = 3;
+
 async function zoekGoogleBooks(tekst, alleenNederlands = false, limiet = 10) {
   const taal = alleenNederlands ? '&langRestrict=nl' : '';
   const url = googleUrl(tekst, `&maxResults=${limiet}${taal}`);
-  const data = await haalJson(url);
+  let data;
+  for (let poging = 1; ; poging += 1) {
+    try {
+      data = await haalJson(url);
+      break;
+    } catch (fout) {
+      if (fout.status !== 503 || poging >= GOOGLE_POGINGEN) throw fout;
+      await new Promise((klaar) => setTimeout(klaar, 800 * poging));
+    }
+  }
   return (data.items ?? []).map(({ volumeInfo: v }) => {
     const ids = v.industryIdentifiers ?? [];
     const isbn = (ids.find((i) => i.type === 'ISBN_13') || ids.find((i) => i.type === 'ISBN_10'))?.identifier ?? '';
@@ -191,9 +204,11 @@ export function googleId(coverUrl) {
   }
 }
 
-// Heeft het zoeken bij Google een storing (fout 503), dan een half uur niet meer zoeken voor
-// de synopsis: dat spaart vragen. Rechtstreeks opvragen (met het Google-nummer) gaat wel door.
+// Blijft het zoeken bij Google ook na een paar pogingen een storing geven (fout 503), dan tien
+// minuten niet meer zoeken voor de synopsis: dat spaart vragen. Rechtstreeks opvragen (met het
+// Google-nummer) gaat wel door.
 let googleZoekenStoringTot = 0;
+const GOOGLE_STORING_PAUZE = 10 * 60000;
 
 // Lijkt deze tekst Nederlands? Telt een paar heel gewone Nederlandse woorden.
 export function lijktNederlands(tekst) {
@@ -229,16 +244,18 @@ export async function zoekSynopsis(boek) {
       google = await zoekGoogleBooks(`isbn:${boek.isbn}`, false, 3);
     } catch (fout) {
       google = [];
-      if (fout.status === 503) googleZoekenStoringTot = Date.now() + 30 * 60000;
+      if (fout.status === 503) googleZoekenStoringTot = Date.now() + GOOGLE_STORING_PAUZE;
     }
   }
   if (!storing && !google.some((k) => k.synopsis)) {
     try {
-      const opTitel = await zoekGoogleBooks(`intitle:${boek.titel}${auteur ? ` inauthor:${auteur}` : ''}`, false, 10);
+      // Op de hoofdtitel: een lange ondertitel maakt de zoekvraag alleen maar strenger.
+      const hoofdtitel = boek.titel.split(':')[0].trim() || boek.titel;
+      const opTitel = await zoekGoogleBooks(`intitle:${hoofdtitel}${auteur ? ` inauthor:${auteur}` : ''}`, false, 10);
       google = google.concat(opTitel.filter((k) => vindDubbel(boek, [k])));
     } catch (fout) {
       if (tijdelijk(fout)) storing = fout;
-      if (fout.status === 503) googleZoekenStoringTot = Date.now() + 30 * 60000;
+      if (fout.status === 503) googleZoekenStoringTot = Date.now() + GOOGLE_STORING_PAUZE;
     }
   }
   // Liefst een Nederlandse beschrijving.

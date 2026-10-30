@@ -155,8 +155,8 @@ export async function verrijkAlles() {
     }
   }
   // De synopsis kijkt zelf of er vandaag nog Google-vragen over zijn.
-  // Daarna de synopsis bij boeken die er nog geen hebben.
-  vulSynopsisAan();
+  // Daarna de synopsis bij boeken die er nog geen hebben, en dan de covers als plaatje vastleggen.
+  vulSynopsisAan().finally(legCoversVanzelfVast);
 }
 
 // --- Synopsis ---
@@ -255,24 +255,54 @@ export async function coverStand() {
   return { totaal: alle.length, plaatje, internet, geen: alle.length - plaatje - internet };
 }
 
-// Covers die alleen als adres bestaan, alsnog als plaatje bewaren. Google staat dat niet
-// toe; daarvoor zoeken we dezelfde uitgave (zelfde ISBN) bij Open Library. Het adres blijft
-// staan, er komt alleen het plaatje bij. Wat niet lukt, kun je zelf kopiëren en plakken.
-export async function legCoversVast(voortgang = () => {}) {
-  const lijst = await db.boeken.filter((b) => !(b.cover instanceof Blob) && Boolean(b.coverUrl)).toArray();
-  let gelukt = 0;
-  for (const [i, boek] of lijst.entries()) {
-    if (!navigator.onLine) break;
-    let blob = boek.coverUrl.includes('books.google') ? null : await haalPlaatje(boek.coverUrl);
-    if (!blob && boek.isbn) blob = await haalPlaatje(`https://covers.openlibrary.org/b/isbn/${boek.isbn}-M.jpg?default=false`);
-    if (blob) {
-      await db.boeken.where('id').equals(boek.id).modify((b) => {
-        if (!(b.cover instanceof Blob) && b.coverUrl === boek.coverUrl) b.cover = blob;
-      });
-      gelukt += 1;
-    }
-    voortgang({ klaar: i + 1, totaal: lijst.length, gelukt });
-    await wacht(300);
+// Covers die alleen als adres bestaan, vanzelf als plaatje bewaren: dan zitten ze echt in de
+// backup. Google staat dat niet toe; daarvoor zoeken we dezelfde uitgave (zelfde ISBN) bij
+// Open Library. Het adres blijft staan, er komt alleen het plaatje bij. Elk boek één keer per
+// cover-adres; wat niet lukt, kun je zelf vastleggen via Covers zelf nalopen.
+const VASTLEGGEN_GEPROBEERD = 'coverVastGeprobeerd';
+let vastleggenBezig = false;
+
+function vastleggenGeprobeerd() {
+  try {
+    return JSON.parse(localStorage.getItem(VASTLEGGEN_GEPROBEERD) || '{}');
+  } catch {
+    return {};
   }
-  return { gelukt, over: lijst.length - gelukt };
+}
+
+async function coverAlsPlaatje(boek) {
+  let blob = boek.coverUrl.includes('books.google') ? null : await haalPlaatje(boek.coverUrl);
+  if (!blob && boek.isbn) blob = await haalPlaatje(`https://covers.openlibrary.org/b/isbn/${boek.isbn}-M.jpg?default=false`);
+  return blob;
+}
+
+export async function legCoversVanzelfVast() {
+  if (vastleggenBezig || bezig || synopsisBezig) return;
+  vastleggenBezig = true;
+  const mijnGeneratie = generatie;
+  try {
+    const geprobeerd = vastleggenGeprobeerd();
+    const lijst = await db.boeken
+      .filter((b) => !(b.cover instanceof Blob) && Boolean(b.coverUrl) && geprobeerd[b.id] !== b.coverUrl)
+      .toArray();
+    for (const boek of lijst) {
+      // Ander werk (covers zoeken, een teruggezette backup) gaat voor; dit komt later terug.
+      if (!navigator.onLine || bezig || mijnGeneratie !== generatie) break;
+      const blob = await coverAlsPlaatje(boek);
+      if (blob) {
+        await db.boeken.where('id').equals(boek.id).modify((b) => {
+          if (!(b.cover instanceof Blob) && b.coverUrl === boek.coverUrl) b.cover = blob;
+        });
+      }
+      geprobeerd[boek.id] = boek.coverUrl;
+      try {
+        localStorage.setItem(VASTLEGGEN_GEPROBEERD, JSON.stringify(geprobeerd));
+      } catch {
+        // Niet erg; dan probeert hij dit boek de volgende keer opnieuw.
+      }
+      await wacht(300);
+    }
+  } finally {
+    vastleggenBezig = false;
+  }
 }
