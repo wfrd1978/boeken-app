@@ -2,7 +2,7 @@
 // je ereader) omzetten in zoekopdrachten, en per regel het best passende resultaat kiezen.
 import { achternaam, kaal, titelKern as kern } from './dubbel.js';
 
-export const MAX_REGELS = 30;
+const MAX_REGELS = 30;
 
 // Regels van een bibliotheekscherm die geen titel zijn: percentages, 'Gelezen', 'Nieuw', tijden.
 const RUIS = /^(\d+\s*%.*|\d+|nieuw|gelezen|ongelezen|voltooid|bezig|aan het lezen|kobo plus|voorbeeld|e-?book|luisterboek|.*\b(min|uur|pagina's|blz)\.?\s*(resterend|over)?)$/i;

@@ -16,7 +16,7 @@ export const STEEKWOORDEN = [
   'Voorspelbaar',
 ];
 
-export const LENGTES = { kort: 'twee of drie zinnen', lang: 'één alinea van vijf tot zeven zinnen' };
+const LENGTES = { kort: 'twee of drie zinnen', lang: 'één alinea van vijf tot zeven zinnen' };
 
 export function recensieOpdracht({ boek, woorden = [], eigen = '', lengte = 'kort' }) {
   const auteurs = (boek.auteurs ?? []).join(' & ');

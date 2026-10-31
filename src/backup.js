@@ -21,10 +21,15 @@ function blobNaarTekst(blob) {
 // Zelf ontleden in plaats van fetch(): de veiligheidsregels van de app staan fetch van
 // 'data:'-adressen bewust niet toe.
 async function tekstNaarBlob(dataUrl) {
-  const [kop, gegevens = ''] = dataUrl.split(',');
-  const type = kop.match(/^data:([^;,]+)/)?.[1] ?? 'image/jpeg';
-  const bytes = /;base64$/.test(kop) ? atob(gegevens) : decodeURIComponent(gegevens);
-  return new Blob([Uint8Array.from(bytes, (c) => c.charCodeAt(0))], { type });
+  // Een beschadigd plaatje wordt 'geen cover', zodat de rest van de backup gewoon terugkomt.
+  try {
+    const [kop, gegevens = ''] = dataUrl.split(',');
+    const type = kop.match(/^data:([^;,]+)/)?.[1] ?? 'image/jpeg';
+    const bytes = /;base64$/.test(kop) ? atob(gegevens) : decodeURIComponent(gegevens);
+    return new Blob([Uint8Array.from(bytes, (c) => c.charCodeAt(0))], { type });
+  } catch {
+    return null;
+  }
 }
 
 // Keuzes in de lijst (sorteren, tab, filter): klein, maar fijn om mee te verhuizen.

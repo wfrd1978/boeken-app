@@ -180,7 +180,7 @@ async function zoekGoogleBooks(tekst, alleenNederlands = false, limiet = 10) {
 
 // Google geeft beschrijvingen soms met HTML (<p>, <br>, <b>). Maak er gewone tekst van,
 // met witregels tussen alinea's.
-export function schoneTekst(html) {
+function schoneTekst(html) {
   if (!html) return '';
   const metRegels = String(html)
     .replace(/<br\s*\/?>/gi, '\n')
@@ -572,7 +572,10 @@ export async function vierkanteFoto(bestand, maat = 400) {
     canvas
       .getContext('2d')
       .drawImage(img, (img.naturalWidth - kant) / 2, (img.naturalHeight - kant) / 2, kant, kant, 0, 0, canvas.width, canvas.height);
-    return await new Promise((klaar) => canvas.toBlob(klaar, 'image/jpeg', 0.85));
+    // Lukt het omzetten niet, dan een fout: een bestaande foto mag nooit leeg worden.
+    return await new Promise((klaar, fout) =>
+      canvas.toBlob((blob) => (blob ? klaar(blob) : fout(new Error('Foto niet te lezen'))), 'image/jpeg', 0.85)
+    );
   } finally {
     URL.revokeObjectURL(url);
   }

@@ -68,6 +68,7 @@ import {
 import { leesExcel, planImport } from './importeren.js';
 import { maakExcel, deelBestand } from './exporteren.js';
 import {
+  coverZelfGekozen,
   verrijkAlles,
   opVoortgang,
   aantalTeVerrijken,
@@ -120,6 +121,8 @@ vraagBlijvendeOpslag();
 zetKoboOm()
   .then(vulLeesvormAan)
   .then(() => vulWerkenAan(zoekWerk))
+  // Gaat een van de omzettingen mis, dan toch gewoon covers en synopsis ophalen.
+  .catch(() => {})
   .then(verrijkAlles);
 // Reeksen herkennen met de lijst van de site (ook bij elke start: dan komen nieuwe delen mee).
 vulReeksenAan().catch(() => {});
@@ -730,7 +733,7 @@ async function toonLijst() {
              </div>
            </div>
            <ul class="lijst" id="lijst"></ul>`
-        : `<p class="leeg">Nog geen boeken.<br />Tik onderin op <b>Toevoegen</b> om je eerste boek toe te voegen.</p>`
+        : `<p class="leeg">Nog geen boeken (v2).(v2).(v2).<br />Tik onderin op <b>Toevoegen</b> om je eerste boek toe te voegen.</p>`
     }
   `;
   if (!boeken.length) return;
@@ -749,7 +752,7 @@ async function toonLijst() {
     const zichtbaar = sorteer(filter(boeken));
     document.getElementById('lijst').innerHTML = zichtbaar.length
       ? zichtbaar.map(boekRegel).join('')
-      : `<li class="leeg">${zoekterm ? `Geen boek gevonden voor "${veilig(zoekterm)}".` : toon ? 'Geen boeken met deze keuze.' : `Nog geen boeken bij ${veilig(statusNaam(tab))}.`}</li>`;
+      : `<li class="leeg">${zoekterm ? `Geen boek gevonden voor "${veilig(zoekterm)}".` : toon ? 'Geen boeken met deze keuze.' : `Nog geen boeken (v2).(v2).(v2).bij ${veilig(statusNaam(tab))}.`}</li>`;
     document.getElementById('aantal').textContent = zichtbaar.length === 1 ? '1 boek' : `${zichtbaar.length} boeken`;
   };
 
@@ -1025,11 +1028,25 @@ async function toonInstellingen() {
   // klaarmaken en daarna nog een tik.
   const maakKnop = document.getElementById('backup-maken');
   let bestand = null;
-  const klaarmaken = () =>
+  // Wat op dit scherm kan veranderen en in de backup gaat (weergave en andere keuzes) staat in
+  // de voorkeuren. Alleen als die veranderen, wordt de backup opnieuw klaargemaakt: met veel
+  // covers is dat zwaar werk.
+  const ONBELANGRIJK = ['tipCovers', 'coverVastGeprobeerd', 'googleTeller'];
+  const vingerafdruk = () => {
+    try {
+      return JSON.stringify(Object.entries(localStorage).filter(([k]) => !ONBELANGRIJK.includes(k)).sort());
+    } catch {
+      return '';
+    }
+  };
+  let klaarVoor = '';
+  const klaarmaken = () => (
+    (klaarVoor = vingerafdruk()),
     maakBackupBestand().then(
       (b) => (bestand = b),
       () => (bestand = null)
-    );
+    )
+  );
   if (aantal) klaarmaken();
   // Verandert er iets op dit scherm (weergave, profiel…), dan een verse backup klaarmaken,
   // zodat dat er ook in zit.
@@ -1040,7 +1057,7 @@ async function toonInstellingen() {
     if (!aantal || e.target.closest?.('#backup-blok')) return;
     clearTimeout(backupTimer);
     backupTimer = setTimeout(() => {
-      if (nr !== schermNr || maakKnop.disabled) return;
+      if (nr !== schermNr || maakKnop.disabled || vingerafdruk() === klaarVoor) return;
       bestand = null;
       maakKnop.textContent = 'Backup maken';
       klaarmaken();
@@ -1093,7 +1110,7 @@ async function toonInstellingen() {
   const zonder = telling.totaal - telling.met;
   document.getElementById('cover-telling').textContent = telling.totaal
     ? `${telling.met} van de ${telling.totaal} boeken hebben een cover.`
-    : 'Nog geen boeken.';
+    : 'Nog geen boeken (v2).(v2).(v2).';
   const syn = await synopsisTelling();
   document.getElementById('synopsis-telling').textContent = syn.totaal
     ? `${syn.met} van de ${syn.totaal} boeken hebben een synopsis${
@@ -1249,7 +1266,7 @@ async function toonInstellingen() {
         if (n) await boekenImporteren(toevoegen);
         if (m) await boekenAanvullen(bijwerken.map(({ al, wijzigingen }) => ({ id: al.id, wijzigingen })));
       } catch {
-        vak.innerHTML = '<div class="waarschuwing"><p>Importeren is mislukt. Maak zo nodig je backup terug.</p></div>';
+        vak.innerHTML = '<div class="waarschuwing"><p>Importeren is (deels) mislukt. Kijk in je lijst wat er al bij staat, en zet zo nodig je backup terug.</p></div>';
         return;
       }
       zoekterm = '';
@@ -1638,7 +1655,7 @@ async function toonResultaten(resultaten) {
           <div class="boek-tekst">
             <strong>${veilig(b.titel)}</strong>
             <span>${veilig(auteurTekst(b))}${b.jaar ? ` · ${veilig(b.jaar)}` : ''}${b.taal ? ` · ${veilig(b.taal.toUpperCase())}` : ''}</span>
-            ${vindDubbel(b, mijnBoeken) ? `<span class="al-in-lijst">Staat al in je lijst · ${veilig(statusNaam(vindDubbel(b, mijnBoeken).status))}</span>` : ''}
+            ${((al) => (al ? `<span class="al-in-lijst">Staat al in je lijst · ${veilig(statusNaam(al.status))}</span>` : ''))(vindDubbel(b, mijnBoeken))}
           </div>
         </button></li>`
         )
@@ -2276,6 +2293,9 @@ function toonTip(tip, boeken, opnieuw = herteken) {
 
 // Een tip als boek in de lijst zetten, met een voorstel voor de categorie.
 async function voegTipToe(tip, reactie, boeken) {
+  // Staat het boek er intussen al (bijvoorbeeld na een eerdere poging), dan dat boek gebruiken.
+  const al = vindDubbel(tip, await alleBoeken());
+  if (al) return al.id;
   const cover = await zoekCover(tip);
   const id = await boekToevoegen({
     titel: tip.titel,
@@ -2406,6 +2426,7 @@ function toonRecensieHulp(boek, plakTerug) {
     lengte = knop.dataset.l;
     document.querySelectorAll('#hulp-lengte .keuze').forEach((k) => k.classList.toggle('actief', k === knop));
   });
+  let laatsteOpdracht = '';
   document.getElementById('hulp-open').addEventListener('click', () => {
     const opdracht = recensieOpdracht({
       boek,
@@ -2415,6 +2436,7 @@ function toonRecensieHulp(boek, plakTerug) {
     });
     // Eerst openen (iOS wil dat direct na de tik), daarna kopiëren als reserve.
     window.open(claudeAdres(opdracht), '_blank', 'noopener');
+    laatsteOpdracht = opdracht.trim();
     navigator.clipboard?.writeText(opdracht).catch(() => {});
   });
   document.getElementById('hulp-plak').addEventListener('click', async () => {
@@ -2424,6 +2446,14 @@ function toonRecensieHulp(boek, plakTerug) {
     } catch {
       // Geen toestemming of niet mogelijk: dan zelf plakken.
     }
+    // Staat de opdracht zelf nog op het klembord, dan is er nog geen recensie gekopieerd.
+    if (tekst && tekst === laatsteOpdracht) {
+      melding('Op het klembord staat nog de opdracht. Kopieer eerst de recensie in Claude.');
+      return;
+    }
+    // Een recensie die er al staat, niet zonder te vragen vervangen.
+    const huidig = document.getElementById('recensie')?.value.trim();
+    if (tekst && huidig && huidig !== tekst && !confirm('Je huidige recensie vervangen door de tekst van het klembord?')) return;
     sluit();
     if (!tekst) {
       document.getElementById('recensie')?.focus();
@@ -2478,7 +2508,9 @@ async function toonCoverKeuze(boek, bewaar, klaar) {
     const knop = e.target.closest('.keuze-cover');
     if (!knop) return;
     knop.classList.add('gekozen');
-    await bewaar(await bewaarbareCover(urls[Number(knop.dataset.i)]));
+    const gekozen = await bewaarbareCover(urls[Number(knop.dataset.i)]);
+    await bewaar(gekozen);
+    if (!gekozen.cover) coverZelfGekozen(boek.id, gekozen.coverUrl);
     klaar();
     sluit();
     melding('Cover bewaard');
@@ -2982,6 +3014,8 @@ async function route({ naarBoven = false } = {}) {
   scrollPlekken[vorigeHash] = window.scrollY;
   vorigeHash = location.hash || '#/';
   sluitScanner();
+  // Een open laag (tip, cover kiezen) hoort bij het vorige scherm.
+  document.querySelectorAll('.laag').forEach((laag) => laag.remove());
   // Een recensie die nog niet bewaard is, eerst opslaan.
   if (toonBoek.bewaarOpenstaand) {
     const bewaarNog = toonBoek.bewaarOpenstaand;

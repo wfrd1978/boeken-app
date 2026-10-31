@@ -103,7 +103,9 @@ async function paginaVanInternet(request, event) {
   const cache = await caches.open(CACHE);
   try {
     const antwoord = await fetch(request, { cache: 'no-store' });
-    if (antwoord.ok) bewaarVersie(cache, antwoord.clone()).catch(() => {});
+    // Eerst de nieuwe versie compleet bewaren en dan pas antwoorden: dan staat hij echt klaar
+    // als de app 'Nieuwe versie klaar' laat zien.
+    if (antwoord.ok) await bewaarVersie(cache, antwoord.clone()).catch(() => {});
     return antwoord;
   } catch {
     return (await cache.match(self.registration.scope)) ?? Response.error();

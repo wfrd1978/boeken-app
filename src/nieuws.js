@@ -36,7 +36,7 @@ export async function nieuwsArchief() {
 }
 
 // Nieuwe berichten (en verbeterde versies van bestaande) bewaren in het archief.
-export async function bewaarNieuws(berichten) {
+async function bewaarNieuws(berichten) {
   const archief = await nieuwsArchief();
   const opId = new Map(archief.map((b) => [b.id, b]));
   let veranderd = false;

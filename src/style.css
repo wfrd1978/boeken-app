@@ -118,7 +118,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* --- Lijst --- */
 
 .lijst-bediening { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
-.lijst-bediening input, .zoekbalk input, .bevestig input, .datum-toevoegen input, .bevestig textarea {
+.lijst-bediening input, .bevestig input, .datum-toevoegen input, .bevestig textarea {
   width: 100%; min-width: 0; padding: 11px 14px; font-size: 16px;
   border: 1px solid var(--lijn); border-radius: 10px; background: var(--vlak);
 }
@@ -209,9 +209,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* --- Toevoegen en boekscherm --- */
 
-.zoekbalk { display: flex; gap: 8px; margin-bottom: 8px; }
-.zoekbalk input { flex: 1; }
-.zoekbalk button, .hoofdknop {
+.hoofdknop {
   border: 0; border-radius: 10px; padding: 12px 18px;
   background: var(--accent); color: var(--accent-tekst); font-weight: 600;
 }
