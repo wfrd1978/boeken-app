@@ -1,254 +1,251 @@
 {
-  "gemaakt": "2026-10-24",
-  "ronde": "2026-week-44",
+  "gemaakt": "2026-10-31",
+  "ronde": "2026-week-45",
   "tips": [
     {
-      "id": "2026w44-cryptoparadijs",
+      "id": "2026w45-operatie-porcus",
       "soort": "nieuw",
-      "titel": "Het cryptoparadijs",
+      "titel": "Operatie Porcus",
       "auteurs": [
-        "Roel Janssen"
+        "Kim Hundevadt"
       ],
+      "isbn": "9789044370225",
       "jaar": 2026,
-      "reden": "Een financiële thriller over witwassen en macht, voor wie houdt van spanning met een maatschappelijke kern.",
-      "synopsis": "Bij een advocatenkantoor verdwijnt 22 miljoen euro en de fraudeur pleegt zelfmoord. Financieel specialist Rick Reijders volgt het geld, dat in cryptomunt is omgezet, tot in El Salvador. Daar stuit hij op witwaspraktijken en complotten die democratieën bedreigen.",
-      "categorie": "Thriller & spanning",
-      "coverUrl": "https://static.unbidan.nl/covers/230096aa-02b8-4903-b03e-f235de34e058-320.jpg"
+      "uitgever": "The House of Books",
+      "coverUrl": "https://static.unbidan.nl/covers/a361d637-898d-4f34-9958-cfb482e7feba-320.jpg",
+      "reden": "Een Deense thriller waarin een vermissing uitgroeit tot een nationale crisis, voor wie houdt van spanning met een politieke en maatschappelijke kern.",
+      "synopsis": "De grootste varkenshouder van Denemarken verdwijnt spoorloos. Een journalist stuit op sporen naar Russische criminelen en radicale dierenactivisten, en zijn eigen dochter lijkt erbij betrokken. Terwijl boeren en activisten voor het parlement botsen, moet een inlichtingenagente in zes dagen de waarheid boven tafel krijgen.",
+      "categorie": "Thriller & spanning"
     },
     {
-      "id": "2026w44-goud-seyss-inquart",
+      "id": "2026w45-franse-illusie",
       "soort": "nieuw",
-      "titel": "Het goud van Seyss-Inquart",
+      "titel": "De Franse illusie",
       "auteurs": [
-        "John Kuipers"
+        "John Grisham"
       ],
+      "isbn": "9789044934847",
       "jaar": 2026,
-      "reden": "Een misdaadroman in bezet Nederland, voor wie houdt van spanning met historische lading en morele dilemma's.",
-      "synopsis": "Winter 1943: bij een overval op een juwelierszaak vallen twee doden en de Duitsers verdenken het verzet. Als maanden later het lijk van een heler opduikt, onderzoekt rechercheur Swieninck een verband tussen beide zaken. Hij vraagt zich af of hij de daders wel wil vinden als het verzet erachter zit. Deel 4 in een reeks.",
-      "categorie": "Thriller & spanning",
-      "coverUrl": "https://static.unbidan.nl/covers/a980e4c7-07b5-47af-84a8-e0e0e83fb0e1-320.jpg"
+      "uitgever": "A.W. Bruna Uitgevers",
+      "coverUrl": "https://static.unbidan.nl/covers/6bb1bba0-282d-4733-bc01-d47def14306c-320.jpg",
+      "reden": "Een vlot geschreven thriller met een juridische draai, voor wie houdt van spanning die je in een paar avonden uitleest.",
+      "synopsis": "Een Amerikaans stel wordt tijdens de huwelijksreis in Parijs ontvoerd. Na betaling van het losgeld komt de vrouw vrij, maar van de man ontbreekt elk spoor. De FBI ontdekt dat dit al eerder is gebeurd, en een jonge advocaat wordt ingezet als lokaas om de daders te vinden.",
+      "categorie": "Thriller & spanning"
     },
     {
-      "id": "2026w44-de-taak",
-      "soort": "parel",
-      "titel": "De taak",
+      "id": "2026w45-winterstilte",
+      "soort": "nieuw",
+      "titel": "Winterstilte",
       "auteurs": [
-        "Robert Pollack"
+        "Ragnar Jónasson",
+        "Katrín Jakobsdóttir"
       ],
-      "jaar": 2019,
+      "isbn": "9789044939743",
+      "jaar": 2026,
+      "uitgever": "A.W. Bruna Uitgevers",
+      "coverUrl": "https://static.unbidan.nl/covers/e32ce0e8-a37d-4543-afed-0b32d7761d42-320.jpg",
+      "reden": "Een sfeervolle IJslandse thriller van een misdaadschrijver en een oud-premier, voor wie houdt van spanning in een klein dorp dat zwijgt.",
+      "synopsis": "In februari 1989 wordt in een vervallen oud ziekenhuis aan de IJslandse oostkust een man dood gevonden. Journalist Sunna reist naar het afgelegen dorp, maar de bewoners sluiten de rijen. Wat begint als een reportage wordt een gevaarlijk onderzoek naar de vraag of het een ongeluk was of moord.",
+      "categorie": "Thriller & spanning"
+    },
+    {
+      "id": "2026w45-slapende-vulkaan",
+      "soort": "nieuw",
+      "titel": "De slapende vulkaan",
+      "auteurs": [
+        "Michael Hjorth",
+        "Bjarni Thorsson"
+      ],
+      "isbn": "9789402720723",
+      "jaar": 2026,
+      "uitgever": "HarperCollins",
+      "coverUrl": "https://static.unbidan.nl/covers/1e09da5d-3289-439b-b84d-8fe0fb2a9d99-320.jpg",
+      "reden": "Het eerste deel van een nieuwe Scandinavische misdaadreeks op IJsland, voor wie houdt van ruige natuur en een klopjacht op een seriemoordenaar.",
+      "synopsis": "Bij Reykjavik wordt een vrouw vermoord en haar tienjarige zoon is vermist. Agent Helga vermoedt dat hij is gevlucht naar de grotten in het vulkaanlandschap en krijgt hulp van een zwijgzaam lid van het reddingsteam. Dan vallen er nieuwe slachtoffers, en het lijkt erop dat de dader het op alleenstaande moeders heeft gemunt.",
+      "categorie": "Thriller & spanning"
+    },
+    {
+      "id": "2026w45-druk",
+      "soort": "nieuw",
+      "titel": "Druk",
+      "auteurs": [
+        "Erik Dijkstra"
+      ],
+      "isbn": "9789052868363",
+      "jaar": 2026,
+      "uitgever": "J.M. Meulenhoff",
+      "coverUrl": "https://static.unbidan.nl/covers/50f0f899-b321-4e20-9b51-c3211569c6c6-320.jpg",
+      "reden": "Openhartige verhalen over wat er in het hoofd van een topsporter gebeurt, voor wie houdt van sport, doorzettingsvermogen en mentale kracht.",
+      "synopsis": "In 23 portretten vertellen Nederlandse (oud-)topsporters en coaches over de enorme druk om te presteren. Onder anderen Kiki Bertens, Epke Zonderland, Suzanne Schulting en Annemiek van Vleuten vertellen hoe die druk hen soms boven zichzelf uittilde en soms deed breken. Een nieuwe blik op bekende sportmomenten.",
+      "categorie": "Sport"
+    },
+    {
+      "id": "2026w45-amerikaanse-sportshow",
+      "soort": "nieuw",
+      "titel": "De grote Amerikaanse sportshow",
+      "auteurs": [
+        "Koen van der Velden"
+      ],
+      "isbn": "9789026371059",
+      "jaar": 2026,
       "uitgever": "Ambo|Anthos",
-      "reden": "Een politieke thriller over macht, recht en het Rusland van Poetin. Voor wie houdt van spanning met inhoud.",
-      "synopsis": "Twee Europese functionarissen reizen naar Sint-Petersburg om de dood van een Russische advocaat in een cel te onderzoeken. De autoriteiten werken tegen, een gevangenisarts sterft na zijn getuigenis en de geheime dienst zet druk. Het verhaal is deels geïnspireerd op de zaak-Magnitski.",
-      "categorie": "Thriller & spanning",
-      "coverUrl": "https://static.unbidan.nl/covers/983f7888-c15b-488b-8fba-bdfccfd4cecb-320.jpg"
+      "coverUrl": "https://static.unbidan.nl/covers/1b54f60f-fb79-4bee-b576-1a9f9a6a23fd-320.jpg",
+      "reden": "Een levendige reportage over sport als groot spektakel, voor wie houdt van sport en van kijken achter de schermen.",
+      "synopsis": "In aanloop naar het WK voetbal van 2026 reist Koen van der Velden door het Amerikaanse sportlandschap, waar entertainment en geld de dienst uitmaken. Hij staat in een kleedkamer met LeBron James, bezoekt ijshockey in Las Vegas en ziet hoe Lionel Messi de Verenigde Staten verovert.",
+      "categorie": "Sport"
     },
     {
-      "id": "2026w44-dagboek-uit-de-kampen",
+      "id": "2026w45-soldaat-van-oranje",
       "soort": "nieuw",
-      "titel": "Dagboek uit de kampen",
+      "titel": "De soldaat van Oranje ontmaskerd",
       "auteurs": [
-        "Nelly Mousset-Vos"
+        "Petra Alkema"
       ],
+      "isbn": "9789461563545",
       "jaar": 2026,
-      "uitgever": "Horizon",
-      "reden": "Een persoonlijk getuigenis van een vrouw onder extreme druk. Voor wie wil lezen hoe mensen in de oorlog overleefden.",
-      "synopsis": "De Belgische operazangeres en verzetsvrouw hield in het geheim een dagboek bij vanaf haar arrestatie in 1943 tot de bevrijding uit het concentratiekamp. Ze schrijft over de scheiding van haar dochters, het lijden, de solidariteit tussen gevangenen en kunst als toevluchtsoord.",
-      "categorie": "Oorlog & geschiedenis",
-      "coverUrl": "https://static.unbidan.nl/covers/df55f9dd-c3f1-4a19-b54a-b29174a0c81e-320.jpg"
+      "uitgever": "Bertram + de Leeuw Uitgevers BV",
+      "coverUrl": "https://static.unbidan.nl/covers/08debcaf-0b3b-4b48-bc3d-c696c376e681-320.jpg",
+      "reden": "Een kritisch onderzoek naar een van de bekendste Nederlandse oorlogshelden, voor wie houdt van geschiedenis waarin feit en mythe worden gescheiden.",
+      "synopsis": "Rechercheur en analist Petra Alkema reconstrueert met uitgebreid archiefonderzoek het leven van Erik Hazelhoff Roelfzema. Ze laat zien dat het heldenbeeld van de Soldaat van Oranje op veel punten niet klopt, en wijst ook op autoritaire trekken in zijn verleden.",
+      "categorie": "Oorlog & geschiedenis"
     },
     {
-      "id": "2026w44-blijf-in-leven",
+      "id": "2026w45-gif",
       "soort": "nieuw",
-      "titel": "Blijf in leven: Berlijn 1939-1945",
+      "titel": "Gif",
       "auteurs": [
-        "Ian Buruma"
+        "Jacob de Boer",
+        "Rolf Heynen"
       ],
+      "isbn": "9789463825191",
       "jaar": 2026,
-      "uitgever": "Prometheus",
-      "reden": "Het dagelijks leven in Hitlers hoofdstad, verteld aan de hand van brieven en getuigenissen. Voor wie geschiedenis het liefst dichtbij leest.",
-      "synopsis": "Buruma beschrijft Berlijn van 1939 tot de ondergang, voor joodse inwoners en gewone Berlijners. Hij put uit brieven, interviews, archieven en de herinneringen van zijn vader, die in Berlijn dwangarbeid verrichtte. Het motto is 'blijf in leven'.",
-      "categorie": "Oorlog & geschiedenis",
-      "coverUrl": "https://static.unbidan.nl/covers/5001184a-e051-4930-891e-01f9675c0f42-320.jpg"
+      "uitgever": "Balans",
+      "coverUrl": "https://static.unbidan.nl/covers/4a66fcc8-d2ee-4ca9-8593-d853c2e11a2d-320.jpg",
+      "reden": "Een verontrustend boek over macht, lobby en gezondheid, voor wie wil weten wat er achter de schermen van industrie en politiek gebeurt.",
+      "synopsis": "PFAS, pesticiden, zware metalen en microplastics zitten in ons water, ons eten en ons bloed. Twee experts leggen uit hoe het zo ver kon komen, hoe de chemische industrie lobbyt en waarom overheden regels voor zich uit schuiven. Ze sluiten af met voorstellen om het tij te keren.",
+      "categorie": "Journalistiek & samenleving"
     },
     {
-      "id": "2026w44-cilkas-keuze",
-      "soort": "parel",
-      "titel": "Cilka's keuze",
-      "auteurs": [
-        "Heather Morris"
-      ],
-      "isbn": "9789402704112",
-      "jaar": 2019,
-      "uitgever": "HarperCollins Holland",
-      "reden": "Een aangrijpend, op waarheid gebaseerd verhaal over overleven onder onmenselijke druk, en over de moed om je waardigheid te bewaren.",
-      "synopsis": "Cilka overleeft Auschwitz-Birkenau, maar wordt na de bevrijding als 'collaborateur' veroordeeld en naar een Siberisch werkkamp gestuurd. Ook daar moet ze opnieuw kiezen tussen overleven en haar waardigheid. Een roman gebaseerd op een waargebeurd levensverhaal.",
-      "categorie": "Oorlog & geschiedenis",
-      "coverUrl": "https://static.unbidan.nl/covers/9d9eb3f1-3648-4b06-a760-c2887c739cac-320.jpg"
-    },
-    {
-      "id": "2026w44-mijn-twee-moeders",
-      "soort": "parel",
-      "titel": "Mijn twee moeders: Hoe een joods jongetje gered werd door zijn kindermeisje",
-      "auteurs": [
-        "Stefan Skotnicki",
-        "Dore van Duivenbode"
-      ],
-      "jaar": 2025,
-      "uitgever": "Alfabet Uitgevers",
-      "reden": "Een kort, waargebeurd oorlogsverhaal over moed en trouw. Voor wie persoonlijke getuigenissen zoekt.",
-      "synopsis": "De vijfjarige Stefan wordt door zijn ouders weggestuurd voordat de familie wordt gedeporteerd. Jarenlang zwerft hij met zijn katholieke kindermeisje Zosia over het Poolse platteland, steeds proberend onopvallend te blijven. Na de oorlog blijft het antisemitisme en vertrekt hij uiteindelijk uit Polen.",
-      "categorie": "Oorlog & geschiedenis",
-      "coverUrl": "https://static.unbidan.nl/covers/745e6eba-5915-4a42-8e45-32ba747ff4cc-320.jpg"
-    },
-    {
-      "id": "2026w44-trots-tranen-triomf",
+      "id": "2026w45-ho-ho-ho",
       "soort": "nieuw",
-      "titel": "Trots, tranen en triomf: Nederlandse vrouwen in de Tour de France",
+      "titel": "Ho ho ho",
       "auteurs": [
-        "Michel Simons"
+        "Lex Boon"
       ],
+      "isbn": "9789049215248",
       "jaar": 2026,
-      "uitgever": "De Kring",
-      "reden": "Wielrensters over hun hoogte- en dieptepunten, mentale veerkracht en de drive om de top te halen.",
-      "synopsis": "Michel Simons sprak 43 huidige en voormalige rensters, onder wie Vollering, Vos en Wiebes. Ze vertellen over succes, pech en doorzetten in de Tour de France Femmes. Met anekdotes, foto's en een overzicht van alle Nederlandse deelnames.",
-      "categorie": "Sport",
-      "coverUrl": "https://static.unbidan.nl/covers/c530c98f-645f-4e96-ad14-424a9bbebb8d-320.jpg"
+      "uitgever": "J.M. Meulenhoff",
+      "coverUrl": "https://static.unbidan.nl/covers/b534be8c-d51e-425e-8a44-8ad7ae302387-320.jpg",
+      "reden": "Een vrolijk en absurd journalistiek avontuur, voor wie houdt van humor en van verhalen die vreemder blijken dan je dacht.",
+      "synopsis": "De Finse stad Rovaniemi noemt zichzelf de officiële woonplaats van de Kerstman. Journalist Lex Boon wil weten wie dat eigenlijk heeft bepaald en reist naar Lapland. Hij stuit op concurrerende kerstmannen, uitgebuite elfen, een nep-poolcirkel en een juridisch gevecht om een merkteken.",
+      "categorie": "Roman & humor"
     },
     {
-      "id": "2026w44-op-gevoel",
-      "soort": "parel",
-      "titel": "Op gevoel: Een wielerleven",
+      "id": "2026w45-gerri-eickhof",
+      "soort": "nieuw",
+      "titel": "Hoe het puntje van de i op mijn hoofd viel",
       "auteurs": [
-        "Tom Dumoulin",
-        "Nando Boers"
+        "Gerri Eickhof"
       ],
+      "isbn": "9789463825337",
+      "jaar": 2026,
+      "uitgever": "Balans",
+      "coverUrl": "https://static.unbidan.nl/covers/5725eef4-b322-458d-be95-36cf815404a0-320.jpg",
+      "reden": "Een openhartig en humoristisch levensverhaal van een bekende televisiejournalist, voor wie houdt van verhalen over vallen en opstaan achter de schermen.",
+      "synopsis": "NOS-verslaggever Gerri Eickhof vertelt voor het eerst over zijn leven: opgevoed door zijn moeder en grootouders, een studie antropologie en een opleiding bij Migrantentelevisie Amsterdam. Daarna volgde een lange carrière vol hoogte- en dieptepunten, waarin hij getuige was van veel historische gebeurtenissen.",
+      "categorie": "Biografie & levensverhaal"
+    },
+    {
+      "id": "2026w45-gelukkigste-man",
+      "soort": "parel",
+      "titel": "De gelukkigste man ter wereld",
+      "auteurs": [
+        "Eddie Jaku"
+      ],
+      "isbn": "9789044932867",
+      "jaar": 2021,
+      "uitgever": "Lev.",
+      "coverUrl": "https://static.unbidan.nl/covers/0c2ac4f8-9b39-46e0-aa6d-b1f5a2089135-320.jpg",
+      "reden": "Een hoopvol en aangrijpend getuigenis van een overlevende, voor wie houdt van waargebeurde verhalen over mensen onder extreme druk.",
+      "synopsis": "Eddie Jaku groeide op als Joodse jongen in Leipzig, tot hij in 1938 werd mishandeld en opgepakt. Hij overleefde Buchenwald, Auschwitz en een dodenmars, maar verloor familie, vrienden en zijn vaderland. Na de oorlog besloot hij elke dag te glimlachen en zijn verhaal te vertellen. Hij schreef dit boek toen hij honderd was.",
+      "categorie": "Oorlog & geschiedenis"
+    },
+    {
+      "id": "2026w45-grootste-bankoverval",
+      "soort": "parel",
+      "titel": "De grootste bankoverval aller tijden",
+      "auteurs": [
+        "Frank Krake"
+      ],
+      "isbn": "9789082476453",
+      "jaar": 2022,
+      "uitgever": "Uitgeverij Achtbaan",
+      "coverUrl": "https://static.unbidan.nl/covers/949e2fce-005a-4de3-8739-7c77f23c17ae-320.jpg",
+      "reden": "Een waargebeurd verzetsverhaal dat leest als een thriller, voor wie houdt van moed, vriendschap en spanning in oorlogstijd.",
+      "synopsis": "Tijdens de spoorwegstaking is er dringend geld nodig voor hulp aan onderduikers. Een groep jonge verzetsmensen beraamt met toestemming uit Londen een gedurfde bankoverval, en de buit verdwijnt in een hooiberg. De bezetter is woedend en zet een berucht officier van de Sicherheitsdienst op de zaak. Dan begint de jacht.",
+      "categorie": "Oorlog & geschiedenis"
+    },
+    {
+      "id": "2026w45-mocro-maffia",
+      "soort": "parel",
+      "titel": "Mocro maffia",
+      "auteurs": [
+        "Wouter Laumans",
+        "Marijn Schrijver"
+      ],
+      "isbn": "9789041714954",
+      "jaar": 2014,
+      "uitgever": "Lebowski",
+      "coverUrl": "https://static.unbidan.nl/covers/89056943-7555-4b79-bf16-62da521e6f3a-320.jpg",
+      "reden": "Het journalistieke standaardwerk over de opkomst van een nieuwe generatie zware criminelen, voor wie wil begrijpen hoe de georganiseerde misdaad werkt.",
+      "synopsis": "Een paar jaar eerder beroofden ze samen juweliers, nu vermoorden ze elkaar in een strijd om cocaïnemiljoenen. Twee misdaadjournalisten vertellen het verhaal achter de oorlog die van Amsterdam tot België en Marokko woedt: wie tegenover wie staat, en waarom. Een verhaal over geld, ambitie, hoogmoed en verraad.",
+      "categorie": "Journalistiek & samenleving"
+    },
+    {
+      "id": "2026w45-moordclub-op-donderdag",
+      "soort": "parel",
+      "titel": "De moordclub (op donderdag)",
+      "auteurs": [
+        "Richard Osman"
+      ],
+      "isbn": "9789403109411",
+      "jaar": 2020,
+      "uitgever": "Cargo",
+      "coverUrl": "https://static.unbidan.nl/covers/9c63dad8-d43a-46ef-8dfc-a6470aae3424-320.jpg",
+      "reden": "Een geestige whodunit met vier hoogbejaarde speurneuzen, voor wie houdt van humor en een moordzaak met een knipoog.",
+      "synopsis": "In een rustig verzorgingshuis onderzoeken vier bewoners elke donderdag onopgeloste moorden. Als een vastgoedontwikkelaar uit het stadje wordt vermoord, krijgt de club haar eerste echte zaak, en die blijkt alles met hun eigen woonplek te maken te hebben. Het eerste deel van een geliefde reeks.",
+      "categorie": "Roman & humor"
+    },
+    {
+      "id": "2026w45-afgrond",
+      "soort": "parel",
+      "titel": "Afgrond",
+      "auteurs": [
+        "Robert Harris"
+      ],
+      "isbn": "9789403134260",
       "jaar": 2024,
-      "uitgever": "Thomas Rap",
-      "reden": "Een openhartig wielerverhaal over prestatiedruk, twijfel en een eigen weg. Voor wie van wielrennen en mentale kracht houdt.",
-      "synopsis": "Tom Dumoulin blikt terug op zijn wielerloopbaan, van de Giro-zege tot de druk en twijfel die daarbij hoorden. Hij vertelt hoe hij zijn eigen weg vond binnen en buiten het peloton.",
-      "categorie": "Sport",
-      "coverUrl": "https://static.unbidan.nl/covers/bbcdb155-24cf-44e8-81bb-34112c4a5c8b-320.jpg"
+      "uitgever": "Cargo",
+      "coverUrl": "https://static.unbidan.nl/covers/b7aed9f6-7c3d-4eee-a2de-569418302500-320.jpg",
+      "reden": "Een historische thriller over macht en geheimen aan de vooravond van een wereldoorlog, voor wie houdt van spanning gebaseerd op echte gebeurtenissen.",
+      "synopsis": "In 1914 heeft de Britse premier Asquith een geheime relatie met de jonge Venetia Stanley, aan wie hij brieven schrijft vol gevoelige staatszaken. Als Groot-Brittannië Duitsland de oorlog verklaart, moet een jonge inlichtingenofficier een lek van geheime documenten onderzoeken. Zo wordt een affaire een zaak van nationale veiligheid.",
+      "categorie": "Thriller & spanning"
     },
     {
-      "id": "2026w44-littekens",
+      "id": "2026w45-god-heeft-een-naam",
       "soort": "parel",
-      "titel": "Littekens",
-      "auteurs": [
-        "Joey Litjens"
-      ],
-      "jaar": 2024,
-      "uitgever": "Volt",
-      "reden": "Een rauw levensverhaal over vallen, opstaan en jezelf opnieuw uitvinden.",
-      "synopsis": "Voormalig motorcoureur Joey Litjens zag zijn carrière eindigen na een zware crash met blijvende zenuwschade. Hij vertelt over revalidatie, rouw om zijn vader, een comeback, een periode van excessen en een nieuwe crash. Daarna keert hij zijn leven om en helpt hij anderen.",
-      "categorie": "Biografie & levensverhaal",
-      "coverUrl": "https://static.unbidan.nl/covers/e9ed47b9-a9b8-4e97-b46f-870be0ee5be7-320.jpg"
-    },
-    {
-      "id": "2026w44-fentanyl",
-      "soort": "nieuw",
-      "titel": "Fentanyl: Hoe een zware pijnstiller in handen viel van nietsontziende drugskartels",
-      "auteurs": [
-        "Teun Voeten"
-      ],
-      "isbn": "9789025322984",
-      "jaar": 2026,
-      "uitgever": "Querido",
-      "reden": "Een reportage over farmaceutische macht en georganiseerde misdaad, voor wie wil begrijpen hoe een crisis ontstaat.",
-      "synopsis": "Oorlogsfotograaf Teun Voeten volgt de fentanylcrisis in de Verenigde Staten en Mexico en spreekt verslaafden in meerdere steden. Hij onderzoekt de rol van Purdue, Mexicaanse labs en grondstoffen uit China, en vraagt zich af of het middel Europa gaat bereiken.",
-      "categorie": "Journalistiek & samenleving",
-      "coverUrl": "https://static.unbidan.nl/covers/579132a7-dae9-4f23-ade2-1a1d4721939b-320.jpg"
-    },
-    {
-      "id": "2026w44-de-ijsprofeet",
-      "soort": "nieuw",
-      "titel": "De ijsprofeet: Wim Hof, het duistere verhaal achter zijn wereldwijde succes",
-      "auteurs": [
-        "Robert van de Griend",
-        "Anneke Stoffelen"
-      ],
-      "jaar": 2025,
-      "uitgever": "Singel Uitgeverijen",
-      "reden": "Onderzoeksjournalistiek over een goeroe en zijn volgers, bekroond als beste journalistieke boek van 2025.",
-      "synopsis": "De auteurs ontrafelen de mythe rond ijsbadgoeroe Wim Hof. Ze onderzoeken zijn familieachtergrond, beschuldigingen van geweld en twijfelachtige recordpogingen, en toetsen zijn gezondheidsclaims. Ook vragen ze waarom zo veel mensen een goeroe zo kritiekloos volgen.",
-      "categorie": "Journalistiek & samenleving",
-      "coverUrl": "https://static.unbidan.nl/covers/dfc120ef-679d-4975-8d5e-3f5c3102caeb-320.jpg"
-    },
-    {
-      "id": "2026w44-klopjacht",
-      "soort": "nieuw",
-      "titel": "Klopjacht",
-      "auteurs": [
-        "Patrick van der Valk"
-      ],
-      "jaar": 2026,
-      "uitgever": "Luitingh-Sijthoff",
-      "reden": "Een kijkje achter de schermen van de opsporing van voortvluchtige criminelen, voor wie houdt van true crime.",
-      "synopsis": "Oud-politieman Patrick van der Valk richtte in 2007 een van de eerste voortvluchtigenteams van Nederland op. Hij beschrijft achtervolgingen, afluisteren en andere opsporingsmethoden, en de spanning tussen het werk op straat en de systemen erboven.",
-      "categorie": "Journalistiek & samenleving",
-      "coverUrl": "https://static.unbidan.nl/covers/d0f36845-bf99-4906-aa88-ef4f2020e414-320.jpg"
-    },
-    {
-      "id": "2026w44-doen-als-jezus",
-      "soort": "nieuw",
-      "titel": "Doen als Jezus: De man die alles veranderde",
-      "auteurs": [
-        "Kees Postma"
-      ],
-      "jaar": 2025,
-      "uitgever": "VBK Media",
-      "reden": "Een toegankelijk, praktisch boek over leven als volger van Jezus in het gewone dagelijks leven.",
-      "synopsis": "In korte hoofdstukken kijkt pastor Kees Postma naar wat Jezus zei, deed en tegenkwam, met observaties, anekdotes en praktische tips. Het boek is bedoeld voor zoekers en doorgewinterde christenen die eerlijker en royaler willen leven, ook als ze struikelen.",
-      "categorie": "Geloof & zingeving",
-      "coverUrl": "https://static.unbidan.nl/covers/ab5f7e88-e572-484b-95c3-10d36de640b6-320.jpg"
-    },
-    {
-      "id": "2026w44-leef-geen-leugens",
-      "soort": "parel",
-      "titel": "Leef geen leugens: Herken en weersta de drie vijanden die je vrede ondermijnen",
+      "titel": "God heeft een naam",
       "auteurs": [
         "John Mark Comer"
       ],
-      "isbn": "9789033803031",
+      "isbn": "9789083121956",
       "jaar": 2022,
-      "uitgever": "Ark Media",
-      "reden": "Praktische spiritualiteit over vrijheid en innerlijke rust, van een bekende schrijver over discipelschap.",
-      "synopsis": "Comer beschrijft de duivel, het vlees en de wereld als drie vijanden van je vrede. Hij laat zien hoe je ze herkent en weerstaat met oude christelijke gewoonten als stilte, gebed en eerlijkheid.",
-      "categorie": "Geloof & zingeving",
-      "coverUrl": "https://static.unbidan.nl/covers/f4540a16-ad8a-46ed-a370-0a79a8cb1112-320.jpg"
+      "uitgever": "Unravel Publishers",
+      "coverUrl": "https://static.unbidan.nl/covers/10a0a383-c66c-4d9c-bcfc-8b06afa4ca07-320.jpg",
+      "reden": "Een toegankelijk boek over wie God volgens de Bijbel zelf is, voor wie verlangt naar een geloof dat persoonlijk en praktisch wordt.",
+      "synopsis": "Veel mensen verlangen naar een relatie met God, maar ervaren Hem vooral als een idee. John Mark Comer gaat regel voor regel door Exodus 34:6-8, waarin God zichzelf beschrijft. In een vlotte spreekstijl laat hij zien dat de echte God anders is dan ons beeld van Hem, en beter.",
+      "categorie": "Geloof & zingeving"
     }
   ],
-  "bijwerkingen": [
-    {
-      "id": "2026w43-rode-erfenis",
-      "coverUrl": "https://static.unbidan.nl/covers/861557b1-54eb-41a3-bdfd-c8be162bfff5-320.jpg"
-    },
-    {
-      "id": "2026w43-narcostaat",
-      "coverUrl": "https://static.unbidan.nl/covers/4bfd0922-b7db-4c18-a8a3-5d884b54aa8b-320.jpg"
-    },
-    {
-      "id": "2026w43-bontebok",
-      "coverUrl": "https://static.unbidan.nl/covers/ce832788-10c0-4a21-ac51-9f41ef51cdc4-320.jpg"
-    },
-    {
-      "id": "2026w43-vuelta-smeets",
-      "coverUrl": "https://static.unbidan.nl/covers/3096ac45-a4ea-45d8-8f6d-3701396089d9-320.jpg"
-    },
-    {
-      "id": "2026w43-trage-paarden",
-      "coverUrl": "https://static.unbidan.nl/covers/d9efb4aa-2997-4f01-8c08-4df414608a00-320.jpg",
-      "titel": "Slome paarden",
-      "isbn": "9789044370720",
-      "jaar": 2026,
-      "uitgever": "Overamstel Uitgevers"
-    },
-    {
-      "id": "2026w43-vaderland",
-      "coverUrl": "https://static.unbidan.nl/covers/25a1fee8-e166-486c-88ab-5b75a84934b5-320.jpg"
-    },
-    {
-      "id": "2026w43-de-weg-volgen",
-      "coverUrl": "https://static.unbidan.nl/covers/a00e4f6b-c818-4f8f-a31a-048435fafe93-320.jpg"
-    }
-  ]
+  "bijwerkingen": []
 }
