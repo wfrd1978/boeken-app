@@ -174,9 +174,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* De rode knop (en de extra laag om soepel te schuiven) alleen tijdens het vegen,
    anders kan iOS hem bij snel scrollen door de lijst heen laten zien. */
 .veeg-actie {
-  position: absolute; top: 0; right: 0; bottom: 1px; width: 96px; visibility: hidden;
-  border: 0; background: var(--rood); color: #fff; font-weight: 600; font-size: 0.95rem;
+  position: absolute; top: 50%; right: 4px; width: 80px; height: min(84px, calc(100% - 20px)); visibility: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  border: 0; border-radius: 18px; background: var(--rood); color: #fff; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.01em;
+  /* Groeit mee met het vegen (--veeg van 0 tot 1) */
+  opacity: calc(0.35 + var(--veeg, 0) * 0.65);
+  transform: translateY(-50%) scale(calc(0.7 + var(--veeg, 0) * 0.3));
 }
+.veeg-animeer .veeg-actie { transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+.veeg-actie svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.veeg-actie:active { filter: brightness(0.9); }
 .veeg.veegt .veeg-actie { visibility: visible; }
 .veeg.veegt .boek { will-change: transform; }
 

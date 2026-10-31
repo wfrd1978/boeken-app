@@ -380,7 +380,7 @@ function filter(boeken) {
 function boekRegel(b) {
   return `
     <li class="veeg" data-id="${b.id}">
-      <button class="veeg-actie" tabindex="-1">Verwijder</button>
+      <button class="veeg-actie" tabindex="-1" aria-label="Verwijder">${PRULLENBAK}<span>Verwijder</span></button>
       <a class="boek" href="#/boek/${b.id}">
       ${coverHtml(b, 'cover-klein', lijstLinks)}
       <div class="boek-tekst">
@@ -398,6 +398,8 @@ function boekRegel(b) {
 
 // Naar links vegen toont een rode knop, zoals in Apple Mail.
 const VEEG_BREEDTE = 96;
+// Prullenbak in dezelfde lijnstijl als de iconen in de app.
+const PRULLENBAK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
 
 function maakVeegbaar(lijst, onVerwijder) {
   let open = null;
@@ -409,6 +411,9 @@ function maakVeegbaar(lijst, onVerwijder) {
     li.classList.add('veegt');
     a.style.transition = animeer ? 'transform 0.32s cubic-bezier(0.22, 1, 0.36, 1)' : 'none';
     a.style.transform = x ? `translate3d(${x}px, 0, 0)` : '';
+    // Hoe ver de regel open staat (0 tot 1): de knop groeit daarmee zacht mee.
+    li.style.setProperty('--veeg', String(Math.min(1, Math.abs(x) / VEEG_BREEDTE)));
+    li.classList.toggle('veeg-animeer', Boolean(animeer));
     // Dicht geschoven: knop en extra laag weer weg zodra de beweging klaar is.
     if (!x) {
       clearTimeout(li.veegTimer);
