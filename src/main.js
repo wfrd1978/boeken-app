@@ -784,7 +784,7 @@ async function toonLijst() {
     const knop = e.target.closest('[data-naar-tab]');
     if (!knop) return;
     kiesTab(knop.dataset.naarTab);
-    document.getElementById('lijst-kop').scrollIntoView({ behavior: 'smooth' });
+    houdInBeeld(document.getElementById('lijst-kop'), { behavior: 'smooth' });
   });
   teken();
 
@@ -3018,11 +3018,38 @@ function herteken() {
   return toonLijst();
 }
 
+// Naar een plek op de pagina springen en daar blijven terwijl erboven nog nieuws, tips en
+// covers verschijnen (die duwen de pagina anders omlaag). Scrolt de gebruiker zelf, dan stopt het.
+let stopInBeeld = null;
+function houdInBeeld(el, { behavior = 'auto', duur = 2500 } = {}) {
+  stopInBeeld?.();
+  if (!el) return;
+  el.scrollIntoView({ behavior });
+  // De eerste melding komt meteen bij het beginnen met kijken: die telt niet.
+  let eerste = true;
+  const opnieuw = () => {
+    if (eerste) return (eerste = false);
+    if (el.isConnected) el.scrollIntoView();
+  };
+  const kijker = new ResizeObserver(opnieuw);
+  kijker.observe(document.getElementById('app'));
+  const stop = () => {
+    kijker.disconnect();
+    clearTimeout(timer);
+    ['touchstart', 'wheel', 'keydown'].forEach((t) => window.removeEventListener(t, stop));
+    if (stopInBeeld === stop) stopInBeeld = null;
+  };
+  const timer = setTimeout(stop, duur);
+  ['touchstart', 'wheel', 'keydown'].forEach((t) => window.addEventListener(t, stop, { passive: true }));
+  stopInBeeld = stop;
+}
+
 async function route({ naarBoven = false } = {}) {
   schermNr += 1;
   scrollPlekken[vorigeHash] = window.scrollY;
   vorigeHash = location.hash || '#/';
   sluitScanner();
+  stopInBeeld?.();
   // Een open laag (tip, cover kiezen) hoort bij het vorige scherm.
   document.querySelectorAll('.laag').forEach((laag) => laag.remove());
   // Een recensie die nog niet bewaard is, eerst opslaan.
@@ -3058,7 +3085,7 @@ async function route({ naarBoven = false } = {}) {
     await toonLijst();
     const veld = document.getElementById('lijst-zoek');
     veld?.focus({ preventScroll: true });
-    document.getElementById('lijst-kop')?.scrollIntoView();
+    houdInBeeld(document.getElementById('lijst-kop'));
   } else {
     const nr = schermNr;
     await toonLijst();
