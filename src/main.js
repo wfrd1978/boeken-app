@@ -606,19 +606,21 @@ async function toonKoboCheck() {
       <a class="terug" href="#/">‹ Boeken</a>
       <h1>Kobo-check</h1>
     </header>
-    <p class="zacht">Tik op <b>Kobo ↗</b> om het boek op kobo.com te bekijken. Staat er dat het bij Kobo Plus hoort, download het dan en tik hier op <b>Gedownload</b>.</p>
+    <p class="zacht">Tik op <b>Bekijk bij Kobo</b> om het boek op kobo.com te zien. Staat er dat het bij Kobo Plus hoort, download het dan en tik hier op <b>Gedownload</b>.</p>
     <p class="zacht klein">${laatst ? `Vorige check: ${laatst.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}.` : 'Nog niet eerder gecontroleerd.'}</p>
     ${
       wachtend.length
         ? `<ul class="lijst" id="kobo-lijst">${wachtend
             .map(
               (b) => `
-          <li class="nalopen-regel" data-id="${b.id}">
+          <li class="kobo-regel" data-id="${b.id}">
             <div class="cover-vak">${coverHtml(b, 'cover-klein', lijstLinks)}</div>
-            <div class="boek-tekst"><strong>${veilig(b.titel)}</strong><span>${veilig(auteurTekst(b))}</span></div>
-            <div class="nalopen-knoppen">
-              <a class="link-knop" href="${koboZoekUrl(b)}" target="_blank" rel="noopener">Kobo ↗</a>
-              <button class="keuze" data-gedownload="${b.id}">Gedownload</button>
+            <div class="kobo-inhoud">
+              <div class="boek-tekst"><strong>${veilig(b.titel)}</strong><span>${veilig(auteurTekst(b))}</span></div>
+              <div class="kobo-knoppen">
+                <a class="kobo-bekijk" href="${koboZoekUrl(b)}" target="_blank" rel="noopener">Bekijk bij Kobo ↗</a>
+                <button class="kobo-gedownload" data-gedownload="${b.id}">Gedownload</button>
+              </div>
             </div>
           </li>`
             )
@@ -635,7 +637,7 @@ async function toonKoboCheck() {
     await boekBijwerken(id, { koboWacht: false, koboGedownload: true, ...(boek && !boek.leesvorm ? { leesvorm: 'ebook' } : {}) });
     const li = knop.closest('li');
     li.classList.add('klaar');
-    li.querySelector('.nalopen-knoppen').innerHTML = '<span class="keuze actief">Gedownload ✓</span>';
+    knop.outerHTML = '<span class="kobo-gedownload klaar">Gedownload ✓</span>';
     melding('Op Gedownload in Kobo gezet');
   });
   document.getElementById('kobo-klaar')?.addEventListener('click', () => {
