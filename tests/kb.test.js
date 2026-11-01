@@ -44,3 +44,10 @@ describe('Synopsis zonder Google-zoeken', () => {
     expect(lijktNederlands('When a renowned expert dies during a conference, the club is drawn back into the world of espionage and the trail leads to Amsterdam where he was last seen.')).toBe(false);
   });
 });
+
+describe('schrijver uit de KB', () => {
+  it('laat "door" voor de naam weg', () => {
+    expect(kbNaarBoek({ titel: 'God heeft een naam', label: 'God heeft een naam / door John Mark Comer' }).auteurs).toEqual(['John Mark Comer']);
+  });
+});
+

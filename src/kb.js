@@ -73,7 +73,8 @@ async function vraagKB(kern) {
 
 // "President vermist / Bill Clinton & James Patterson ; vertaald ..." -> ["Bill Clinton", "James Patterson"]
 function auteursUitLabel(label) {
-  const deel = String(label ?? '').split(' / ')[1]?.split(' ; ')[0];
+  // Soms staat er "door" of "tekst" voor de naam ("door John Mark Comer"): dat hoort er niet bij.
+  const deel = String(label ?? '').split(' / ')[1]?.split(' ; ')[0]?.replace(/^(door|tekst:?|geschreven door)\s+/i, '');
   return deel ? deel.split(/\s*(?:&|,|\sen\s)\s*/).map((a) => a.trim()).filter(Boolean) : [];
 }
 

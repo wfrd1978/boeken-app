@@ -317,6 +317,7 @@ export async function zoekBoeken(tekst) {
     }
   }
   const resultaten = [...gezien.values()];
+  for (const boek of resultaten) if (!boek.coverUrl && boek.isbn) boek.coverUrl = biblionCoverUrl(boek.isbn);
   // Stabiele sortering: Nederlands eerst, verder de volgorde van de bronnen.
   resultaten.sort((a, b) => (b.taal === 'nl') - (a.taal === 'nl'));
   return resultaten.slice(0, 15);
@@ -460,6 +461,35 @@ export async function zoekWerk(isbn) {
   }
 }
 
+// Covers van Nederlandse uitgaven via Biblion, de dienst waar bibliotheken hun covers vandaan
+// halen. Gratis en zonder sleutel, maar geen officieel aangeboden koppeling: valt hij weg, dan
+// vallen we terug op de andere bronnen. Alleen het ISBN gaat mee. Kent Biblion het boek niet,
+// dan geeft hij een piepklein leeg plaatje (zie MIN_COVER_BREEDTE).
+export const MIN_COVER_BREEDTE = 40;
+
+export function biblionCoverUrl(isbn) {
+  const schoon = String(isbn ?? '').replace(/[^0-9X]/gi, '');
+  if (!/^(97[89]\d{10}|\d{9}[\dX])$/i.test(schoon)) return '';
+  return `https://cover.biblion.nl/coverlist.dll/?doctype=morebutton&bibliotheek=oba&style=0&ppn=&isbn=${schoon}&lid=&aut=&ti=&size=150`;
+}
+
+// Is dit adres een echte cover? Via een gewoon plaatje, want Biblion staat ophalen als bestand niet toe.
+function isEchteCover(url, wacht = 8000) {
+  return new Promise((klaar) => {
+    const img = new Image();
+    const timer = setTimeout(() => klaar(false), wacht);
+    img.onload = () => {
+      clearTimeout(timer);
+      klaar(img.naturalWidth >= MIN_COVER_BREEDTE);
+    };
+    img.onerror = () => {
+      clearTimeout(timer);
+      klaar(false);
+    };
+    img.src = url;
+  });
+}
+
 // Haal een plaatje op als bestand, zodat het ook offline zichtbaar blijft.
 // Lukt dat niet (Google Books staat het niet toe), dan bewaren we alleen het adres.
 export async function haalPlaatje(url) {
@@ -493,9 +523,14 @@ async function googleCoverUrl(zoekvraag) {
 // 'opTitel: false' slaat de laatste stap over, als daar net al op gezocht is.
 export async function zoekCover(boek, { opTitel = true } = {}) {
   const kandidaten = [
-    () => boek.coverUrl,
+    // Een Biblion-adres uit de zoekresultaten is nog niet gecontroleerd: eerst kijken of er echt een cover is.
+    async () => (boek.coverUrl?.includes('cover.biblion.nl') && !(await isEchteCover(boek.coverUrl)) ? '' : boek.coverUrl),
     () => boek.isbn && `https://covers.openlibrary.org/b/isbn/${boek.isbn}-M.jpg?default=false`,
     () => boek.isbn && googleCoverUrl(`isbn:${boek.isbn}`),
+    async () => {
+      const url = biblionCoverUrl(boek.isbn);
+      return url && (await isEchteCover(url)) ? url : '';
+    },
     () => opTitel && googleCoverUrl(`intitle:${boek.titel}${boek.auteurs?.[0] ? ` inauthor:${boek.auteurs[0]}` : ''}`),
   ];
   let reserve = '';
@@ -506,7 +541,7 @@ export async function zoekCover(boek, { opTitel = true } = {}) {
     if (blob) return { cover: blob, coverUrl: url };
     // Google-plaatjes (en een cover die al bij het boek zat, zoals bij een tip) kunnen we
     // niet altijd opslaan, maar wel tonen.
-    if (!reserve && (url.includes('books.google') || url === boek.coverUrl)) reserve = url;
+    if (!reserve && (url.includes('books.google') || url.includes('cover.biblion.nl') || url === boek.coverUrl)) reserve = url;
   }
   return { cover: null, coverUrl: reserve };
 }

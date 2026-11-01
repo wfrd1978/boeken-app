@@ -24,6 +24,7 @@ import {
   bewaarProfielFoto,
 } from './db.js';
 import {
+  MIN_COVER_BREEDTE,
   zoekBoeken,
   verkleinFoto,
   zoekWerk,
@@ -276,6 +277,21 @@ document.addEventListener(
     } else if (img.dataset.bijFout === 'weg') {
       (img.closest('.keuze-cover') ?? img).remove();
     }
+  },
+  true
+);
+
+// Een cover die wel laadt maar leeg is (Biblion kent het boek niet): ook het vlak met de beginletter.
+document.addEventListener(
+  'load',
+  (e) => {
+    const img = e.target;
+    if (!(img instanceof HTMLImageElement) || img.dataset.bijFout !== 'letter') return;
+    if (img.naturalWidth >= MIN_COVER_BREEDTE) return;
+    const vlak = document.createElement('div');
+    vlak.className = `${img.className} geen-cover`;
+    vlak.textContent = img.dataset.letter;
+    img.replaceWith(vlak);
   },
   true
 );
@@ -911,7 +927,7 @@ function overDezeAppHtml() {
       </details>
       <details>
         <summary>Wat gaat er over internet?</summary>
-        <p>Bij zoeken en toevoegen vraagt de app gegevens op bij Open Library, Google Books en de Koninklijke Bibliotheek: de titel, auteur of ISBN waarnaar je zoekt. Op de achtergrond doet de app dat ook voor de boeken in je lijst, om ontbrekende covers, gegevens en de synopsis op te halen; dan gaan per boek de titel, auteur en het ISBN mee, los van elkaar en zonder naam. Je sterren, recensies en profiel gaan nooit mee.</p>
+        <p>Bij zoeken en toevoegen vraagt de app gegevens op bij Open Library, Google Books en de Koninklijke Bibliotheek: de titel, auteur of ISBN waarnaar je zoekt. Covers van Nederlandse uitgaven komen ook van Biblion, de dienst van de bibliotheken; daar gaat alleen het ISBN heen. Op de achtergrond doet de app dat ook voor de boeken in je lijst, om ontbrekende covers, gegevens en de synopsis op te halen; dan gaan per boek de titel, auteur en het ISBN mee, los van elkaar en zonder naam. Je sterren, recensies en profiel gaan nooit mee.</p>
         <p>Open je een boek, dan vraagt de app bij Wikipedia en Wikidata een korte tekst en foto van de schrijver en de verfilmingen op. Daarvoor gaat alleen de naam van de schrijver mee; het antwoord blijft een maand op je telefoon bewaard.</p>
         <p>De boekentips komen uit een openbare lijst op de site van de app. Die wordt elke zaterdagochtend vernieuwd door een geplande taak van Claude. Wat je met een tip doet, blijft op je telefoon.</p>
         <p>Het boekennieuws komt, net als de tips, uit een openbare lijst; elke ochtend komen er een of twee berichten bij, in het Nederlands samengevat. Alle berichten blijven op je telefoon bewaard. Of een bericht over een schrijver uit je lijst gaat, bekijkt de app op je telefoon zelf.</p>
