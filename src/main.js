@@ -1775,14 +1775,21 @@ async function toonBevestigen(boek) {
     if (!gegevens.werk && gegevens.isbn) gegevens.werk = await zoekWerk(gegevens.isbn);
     // Zelf ingevuld zonder cover: later op de achtergrond nog eens zoeken.
     const verrijkt = !(boek.handmatig && !cover.cover && !cover.coverUrl);
-    await boekToevoegen({ ...gegevens, ...cover, status, categorie, bron: boek.bron ?? 'getypt', verrijkt });
+    const id = await boekToevoegen({ ...gegevens, ...cover, status, categorie, bron: boek.bron ?? 'getypt', verrijkt });
     vulReeksenAan().catch(() => {});
     if (!verrijkt) verrijkAlles();
     laatsteZoekterm = '';
     laatsteResultaten = [];
     // Intussen ergens anders heen gegaan? Dan daar blijven.
-    if (knop.isConnected) location.hash = '#/';
-    melding('Toegevoegd');
+    if (!knop.isConnected) return melding('Toegevoegd');
+    // Al gelezen: meteen naar het boek, om sterren te geven en een recensie te schrijven.
+    if (status === 'Gelezen') {
+      location.hash = `#/boek/${id}`;
+      melding('Toegevoegd als gelezen. Geef je oordeel!');
+    } else {
+      location.hash = '#/';
+      melding('Toegevoegd');
+    }
   });
 }
 
