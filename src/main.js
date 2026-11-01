@@ -288,6 +288,19 @@ document.addEventListener(
     const img = e.target;
     if (!(img instanceof HTMLImageElement) || img.dataset.bijFout !== 'letter') return;
     if (img.naturalWidth >= MIN_COVER_BREEDTE) return;
+    // Een eigen plaatje (van de telefoon) dat leeg laadt: Safari kon het niet lezen. Dan de cover
+    // van internet (als het boek die heeft), niet meteen de letter.
+    if (img.src.startsWith('blob:') && img.dataset.boek && !img.dataset.leeg) {
+      img.dataset.leeg = '1';
+      img.dataset.opnieuw = '1';
+      haalBoek(Number(img.dataset.boek)).then((boek) => {
+        const url = veiligeUrl(boek?.coverUrl);
+        if (!img.isConnected) return;
+        if (url) img.src = url;
+        else img.dispatchEvent(new Event('error'));
+      });
+      return;
+    }
     const vlak = document.createElement('div');
     vlak.className = `${img.className} geen-cover`;
     vlak.textContent = img.dataset.letter;
