@@ -243,6 +243,20 @@ export function haalBoek(id) {
 }
 
 export async function boekBijwerken(id, wijzigingen) {
+  // Safari kan een opgeslagen cover soms niet meer lezen nadat het boek opnieuw is weggeschreven
+  // met datzelfde plaatje erin (bijvoorbeeld na het geven van sterren). Daarom bij elke wijziging
+  // een verse kopie van het plaatje meegeven. Lukt het lezen niet, dan blijft alles zoals het was.
+  if (!('cover' in wijzigingen)) {
+    const huidig = await db.boeken.get(id);
+    if (huidig?.cover instanceof Blob) {
+      try {
+        const kopie = new Blob([await huidig.cover.arrayBuffer()], { type: huidig.cover.type || 'image/jpeg' });
+        wijzigingen = { ...wijzigingen, cover: kopie };
+      } catch {
+        // Het plaatje is nu al niet te lezen: dan niets aan de cover veranderen.
+      }
+    }
+  }
   const n = await db.boeken.update(id, wijzigingen);
   if (n && Object.keys(wijzigingen).some((v) => TELT_MEE.includes(v))) telWijziging();
   return n;
