@@ -271,6 +271,18 @@ export function boekTerugzetten(boek) {
   return db.boeken.put(boek);
 }
 
+// --- Leesanalyse: per maand alleen de tekst die Claude schreef (de cijfers rekent de app opnieuw uit) ---
+
+export async function haalLeesRapporten() {
+  return (await db.instellingen.get('leesrapporten'))?.waarde ?? {};
+}
+
+export async function bewaarLeesRapport(maand, tekst) {
+  const rapporten = await haalLeesRapporten();
+  rapporten[maand] = { tekst, gemaakt: new Date().toISOString() };
+  await db.instellingen.put({ sleutel: 'leesrapporten', waarde: rapporten });
+}
+
 // --- Profiel ---
 
 export async function haalProfiel() {

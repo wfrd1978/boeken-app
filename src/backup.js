@@ -81,6 +81,7 @@ export async function maakBackupBestand() {
     profielFoto: await fotoAlsTekst(),
     tipArchief: (await db.instellingen.get('tipArchief'))?.waarde ?? null,
     nieuwsArchief: (await db.instellingen.get('nieuwsArchief'))?.waarde ?? null,
+    leesrapporten: (await db.instellingen.get('leesrapporten'))?.waarde ?? null,
     voorkeuren: leesVoorkeuren(),
   };
   const datum = nu.toISOString().slice(0, 10);
@@ -187,6 +188,18 @@ function schoonProfiel(p) {
   return profiel;
 }
 
+// Maandanalyses: per maand ('jjjj-mm') alleen de tekst van Claude en wanneer die kwam.
+export function schoneRapporten(r) {
+  if (!r || typeof r !== 'object' || Array.isArray(r)) return null;
+  const schoon = {};
+  for (const [maand, v] of Object.entries(r)) {
+    if (/^\d{4}-\d{2}$/.test(maand) && typeof v?.tekst === 'string' && v.tekst.trim()) {
+      schoon[maand] = { tekst: v.tekst.slice(0, 20000), gemaakt: typeof v.gemaakt === 'string' ? v.gemaakt : '' };
+    }
+  }
+  return schoon;
+}
+
 function schoneReacties(r) {
   if (!r || typeof r !== 'object') return null;
   const schoon = {};
@@ -218,6 +231,7 @@ export async function zetBackupTerug(inhoud) {
   const reacties = schoneReacties(inhoud.tipReacties);
   const archief = schoonArchief(inhoud.tipArchief);
   const nieuws = Array.isArray(inhoud.nieuwsArchief) ? inhoud.nieuwsArchief.map(normaliseerBericht).filter(Boolean) : null;
+  const rapporten = schoneRapporten(inhoud.leesrapporten);
   const foto =
     typeof inhoud.profielFoto === 'string' && inhoud.profielFoto.startsWith('data:image/') ? await tekstNaarBlob(inhoud.profielFoto) : null;
   // Werk op de achtergrond (covers, synopsis) eerst stoppen: dat hoort bij de oude lijst.
@@ -232,6 +246,7 @@ export async function zetBackupTerug(inhoud) {
     if (foto) await db.instellingen.put({ sleutel: 'profielFoto', waarde: foto });
     if (archief) await db.instellingen.put({ sleutel: 'tipArchief', waarde: archief });
     if (nieuws) await db.instellingen.put({ sleutel: 'nieuwsArchief', waarde: nieuws });
+    if (rapporten) await db.instellingen.put({ sleutel: 'leesrapporten', waarde: rapporten });
   });
   zetVoorkeuren(inhoud.voorkeuren);
   return boeken.length;

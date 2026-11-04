@@ -1,5 +1,7 @@
 import './style.css';
 import {
+  haalLeesRapporten,
+  bewaarLeesRapport,
   alleBoeken,
   boekToevoegen,
   telWijziging,
@@ -53,6 +55,7 @@ import { filmsVoorBoek, schrijverGegevens } from './schrijver.js';
 import { haalNieuws, nieuwsArchief, ordenNieuws, overMijnSchrijver } from './nieuws.js';
 import { STEEKWOORDEN, recensieOpdracht, claudeAdres } from './recensie.js';
 import { berekenStatistieken, huidigeMaand, geldigeStartmaand } from './statistieken.js';
+import { maandRapport, rapportOpdracht, profielOpdracht, vorigeMaand, maandNaam, gelezenIn, maandenMetLezen, geldigeMaand, MAX_ADRES } from './analyse.js';
 import { veilig, veiligeUrl } from './veilig.js';
 import { tipsUitArchief, verversTips, zetTipReactie } from './tips.js';
 import {
@@ -622,6 +625,168 @@ function koboSeintjeHtml(boeken) {
     </div>`;
 }
 
+// --- Leesanalyse ---
+// De eerste tien dagen van een maand vraagt het startscherm of je de analyse van de vorige
+// maand wilt zien. 'Later' = over drie dagen weer; na het openen niet meer voor die maand.
+const ANALYSE_DAGEN = 10;
+const ANALYSE_LATER_DAGEN = 3;
+
+function analyseKaartHtml(boeken) {
+  const nu = new Date();
+  if (nu.getDate() > ANALYSE_DAGEN) return '';
+  const maand = vorigeMaand(huidigeMaand(nu));
+  if (!gelezenIn(boeken, maand).length) return '';
+  try {
+    if (localStorage.getItem('analyseGezien') === maand) return '';
+  } catch {
+    // Geen opslag: dan gewoon tonen.
+  }
+  if (dagenGeleden(leesDatum('analyseLater')) < ANALYSE_LATER_DAGEN) return '';
+  return `
+    <div class="herinnering" id="analyse-kaart">
+      <p><strong>Je leesmaand ${maandNaam(maand, false)}</strong><br />Wil je de analyse zien?</p>
+      <div class="herinnering-knoppen">
+        <a href="#/analyse/${maand}">Ja, laat zien</a>
+        <button class="link-knop" id="analyse-later">Later</button>
+      </div>
+    </div>`;
+}
+
+// Venster om Claude (in je eigen Claude-app) iets te laten schrijven en de tekst terug te plakken.
+// De app zelf praat met geen enkele AI-dienst: pas als je op Open Claude tikt, gaat de opdracht mee.
+function toonClaudeHulp({ kop, uitleg, opdracht, plakKnop, opPlak }) {
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `<div class="laag" id="claude-laag">
+       <div class="laag-blad">
+         <div class="laag-kop"><h2>${veilig(kop)}</h2><button class="link-knop" id="laag-sluit">Sluiten</button></div>
+         <p class="zacht">${veilig(uitleg)}</p>
+         <button class="hoofdknop" id="claude-open">Open Claude</button>
+         <p class="zacht klein">De opdracht wordt ook gekopieerd. Staat hij niet vanzelf in Claude, plak hem daar dan zelf.</p>
+         <button class="tweede-knop" id="claude-plak">${veilig(plakKnop)}</button>
+         <p class="zacht klein">Kopieer in Claude de tekst, kom terug naar deze app en tik hierboven.</p>
+       </div>
+     </div>`
+  );
+  const laag = document.getElementById('claude-laag');
+  const sluit = () => laag.remove();
+  document.getElementById('laag-sluit').addEventListener('click', sluit);
+  laag.addEventListener('click', (e) => e.target === laag && sluit());
+  document.getElementById('claude-open').addEventListener('click', () => {
+    // Een heel lange opdracht past niet in een adres: dan alleen kopiëren en zelf plakken.
+    const adres = claudeAdres(opdracht);
+    window.open(adres.length <= MAX_ADRES ? adres : 'https://claude.ai/new', '_blank', 'noopener');
+    navigator.clipboard?.writeText(opdracht).catch(() => {});
+    if (adres.length > MAX_ADRES) melding('De opdracht is lang: plak hem zelf in Claude (hij is gekopieerd)');
+  });
+  document.getElementById('claude-plak').addEventListener('click', async () => {
+    let tekst = '';
+    try {
+      tekst = (await navigator.clipboard.readText()).trim();
+    } catch {
+      // Geen toestemming: dan niets.
+    }
+    if (!tekst) return melding('Kopieer eerst de tekst in Claude');
+    if (tekst === opdracht.trim()) return melding('Op het klembord staat nog de opdracht. Kopieer eerst de tekst in Claude.');
+    sluit();
+    await opPlak(tekst);
+  });
+}
+
+function alineasHtml(tekst) {
+  return tekst
+    .split(/\n\s*\n|\n/)
+    .map((a) => a.trim())
+    .filter(Boolean)
+    .map((a) => `<p>${veilig(a)}</p>`)
+    .join('');
+}
+
+async function toonAnalyse(maand) {
+  const nr = schermNr;
+  ruimCoversOp();
+  const [boeken, rapporten] = await Promise.all([alleBoeken(), haalLeesRapporten()]);
+  if (nr !== schermNr) return;
+  try {
+    if (maand === vorigeMaand(huidigeMaand())) localStorage.setItem('analyseGezien', maand);
+  } catch {
+    // Niet erg.
+  }
+  const r = maandRapport(boeken, maand);
+  const tekst = rapporten[maand]?.tekst ?? '';
+  const n = (x, een, meer) => `${x} ${x === 1 ? een : meer}`;
+  const komma = (x) => x.toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const tempo = (() => {
+    const gem = r.gemiddeldEerder;
+    const vergelijk = r.aantal > gem + 0.5 ? 'meer dan' : r.aantal < gem - 0.5 ? 'minder dan' : 'ongeveer evenveel als';
+    const [j, m] = maand.split('-');
+    return `Dat is ${vergelijk} in de drie maanden ervoor (gemiddeld ${komma(gem)}). In ${maandNaam(`${Number(j) - 1}-${m}`)} las je er ${r.vorigJaar}.`;
+  })();
+  app.innerHTML = `
+    <header class="kop">
+      <a class="terug" href="#/profiel">‹ Profiel</a>
+      <h1>Je leesmaand</h1>
+    </header>
+    <p class="analyse-maand">${veilig(maandNaam(maand))}</p>
+    ${
+      !r.aantal
+        ? '<p class="leeg">In deze maand heb je geen boek uitgelezen (of er staat geen leesdatum bij).</p>'
+        : `
+    <section class="statistieken">
+      <div class="tegels">
+        <div class="tegel"><strong>${r.aantal}</strong><span>${r.aantal === 1 ? 'boek' : 'boeken'}</span></div>
+        <div class="tegel"><strong>${r.bladzijden || '–'}</strong><span>bladzijden</span></div>
+        <div class="tegel"><strong>${r.sterren ? `${komma(r.sterren)}<small>★</small>` : '–'}</strong><span>gemiddeld</span></div>
+      </div>
+      <p class="zacht">${veilig(tempo)}</p>
+
+      ${
+        tekst
+          ? `<h2 class="stat-kop">Het verhaal van je maand</h2><div class="analyse-tekst">${alineasHtml(tekst)}</div>
+             <button class="link-knop" id="analyse-claude">Opnieuw laten schrijven door Claude</button>`
+          : `<button class="tweede-knop" id="analyse-claude">Laat Claude er een verhaal van maken</button>`
+      }
+
+      <h2 class="stat-kop">Wat je las</h2>
+      <ul class="analyse-boeken">${r.boeken
+        .map((b) => `<li><strong>${veilig(b.titel)}</strong> <span class="zacht">${veilig(b.auteurs.join(', '))}${b.sterren ? ` · ${'★'.repeat(b.sterren)}` : ''}</span></li>`)
+        .join('')}</ul>
+
+      <h2 class="stat-kop">Genres</h2>
+      ${stavenHtml(r.categorieen.map((c) => ({ label: c.naam, aantal: c.aantal })))}
+      ${r.vormen.length ? `<h2 class="stat-kop">Gelezen als</h2>${stavenHtml(r.vormen.map((v) => ({ label: v.naam, aantal: v.aantal })))}` : ''}
+
+      ${
+        r.beste || r.zinnen.length
+          ? `<h2 class="stat-kop">Hoogtepunten</h2>
+             ${r.beste ? `<p>Je beste boek: <strong>${veilig(r.beste.titel)}</strong> van ${veilig(r.beste.auteurs.join(', '))} (${'★'.repeat(r.beste.sterren)}).</p>` : ''}
+             ${r.zinnen.map((z) => `<blockquote class="analyse-zin">"${veilig(z.zin)}"<span>${veilig(z.titel)}</span></blockquote>`).join('')}`
+          : ''
+      }
+
+      <h2 class="stat-kop">Schrijvers en reeksen</h2>
+      <p>${((meer) => (meer.length ? `Meest gelezen: ${meer.map((s) => `${veilig(s.naam)} (${s.aantal})`).join(', ')}.` : ''))(r.schrijvers.filter((s) => s.aantal > 1))}
+      ${r.nieuweSchrijvers.length ? `<br />Nieuw voor jou: ${r.nieuweSchrijvers.map(veilig).join(', ')}.` : ''}</p>
+      ${r.reeksen.length ? `<p>Verder in een reeks: ${r.reeksen.map((x) => `${veilig(x.reeks)}${x.deel ? ` (deel ${x.deel})` : ''}`).join(', ')}.</p>` : ''}
+    </section>`
+    }
+    <p class="zacht klein">Eerdere maanden vind je op je profielpagina.</p>
+  `;
+  document.getElementById('analyse-claude')?.addEventListener('click', () =>
+    toonClaudeHulp({
+      kop: `Je leesmaand ${maandNaam(maand, false)}`,
+      uitleg: 'Claude maakt van de cijfers en je boeken een korte, persoonlijke terugblik. Die plak je hier terug; hij wordt bij deze maand bewaard.',
+      opdracht: rapportOpdracht(r),
+      plakKnop: 'Plak de terugblik van Claude',
+      opPlak: async (tekst) => {
+        await bewaarLeesRapport(maand, tekst);
+        melding('Terugblik bewaard');
+        if (location.hash === `#/analyse/${maand}`) toonAnalyse(maand);
+      },
+    })
+  );
+}
+
 async function toonKoboCheck() {
   const nr = schermNr;
   ruimCoversOp();
@@ -690,6 +855,7 @@ function startHtml(boeken, naam) {
   return `
     <section class="start">
       <p class="groet">${veilig(deel)}<span>${datum}</span></p>
+      ${analyseKaartHtml(boeken)}
       ${koboSeintjeHtml(boeken)}
       ${
         nu.length
@@ -769,6 +935,10 @@ async function toonLijst() {
   `;
   if (!boeken.length) return;
 
+  document.getElementById('analyse-later')?.addEventListener('click', () => {
+    zetDatum('analyseLater');
+    document.getElementById('analyse-kaart')?.remove();
+  });
   document.getElementById('kobo-later')?.addEventListener('click', () => {
     zetDatum('koboLater');
     document.getElementById('kobo-seintje')?.remove();
@@ -946,6 +1116,7 @@ function overDezeAppHtml() {
         <p>Het boekennieuws komt, net als de tips, uit een openbare lijst; elke ochtend komen er een of twee berichten bij, in het Nederlands samengevat. Alle berichten blijven op je telefoon bewaard. Of een bericht over een schrijver uit je lijst gaat, bekijkt de app op je telefoon zelf.</p>
         <p>Delen gaat alleen als jij op Deel tikt, en dan via het gewone deelmenu van je iPhone.</p>
         <p>Hulp van Claude bij een recensie: pas als jij op Open Claude tikt, gaan de titel, je sterren, je steekwoorden en wat je zelf al schreef naar je eigen Claude-account. De app praat zelf met geen enkele AI-dienst.</p>
+        <p>Leesanalyse en leesprofiel: de cijfers rekent de app zelf uit, op je telefoon. Pas als jij op Open Claude tikt, gaan je titels, schrijvers, categorieën, sterren en een paar zinnen uit je recensies naar je eigen Claude-account.</p>
       </details>
       <details>
         <summary>Hoe werkt het ophalen van covers en synopsis?</summary>
@@ -2009,11 +2180,19 @@ async function toonProfiel() {
       </div>
 
       ${statistiekenHtml(berekenStatistieken(boeken, profiel.statsVanaf), profiel.statsVanaf)}
+      ${(() => {
+        const maanden = maandenMetLezen(boeken).slice(0, 12);
+        return maanden.length
+          ? `<h2 class="stat-kop">Maandanalyses</h2>
+             <ul class="analyse-maanden">${maanden.map((m) => `<li><a href="#/analyse/${m}">${veilig(maandNaam(m))}</a></li>`).join('')}</ul>`
+          : '';
+      })()}
       <h2 class="stat-kop">Over jou</h2>
 
       <label class="veld">Naam<input id="p-naam" value="${veilig(profiel.naam)}" placeholder="Je voornaam" autocomplete="given-name" /></label>
       <label class="veld">Over mij<textarea id="p-over" rows="3" placeholder="Bijvoorbeeld wat je doet, waar en wanneer je leest">${veilig(profiel.overMij)}</textarea></label>
       <label class="veld">Mijn lezersprofiel<textarea id="p-profiel" rows="12" placeholder="Wat lees je graag, en waarom? Welke schrijvers of thema's raken je?">${veilig(profiel.lezersprofiel)}</textarea></label>
+      <button class="link-knop" id="p-leesprofiel">✎ Maak mijn leesprofiel met Claude</button>
       <p class="opgeslagen" id="p-opgeslagen">&nbsp;</p>
     </section>
     ${rijHtml('Mijn vijfsterrenboeken', top, 'Gelezen')}
@@ -2048,6 +2227,26 @@ async function toonProfiel() {
     veld.addEventListener('blur', bewaar);
   }
   toonBoek.bewaarOpenstaand = bewaar;
+
+  // Leesprofiel: Claude schrijft het op basis van alles wat je las; het komt in het vak hierboven.
+  document.getElementById('p-leesprofiel').addEventListener('click', async () => {
+    await bewaar();
+    toonClaudeHulp({
+      kop: 'Je leesprofiel',
+      uitleg: 'Claude schrijft een profiel op basis van alles wat je las: titels, schrijvers, categorieën, sterren en een paar zinnen uit je beste recensies. Plak het hier terug; het komt in Mijn lezersprofiel.',
+      opdracht: profielOpdracht(boeken),
+      plakKnop: 'Plak het profiel van Claude',
+      opPlak: async (tekst) => {
+        const veld = document.getElementById('p-profiel');
+        if (!veld) return;
+        if (veld.value.trim() && veld.value.trim() !== tekst && !confirm('Je huidige lezersprofiel vervangen door de tekst van Claude?')) return;
+        veld.value = tekst;
+        veld.dispatchEvent(new Event('input'));
+        await bewaar();
+        melding('Lezersprofiel bijgewerkt');
+      },
+    });
+  });
 
   document.getElementById('p-foto').addEventListener('change', async (e) => {
     const bestand = e.target.files?.[0];
@@ -3113,6 +3312,7 @@ async function route({ naarBoven = false } = {}) {
   else if (location.hash === '#/covers') toonCoversNalopen();
   else if (location.hash === '#/nieuws') toonNieuwsPagina();
   else if (location.hash === '#/kobo') toonKoboCheck();
+  else if (geldigeMaand(location.hash.slice('#/analyse/'.length)) && location.hash.startsWith('#/analyse/')) toonAnalyse(location.hash.slice('#/analyse/'.length));
   else if (location.hash.startsWith('#/nieuws/')) {
     let id = '';
     try {
