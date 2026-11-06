@@ -61,6 +61,7 @@ function leesSterren(waarde) {
 function leesStatus(waarde) {
   const tekst = kaal(String(waarde || '')).trim();
   if (tekst === 'aan het lezen') return 'Bezig';
+  if (tekst === 'niet uitgelezen') return 'Gestopt';
   return STATUSSEN.find((s) => kaal(s) === tekst) || 'Gelezen';
 }
 

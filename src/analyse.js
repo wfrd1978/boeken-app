@@ -21,14 +21,15 @@ export function maandNaam(maand, metJaar = true) {
 }
 
 // Welke boeken las je in een maand? Een boek dat je die maand twee keer uitlas, telt één keer.
+// Niet uitgelezen boeken (in de opslag 'Gestopt') tellen niet mee.
 export function gelezenIn(boeken, maand) {
-  return boeken.filter((b) => (b.leesdata ?? []).some((d) => d.slice(0, 7) === maand));
+  return boeken.filter((b) => b.status !== 'Gestopt' && (b.leesdata ?? []).some((d) => d.slice(0, 7) === maand));
 }
 
 // Maanden waarin iets is uitgelezen, nieuwste eerst.
 export function maandenMetLezen(boeken) {
   const maanden = new Set();
-  for (const b of boeken) for (const d of b.leesdata ?? []) if (MAAND.test(d.slice(0, 7))) maanden.add(d.slice(0, 7));
+  for (const b of boeken) if (b.status !== 'Gestopt') for (const d of b.leesdata ?? []) if (MAAND.test(d.slice(0, 7))) maanden.add(d.slice(0, 7));
   return [...maanden].sort().reverse();
 }
 

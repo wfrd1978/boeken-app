@@ -16,7 +16,9 @@ export function berekenStatistieken(boeken, vanaf, nu = new Date()) {
   // Elke leesdatum vanaf de start telt, dus herlezen telt opnieuw mee.
   // Een datum met alleen een maand ('2026-10') valt in die maand.
   const lezingen = [];
+  // Niet uitgelezen (in de opslag 'Gestopt') telt niet als gelezen.
   for (const b of boeken) {
+    if (b.status === 'Gestopt') continue;
     for (const d of b.leesdata ?? []) if (d.slice(0, 7) >= vanaf) lezingen.push({ boek: b, maand: d.slice(0, 7) });
   }
   const gelezen = [...new Set(lezingen.map((l) => l.boek))];

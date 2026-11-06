@@ -25,7 +25,7 @@ https://wfrd1978.github.io/boeken-app/
 | ISBN | 13 cijfers, of 10 bij oudere boeken | nee |
 | Cover | Afbeelding, opgeslagen op het toestel zodat hij offline zichtbaar is | nee |
 | Uitgever, jaar, aantal pagina's, taal | Automatisch opgehaald waar mogelijk | nee |
-| Status | *Wil ik lezen*, *Aan het lezen*, *Gelezen*, *Gestopt* (in de opslag heet *Aan het lezen* nog 'Bezig') | ja, standaard *Wil ik lezen* |
+| Status | *Wil ik lezen*, *Aan het lezen*, *Gelezen*, *Niet uitgelezen* (in de opslag heten *Aan het lezen* en *Niet uitgelezen* nog 'Bezig' en 'Gestopt') | ja, standaard *Wil ik lezen* |
 | Sterren | 1 t/m 5, alleen hele sterren | nee |
 | Leesdata | Eén of meer datums waarop het boek uit was; herlezen voegt een datum toe. Is alleen de maand bekend, dan bewaren we alleen maand en jaar (geen verzonnen dag) | nee |
 | Recensie | Vrije tekst | nee |
@@ -212,3 +212,4 @@ Fase 2: startscherm, synopsis en profiel zijn klaar (stap 10–12); boekentips (
 | 2026-11-06 | Stijl 'strak' (keuze A van de eigenaar, in beide apps): strakke schreefloze letter voor koppen en titels, woordmerk en rubriekskopjes in vette hoofdletters, koeler lichtgrijs, dieper groen, warmer goud, hoekigere covers; donkere weergave ongewijzigd |
 | 2026-11-06 | Kleur uit de cover (src/kleur.js): de kaart 'Aan het lezen' en de bovenkant van de boekpagina krijgen een verloop in de sfeerkleur van de cover, donker genoeg voor witte letters; lukt uitlezen niet (cover van een andere website), dan het gewone groen. Boekpagina: cover groter op het gekleurde vlak, sterren en status direct eronder (status als één balk), 'Kies een cover' en 'Eigen foto' achter ⋯ rechtsboven. Covers met een lichte schaduw. Niets aan de opslag veranderd |
 | 2026-11-06 | Rustigere kopjes: de rubriekskopjes op het startscherm, in de lijst en bij de statistieken in gewone letters (geen hoofdletters, geen gouden streepje erboven, geen lijn); 'Alles ›' en 'Alle nieuws ›' in grijs. Het woordmerk BOEKEN blijft zoals het was |
+| 2026-11-06 | Status 'Gestopt' heet in beeld 'Niet uitgelezen' (opslag en backups ongewijzigd; Excel-import kent beide namen). Telt niet als gelezen in statistieken en maandanalyse. De tips leren ervan: tips van een schrijver die je niet uitlas gaan achteraan, die categorie zakt iets. Op de boekpagina staan de vier statussen in een blok van twee bij twee |

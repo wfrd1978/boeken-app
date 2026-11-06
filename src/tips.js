@@ -39,7 +39,9 @@ const MAX_ZICHTBAAR = 8;
 const MAX_BEKEKEN = 200;
 
 // Wat slaat aan? Wil ik lezen telt het zwaarst, Niet voor mij telt negatief.
-// Je vijfsterrenboeken tellen een beetje mee voor hun categorie.
+// Je vijfsterrenboeken tellen een beetje mee voor hun categorie. Een boek dat je niet
+// uitlas (in de opslag 'Gestopt') telt negatief: tips van die schrijver gaan achteraan,
+// en die categorie zakt een beetje.
 const GEWICHT = { wil: 2, gelezen: 1, nee: -2 };
 
 export function smaak(reacties, boeken = []) {
@@ -52,12 +54,20 @@ export function smaak(reacties, boeken = []) {
     tel(r.soort && `s:${r.soort}`, (GEWICHT[r.reactie] ?? 0) / 2);
   }
   for (const b of boeken) if (b.sterren === 5) tel(b.categorie && `c:${b.categorie}`, 0.3);
+  for (const b of boeken) {
+    if (b.status !== 'Gestopt') continue;
+    tel(b.categorie && `c:${b.categorie}`, -0.5);
+    for (const a of b.auteurs ?? []) tel(a && `a:${a.toLowerCase()}`, -3);
+  }
   return score;
 }
 
 // Tips met de hoogste score eerst; bij gelijke stand blijft de volgorde (nieuwste eerst).
 export function ordenTips(tips, score) {
-  const punten = (t) => (score[`c:${t.categorie}`] ?? 0) + (score[`s:${t.soort}`] ?? 0);
+  const punten = (t) =>
+    (score[`c:${t.categorie}`] ?? 0) +
+    (score[`s:${t.soort}`] ?? 0) +
+    Math.min(0, ...(t.auteurs ?? []).map((a) => score[`a:${a.toLowerCase()}`] ?? 0));
   return tips
     .map((t, i) => ({ t, i, p: punten(t) }))
     .sort((a, b) => b.p - a.p || a.i - b.i)

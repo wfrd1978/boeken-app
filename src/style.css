@@ -717,9 +717,10 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .snel-oordeel .keuzes { justify-content: center; }
 .bevestig > .details { text-align: center; }
 .snel-oordeel .keuzes {
-  flex-wrap: nowrap; gap: 0; padding: 4px; border-radius: 999px; background: var(--vlak); max-width: 100%; overflow-x: auto; scrollbar-width: none;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px; width: 100%; max-width: 340px;
+  padding: 4px; border-radius: 18px; background: var(--vlak);
 }
-.snel-oordeel .keuze { border: 0; background: transparent; padding: 8px 9px; font-size: 0.8rem; white-space: nowrap; border-radius: 999px; }
+.snel-oordeel .keuze { border: 0; background: transparent; padding: 9px 8px; font-size: 0.85rem; white-space: nowrap; border-radius: 14px; text-align: center; }
 .snel-oordeel .keuze.actief { background: var(--diep); color: var(--diep-tekst); }
 
 /* --- Rustigere kopjes: gewone letters, geen goudstreep; het goud alleen nog als accent --- */

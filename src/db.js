@@ -28,7 +28,7 @@ export function leesvormUitLabels(b) {
 
 // Zo heet een status in beeld. In de opslag blijft de oorspronkelijke naam staan,
 // zodat bestaande boeken en backups gewoon blijven werken.
-const STATUS_IN_BEELD = { Bezig: 'Aan het lezen' };
+const STATUS_IN_BEELD = { Bezig: 'Aan het lezen', Gestopt: 'Niet uitgelezen' };
 
 export function statusNaam(status) {
   return STATUS_IN_BEELD[status] ?? status;
