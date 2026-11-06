@@ -721,3 +721,12 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 }
 .snel-oordeel .keuze { border: 0; background: transparent; padding: 8px 9px; font-size: 0.8rem; white-space: nowrap; border-radius: 999px; }
 .snel-oordeel .keuze.actief { background: var(--diep); color: var(--diep-tekst); }
+
+/* --- Rustigere kopjes: gewone letters, geen goudstreep; het goud alleen nog als accent --- */
+.rij-kop h2, .lijst-kop, .stat-kop, .blok h2 {
+  font-weight: 800; text-transform: none; letter-spacing: -0.015em; font-size: 1.3rem;
+}
+.rij-kop h2::before, .lijst-kop::before, .stat-kop::before { content: none; }
+.rij-kop { border-top: 0; padding-top: 4px; }
+.lijst-kop { border-top: 0; }
+.rij-kop .link-knop { color: var(--zacht); font-size: 0.9rem; text-decoration: none; }
