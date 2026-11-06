@@ -55,3 +55,32 @@ describe('maandanalyses in de backup', () => {
     expect(schoneRapporten(null)).toBeNull();
   });
 });
+
+import { jaarRapport, terugblikJaar, jarenMetLezen, jaarOpdracht } from '../src/analyse.js';
+
+describe('leesjaar', () => {
+  const lijst = [...boeken, { titel: 'E', auteurs: ['Jan'], status: 'Gestopt', leesdata: ['2026-05-01'] }];
+  const r = jaarRapport(lijst, '2026');
+  it('telt het jaar, zonder niet uitgelezen boeken', () => {
+    expect(r.aantal).toBe(4);
+    expect(r.vorigJaar).toBe(1);
+    expect(r.perMaand.find((m) => m.maand === '2026-10').aantal).toBe(2);
+    expect(r.drukste.maand).toBe('2026-10');
+  });
+  it('vindt beste boeken, nieuwe schrijvers en het langste boek', () => {
+    expect(r.beste[0].titel).toBe('A');
+    expect(r.vijfSterren.map((b) => b.titel)).toEqual(['A']);
+    expect(r.nieuweSchrijvers.sort()).toEqual(['Jan', 'Piet']);
+    expect(r.langste).toEqual({ titel: 'A', paginas: 300 });
+  });
+  it('kiest in december dit jaar en in januari het vorige', () => {
+    expect(terugblikJaar(new Date(2026, 11, 3))).toBe('2026');
+    expect(terugblikJaar(new Date(2027, 0, 20))).toBe('2026');
+    expect(terugblikJaar(new Date(2026, 5, 1))).toBe('');
+    expect(jarenMetLezen(boeken)).toEqual(['2026', '2025']);
+    expect(jaarOpdracht(r)).toContain('leesjaar 2026');
+  });
+  it('bewaart een jaarverhaal ook in de backup', () => {
+    expect(schoneRapporten({ 2026: { tekst: 'Mooi jaar', gemaakt: 'x' } })).toEqual({ 2026: { tekst: 'Mooi jaar', gemaakt: 'x' } });
+  });
+});

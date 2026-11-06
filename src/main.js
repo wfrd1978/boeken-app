@@ -57,7 +57,7 @@ import { filmsVoorBoek, schrijverGegevens } from './schrijver.js';
 import { haalNieuws, nieuwsArchief, ordenNieuws, overMijnSchrijver } from './nieuws.js';
 import { STEEKWOORDEN, recensieOpdracht, claudeAdres } from './recensie.js';
 import { berekenStatistieken, huidigeMaand, geldigeStartmaand } from './statistieken.js';
-import { maandRapport, rapportOpdracht, profielOpdracht, vorigeMaand, maandNaam, gelezenIn, maandenMetLezen, geldigeMaand, MAX_ADRES } from './analyse.js';
+import { maandRapport, rapportOpdracht, profielOpdracht, vorigeMaand, maandNaam, gelezenIn, maandenMetLezen, geldigeMaand, MAX_ADRES, jaarRapport, jaarOpdracht, terugblikJaar, jarenMetLezen, geldigJaar } from './analyse.js';
 import { veilig, veiligeUrl } from './veilig.js';
 import { tipsUitArchief, verversTips, zetTipReactie } from './tips.js';
 import {
@@ -356,7 +356,7 @@ const SORTERINGEN = {
 };
 
 // Tabjes bovenaan de lijst, zoals in een nieuwsapp.
-const TABS = ['Alles', 'Bezig', 'Gelezen', 'Wil ik lezen'];
+const TABS = ['Alles', 'Bezig', 'Gelezen', 'Wil ik lezen', 'Gestopt'];
 
 // Waar het boek is: voor de labels in de lijst, de knoppen bij een boek en de Toon-keuze.
 // De sleutel 'kobo' blijft voor Wacht op Kobo Plus, zodat een bewaarde keuze blijft werken.
@@ -655,6 +655,26 @@ function analyseKaartHtml(boeken) {
     </div>`;
 }
 
+// In december en januari: de vraag of je terug wilt kijken op je leesjaar.
+function jaarKaartHtml(boeken) {
+  const jaar = terugblikJaar();
+  if (!jaar || !jaarRapport(boeken, jaar).aantal) return '';
+  try {
+    if (localStorage.getItem('jaarGezien') === jaar) return '';
+  } catch {
+    // Geen opslag: dan gewoon tonen.
+  }
+  if (dagenGeleden(leesDatum('jaarLater')) < ANALYSE_LATER_DAGEN) return '';
+  return `
+    <div class="herinnering" id="jaar-kaart">
+      <p><strong>Je leesjaar ${jaar}</strong><br />Wil je terugkijken op wat je dit jaar las?</p>
+      <div class="herinnering-knoppen">
+        <a href="#/jaar/${jaar}">Ja, laat zien</a>
+        <button class="link-knop" id="jaar-later">Later</button>
+      </div>
+    </div>`;
+}
+
 // Venster om Claude (in je eigen Claude-app) iets te laten schrijven en de tekst terug te plakken.
 // De app zelf praat met geen enkele AI-dienst: pas als je op Open Claude tikt, gaat de opdracht mee.
 function toonClaudeHulp({ kop, uitleg, opdracht, plakKnop, opPlak }) {
@@ -850,6 +870,86 @@ async function toonAnalyse(maand) {
   );
 }
 
+async function toonJaar(jaar) {
+  const nr = schermNr;
+  ruimCoversOp();
+  const [boeken, rapporten] = await Promise.all([alleBoeken(), haalLeesRapporten()]);
+  if (nr !== schermNr) return;
+  try {
+    if (jaar === terugblikJaar()) localStorage.setItem('jaarGezien', jaar);
+  } catch {
+    // Niet erg.
+  }
+  const r = jaarRapport(boeken, jaar);
+  const tekst = rapporten[jaar]?.tekst ?? '';
+  const komma = (x) => x.toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const lopend = jaar === String(new Date().getFullYear()) && new Date().getMonth() < 11;
+  const metId = (lijst) => lijst.map((b) => boeken.find((x) => x.id === b.id)).filter(Boolean);
+  const kortMaand = (m) => ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'][Number(m.slice(5, 7)) - 1];
+  app.innerHTML = `
+    <header class="kop">
+      <a class="terug" href="#/profiel">‹ Profiel</a>
+      <h1>Je leesjaar</h1>
+    </header>
+    <p class="analyse-maand">${veilig(jaar)}${lopend ? ' tot nu toe' : ''}</p>
+    ${
+      !r.aantal
+        ? '<p class="leeg">In dit jaar heb je geen boek uitgelezen (of er staat geen leesdatum bij).</p>'
+        : `
+    <section class="statistieken">
+      <div class="tegels">
+        <div class="tegel"><strong>${r.aantal}</strong><span>${r.aantal === 1 ? 'boek' : 'boeken'}</span></div>
+        <div class="tegel"><strong>${r.bladzijden ? r.bladzijden.toLocaleString('nl-NL') : '–'}</strong><span>bladzijden</span></div>
+        <div class="tegel"><strong>${r.sterren ? `${komma(r.sterren)}<small>★</small>` : '–'}</strong><span>gemiddeld</span></div>
+      </div>
+      <p class="zacht">${r.vorigJaar ? `In ${Number(jaar) - 1} las je er ${r.vorigJaar}. ` : ''}${r.drukste?.aantal ? `Je las het meest in ${veilig(maandNaam(r.drukste.maand, false))} (${r.drukste.aantal}).` : ''}</p>
+
+      ${
+        tekst
+          ? `<h2 class="stat-kop">Het verhaal van je jaar</h2><div class="analyse-tekst">${alineasHtml(tekst)}</div>
+             <button class="link-knop" id="jaar-claude">Opnieuw laten schrijven door Claude</button>`
+          : `<button class="tweede-knop" id="jaar-claude">Laat Claude er een verhaal van maken</button>`
+      }
+
+      <h2 class="stat-kop">Per maand</h2>
+      ${stavenHtml(r.perMaand.map((m) => ({ label: kortMaand(m.maand), aantal: m.aantal })))}
+    </section>
+    ${rijHtml(r.vijfSterren.length ? 'Je vijfsterrenboeken' : 'Je beste boeken', metId(r.vijfSterren.length ? r.vijfSterren : r.beste), 'Gelezen')}
+    <section class="statistieken">
+      ${
+        r.zinnen.length
+          ? `<h2 class="stat-kop">Uit je recensies</h2>
+             ${r.zinnen.map((z) => `<blockquote class="analyse-zin">"${veilig(z.zin)}"<span>${veilig(z.titel)}</span></blockquote>`).join('')}`
+          : ''
+      }
+      <h2 class="stat-kop">Genres</h2>
+      ${stavenHtml(r.categorieen.map((c) => ({ label: c.naam, aantal: c.aantal })))}
+      ${r.vormen.length ? `<h2 class="stat-kop">Gelezen als</h2>${stavenHtml(r.vormen.map((v) => ({ label: v.naam, aantal: v.aantal })))}` : ''}
+
+      <h2 class="stat-kop">Schrijvers</h2>
+      ${((meer) => (meer.length ? `<p>Meest gelezen: ${meer.map((x) => `${veilig(x.naam)} (${x.aantal})`).join(', ')}.</p>` : ''))(r.schrijvers.filter((x) => x.aantal > 1))}
+      ${r.nieuweSchrijvers.length ? `<p>${r.nieuweSchrijvers.length === 1 ? 'Eén schrijver' : `${r.nieuweSchrijvers.length} schrijvers`} nieuw voor jou${r.nieuweSchrijvers.length <= 8 ? `: ${r.nieuweSchrijvers.map(veilig).join(', ')}` : ''}.</p>` : ''}
+      ${r.langste ? `<p>Je dikste boek: <strong>${veilig(r.langste.titel)}</strong> (${r.langste.paginas} bladzijden).</p>` : ''}
+    </section>`
+    }
+  `;
+  // De rij covers hoort hier niet bij een tab in de lijst: dan ook geen 'Alles ›'.
+  app.querySelectorAll('.rij-kop .link-knop').forEach((k) => k.remove());
+  document.getElementById('jaar-claude')?.addEventListener('click', () =>
+    toonClaudeHulp({
+      kop: `Je leesjaar ${jaar}`,
+      uitleg: 'Claude maakt van de cijfers en je boeken een persoonlijke terugblik op je jaar. Die plak je hier terug; hij wordt bij dit jaar bewaard.',
+      opdracht: jaarOpdracht(r),
+      plakKnop: 'Plak de terugblik van Claude',
+      opPlak: async (t) => {
+        await bewaarLeesRapport(jaar, t);
+        melding('Terugblik bewaard');
+        if (location.hash === `#/jaar/${jaar}`) toonJaar(jaar);
+      },
+    })
+  );
+}
+
 async function toonKoboCheck() {
   const nr = schermNr;
   ruimCoversOp();
@@ -918,6 +1018,7 @@ function startHtml(boeken, naam) {
   return `
     <section class="start">
       <p class="groet">${veilig(deel)}<span>${datum}</span></p>
+      ${jaarKaartHtml(boeken)}
       ${analyseKaartHtml(boeken)}
       ${koboSeintjeHtml(boeken)}
       ${
@@ -993,11 +1094,15 @@ async function toonLijst() {
              </div>
            </div>
            <ul class="lijst" id="lijst"></ul>`
-        : `<p class="leeg">Nog geen boeken (v2).(v2).(v2).<br />Tik onderin op <b>Toevoegen</b> om je eerste boek toe te voegen.</p>`
+        : `<p class="leeg">Nog geen boeken.<br />Tik onderin op <b>Toevoegen</b> om je eerste boek toe te voegen.</p>`
     }
   `;
   if (!boeken.length) return;
 
+  document.getElementById('jaar-later')?.addEventListener('click', () => {
+    zetDatum('jaarLater');
+    document.getElementById('jaar-kaart')?.remove();
+  });
   document.getElementById('analyse-later')?.addEventListener('click', () => {
     zetDatum('analyseLater');
     document.getElementById('analyse-kaart')?.remove();
@@ -1016,7 +1121,7 @@ async function toonLijst() {
     const zichtbaar = sorteer(filter(boeken));
     document.getElementById('lijst').innerHTML = zichtbaar.length
       ? zichtbaar.map(boekRegel).join('')
-      : `<li class="leeg">${zoekterm ? `Geen boek gevonden voor "${veilig(zoekterm)}".` : toon ? 'Geen boeken met deze keuze.' : `Nog geen boeken (v2).(v2).(v2).bij ${veilig(statusNaam(tab))}.`}</li>`;
+      : `<li class="leeg">${zoekterm ? `Geen boek gevonden voor "${veilig(zoekterm)}".` : toon ? 'Geen boeken met deze keuze.' : `Nog geen boeken bij ${veilig(statusNaam(tab))}.`}</li>`;
     document.getElementById('aantal').textContent = zichtbaar.length === 1 ? '1 boek' : `${zichtbaar.length} boeken`;
   };
 
@@ -1376,7 +1481,7 @@ async function toonInstellingen() {
   const zonder = telling.totaal - telling.met;
   document.getElementById('cover-telling').textContent = telling.totaal
     ? `${telling.met} van de ${telling.totaal} boeken hebben een cover.`
-    : 'Nog geen boeken (v2).(v2).(v2).';
+    : 'Nog geen boeken.';
   const syn = await synopsisTelling();
   document.getElementById('synopsis-telling').textContent = syn.totaal
     ? `${syn.met} van de ${syn.totaal} boeken hebben een synopsis${
@@ -2244,6 +2349,13 @@ async function toonProfiel() {
       </div>
 
       ${statistiekenHtml(berekenStatistieken(boeken, profiel.statsVanaf), profiel.statsVanaf)}
+      ${(() => {
+        const jaren = jarenMetLezen(boeken).slice(0, 6);
+        return jaren.length
+          ? `<h2 class="stat-kop">Jaaroverzichten</h2>
+             <ul class="analyse-maanden">${jaren.map((j) => `<li><a href="#/jaar/${j}">${veilig(j)}</a></li>`).join('')}</ul>`
+          : '';
+      })()}
       ${(() => {
         const maanden = maandenMetLezen(boeken).slice(0, 12);
         return maanden.length
@@ -3382,6 +3494,7 @@ async function route({ naarBoven = false } = {}) {
   else if (location.hash === '#/nieuws') toonNieuwsPagina();
   else if (location.hash === '#/kobo') toonKoboCheck();
   else if (geldigeMaand(location.hash.slice('#/analyse/'.length)) && location.hash.startsWith('#/analyse/')) toonAnalyse(location.hash.slice('#/analyse/'.length));
+  else if (location.hash.startsWith('#/jaar/') && geldigJaar(location.hash.slice('#/jaar/'.length))) toonJaar(location.hash.slice('#/jaar/'.length));
   else if (location.hash.startsWith('#/nieuws/')) {
     let id = '';
     try {

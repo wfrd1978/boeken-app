@@ -188,12 +188,12 @@ function schoonProfiel(p) {
   return profiel;
 }
 
-// Maandanalyses: per maand ('jjjj-mm') alleen de tekst van Claude en wanneer die kwam.
+// Maand- en jaaranalyses: per maand ('jjjj-mm') of jaar ('jjjj') alleen de tekst van Claude en wanneer die kwam.
 export function schoneRapporten(r) {
   if (!r || typeof r !== 'object' || Array.isArray(r)) return null;
   const schoon = {};
   for (const [maand, v] of Object.entries(r)) {
-    if (/^\d{4}-\d{2}$/.test(maand) && typeof v?.tekst === 'string' && v.tekst.trim()) {
+    if (/^\d{4}(-\d{2})?$/.test(maand) && typeof v?.tekst === 'string' && v.tekst.trim()) {
       schoon[maand] = { tekst: v.tekst.slice(0, 20000), gemaakt: typeof v.gemaakt === 'string' ? v.gemaakt : '' };
     }
   }
