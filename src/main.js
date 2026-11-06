@@ -3353,7 +3353,71 @@ async function route({ naarBoven = false } = {}) {
   }
 }
 
-window.addEventListener('hashchange', route);
+// Vloeiende overgang: tik je op een cover, dan schuift die cover naar zijn plek op de
+// boekpagina (en bij 'terug' weer terug). Alleen bij een tik in de app: bij terugswipen
+// doet Safari zelf al een beweging, dan niet nog eens. Kan de telefoon het niet, of staat
+// 'Minder beweging' aan, dan gewoon zoals vroeger.
+const COVER_KLASSEN = 'img.held-cover, img.rij-cover, img.cover-klein, .held-cover.geen-cover, .rij-cover.geen-cover, .cover-klein.geen-cover';
+let overgangTik = false;
+let overgangSwipe = null;
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[href^="#/"]');
+  if (!a) return;
+  overgangTik = true;
+  document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => (el.style.viewTransitionName = ''));
+  const cover = a.matches('a[href^="#/boek/"]') ? a.querySelector(COVER_KLASSEN) : null;
+  if (cover) cover.style.viewTransitionName = 'boek-cover';
+}, true);
+window.addEventListener('popstate', (e) => {
+  overgangSwipe = e.hasUAVisualTransition;
+});
+
+const magOvergang = () =>
+  typeof document.startViewTransition === 'function' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function wachtOpNieuwScherm() {
+  return new Promise((klaar) => {
+    const kijker = new MutationObserver(() => {
+      kijker.disconnect();
+      klaar();
+    });
+    kijker.observe(app, { childList: true });
+  });
+}
+
+window.addEventListener('hashchange', () => {
+  const vanBoek = Number(vorigeHash.match(/^#\/boek\/(\d+)$/)?.[1]) || 0;
+  const naarBoek = /^#\/boek\/\d+$/.test(location.hash);
+  const viaTik = overgangTik || overgangSwipe === false;
+  overgangTik = false;
+  overgangSwipe = null;
+  if (!magOvergang() || !viaTik || (!vanBoek && !naarBoek)) return route();
+  // Het oude scherm: van een boek af is de grote cover het bewegende plaatje.
+  if (vanBoek) {
+    document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => (el.style.viewTransitionName = ''));
+    const groot = document.querySelector('#cover-vak .cover-groot');
+    if (groot) groot.style.viewTransitionName = 'boek-cover';
+  }
+  const overgang = document.startViewTransition(async () => {
+    const nieuw = wachtOpNieuwScherm();
+    const klaar = route();
+    // Niet langer dan een halve tel wachten: liever geen beweging dan een hapering.
+    await Promise.race([Promise.all([klaar, nieuw]), new Promise((r) => setTimeout(r, 450))]);
+    document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => (el.style.viewTransitionName = ''));
+    const doel = naarBoek
+      ? document.querySelector('#cover-vak .cover-groot')
+      : [...document.querySelectorAll(`a[href="#/boek/${vanBoek}"]`)]
+          .map((a) => a.querySelector(COVER_KLASSEN))
+          .find((el) => {
+            const r = el?.getBoundingClientRect();
+            return r && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
+          });
+    if (doel) doel.style.viewTransitionName = 'boek-cover';
+  });
+  overgang.finished.finally(() => {
+    document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => (el.style.viewTransitionName = ''));
+  });
+});
 
 // Gaat de app naar de achtergrond, dan een half getypte recensie of profieltekst meteen bewaren.
 const bewaarNu = () => toonBoek.bewaarOpenstaand?.();
