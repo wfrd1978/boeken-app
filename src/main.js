@@ -190,7 +190,8 @@ function coverHtml(boek, klasse, links = coverLinks) {
   // Laadt een cover niet (bijvoorbeeld offline bij een Google-cover), dan het vlak met de beginletter.
   if (src) {
     const id = Number.isInteger(boek.id) ? ` data-boek="${boek.id}"` : '';
-    return `<img class="${klasse}" src="${veilig(src)}" alt="" loading="lazy" data-letter="${letter}" data-bij-fout="letter"${id} />`;
+    const laden = klasse === 'cover-groot' || klasse === 'held-cover' ? 'eager' : 'lazy';
+    return `<img class="${klasse}" src="${veilig(src)}" alt="" loading="${laden}" data-letter="${letter}" data-bij-fout="letter"${id} />`;
   }
   return `<div class="${klasse} geen-cover">${letter}</div>`;
 }
@@ -3413,6 +3414,13 @@ window.addEventListener('hashchange', () => {
             return r && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
           });
     if (doel) doel.style.viewTransitionName = 'boek-cover';
+    // Eerst het plaatje echt klaar hebben (en de kleur van de kop), anders schuift er een
+    // leeg vlak en knippert het. Ook hier niet langer dan een korte tel wachten.
+    if (doel?.tagName === 'IMG') {
+      doel.loading = 'eager';
+      await Promise.race([doel.decode().catch(() => {}), new Promise((r) => setTimeout(r, 350))]);
+      if (naarBoek) kleurVlakNaarCover(document.querySelector('.boek-kop'), doel);
+    }
   });
   overgang.finished.finally(() => {
     document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => (el.style.viewTransitionName = ''));

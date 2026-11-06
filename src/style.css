@@ -724,6 +724,9 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 
 /* --- Vloeiende overgang tussen lijst en boek --- */
 .balk { view-transition-name: balk; }
-::view-transition-group(boek-cover) { animation-duration: 0.38s; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 10; }
+::view-transition-group(boek-cover) { animation-duration: 0.45s; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 10; }
 ::view-transition-old(boek-cover), ::view-transition-new(boek-cover) { height: 100%; object-fit: cover; }
-::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.28s; }
+/* De pagina zelf wisselt rustig: de oude blijft staan, de nieuwe komt er zacht overheen. */
+::view-transition-old(root) { animation: none; }
+::view-transition-new(root) { animation: 0.22s ease-out both vt-in; }
+@keyframes vt-in { from { opacity: 0; } }
