@@ -1,3 +1,4 @@
+import { kleurVlakNaarCover } from './kleur.js';
 import './style.css';
 import {
   haalLeesRapporten,
@@ -976,6 +977,7 @@ async function toonLijst() {
   document.querySelectorAll('[data-achtergrond]').forEach((el) => {
     el.style.backgroundImage = `url(${JSON.stringify(el.dataset.achtergrond)})`;
   });
+  document.querySelectorAll('.held').forEach((held) => kleurVlakNaarCover(held, held.querySelector('img.held-cover')));
   // Tips en nieuws komen van buiten; gaat daar iets mis, dan blijft de lijst gewoon werken.
   await toonTipsRij(boeken).catch(() => {});
   toonNieuws(boeken).catch(() => {});
@@ -2898,21 +2900,31 @@ async function toonBoek(id) {
   };
 
   app.innerHTML = `
-    <header class="kop">
-      <a class="terug" href="#/">‹ Boeken</a>
-      <button class="link-knop deel-knop" id="deel" aria-label="Deel dit boek">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l4 4-1.4 1.4L13 6.8V15h-2V6.8L9.4 8.4 8 7zM5 11h3v2H7v6h10v-6h-1v-2h3v10H5z" /></svg>
-        Deel
-      </button>
-    </header>
-    <section class="bevestig">
+    <div class="boek-kop">
+      <header class="kop">
+        <a class="terug" href="#/">‹ Boeken</a>
+        <button class="link-knop deel-knop" id="deel" aria-label="Deel dit boek">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l4 4-1.4 1.4L13 6.8V15h-2V6.8L9.4 8.4 8 7zM5 11h3v2H7v6h10v-6h-1v-2h3v10H5z" /></svg>
+        </button>
+        <details class="boek-menu">
+          <summary aria-label="Meer">⋯</summary>
+          <div class="boek-menu-lijst">
+            <button class="link-knop" id="cover-kiezen">Kies een cover</button>
+            <label class="link-knop">Eigen foto<input type="file" accept="image/*" id="cover-foto" hidden /></label>
+          </div>
+        </details>
+      </header>
       <div id="cover-vak">${coverHtml(boek, 'cover-groot')}</div>
-      <div class="cover-knoppen">
-        <button class="link-knop" id="cover-kiezen">Kies een cover</button>
-        <label class="link-knop">Eigen foto<input type="file" accept="image/*" id="cover-foto" hidden /></label>
-      </div>
       <h2>${veilig(boek.titel)}</h2>
-      <p>${veilig(auteurTekst(boek))}</p>
+      <p class="boek-kop-auteur">${veilig(auteurTekst(boek))}</p>
+    </div>
+    <section class="bevestig">
+      <div class="snel-oordeel">
+        <div class="sterren" id="sterren" role="radiogroup" aria-label="Sterren"></div>
+        <div class="keuzes" id="statussen">
+          ${STATUSSEN.map((s) => `<button class="keuze" data-s="${s}">${statusNaam(s)}</button>`).join('')}
+        </div>
+      </div>
       <p class="details">${[boek.uitgever, boek.jaar, boek.paginas && `${boek.paginas} blz.`, boek.isbn && `ISBN ${boek.isbn}`]
         .filter(Boolean)
         .map(veilig)
@@ -2930,9 +2942,6 @@ async function toonBoek(id) {
 
       <div class="schrijver" id="schrijver" hidden></div>
 
-      <p class="label">Mijn oordeel</p>
-      <div class="sterren" id="sterren" role="radiogroup" aria-label="Sterren"></div>
-
       <p class="label">Recensie</p>
       <textarea id="recensie" rows="6" placeholder="Wat vond je ervan?">${veilig(boek.recensie)}</textarea>
       <div class="recensie-regel">
@@ -2943,11 +2952,6 @@ async function toonBoek(id) {
       <p class="label">Gelezen als</p>
       <div class="keuzes" id="leesvorm">
         ${Object.entries(LEESVORMEN).map(([k, naam]) => `<button class="keuze" data-vorm="${k}">${naam}</button>`).join('')}
-      </div>
-
-      <p class="label">Status</p>
-      <div class="keuzes" id="statussen">
-        ${STATUSSEN.map((s) => `<button class="keuze" data-s="${s}">${statusNaam(s)}</button>`).join('')}
       </div>
 
       <p class="label">Gelezen op</p>
@@ -2974,6 +2978,9 @@ async function toonBoek(id) {
       <button class="verwijder" id="verwijder">Boek verwijderen</button>
     </section>
   `;
+
+  const kleurBoekKop = () => kleurVlakNaarCover(document.querySelector('.boek-kop'), document.querySelector('#cover-vak img'));
+  kleurBoekKop();
 
   // Reeks: één regel, de delen uit je lijst als kleine knopjes, en zelf aan te passen.
   const reeksVak = document.getElementById('reeks');
@@ -3087,7 +3094,12 @@ async function toonBoek(id) {
 
   const toonNieuweCover = () => {
     document.getElementById('cover-vak').innerHTML = coverHtml(boek, 'cover-groot');
+    kleurBoekKop();
   };
+  // Het ⋯-menu gaat dicht na een keuze of een tik ernaast.
+  const menu = document.querySelector('.boek-menu');
+  menu.addEventListener('click', (e) => { if (e.target.closest('.boek-menu-lijst')) menu.open = false; });
+  document.addEventListener('click', (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
   document.getElementById('cover-kiezen').addEventListener('click', () => toonCoverKeuze(boek, bewaar, toonNieuweCover));
   document.getElementById('cover-foto').addEventListener('change', async (e) => {
     const bestand = e.target.files?.[0];

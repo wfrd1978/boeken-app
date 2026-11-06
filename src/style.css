@@ -672,3 +672,52 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .boek-tekst strong, .rij-titel { font-weight: 800; letter-spacing: -0.01em; }
 .rij-cover, .cover-klein, .held-cover, .cover-groot { border-radius: 4px; }
 
+
+/* --- Kleur uit de cover --- */
+
+/* Het boek dat je nu leest: de kaart neemt de kleur van de cover aan. */
+.held.gekleurd { background: linear-gradient(150deg, var(--kleur-licht), var(--kleur-donker)); }
+.held.gekleurd .held-achtergrond { opacity: 0.35; mix-blend-mode: normal; }
+.held-cover, .rij-cover, .cover-klein { box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), 0 6px 16px rgb(0 0 0 / 0.14); }
+.held-cover { box-shadow: 0 14px 34px rgb(0 0 0 / 0.4); }
+
+/* Boekpagina: bovenaan een vlak in de kleur van de cover, met de cover groot erop. */
+.boek-kop {
+  position: relative; margin: calc(-1 * (env(safe-area-inset-top) + 8px)) -16px 0;
+  padding: calc(env(safe-area-inset-top) + 8px) 16px 26px; text-align: center;
+  background: var(--diep); color: var(--diep-tekst); border-radius: 0 0 22px 22px;
+}
+.boek-kop.gekleurd { background: linear-gradient(180deg, var(--kleur-licht), var(--kleur-donker)); }
+.boek-kop .kop { margin-bottom: 10px; align-items: center; flex-wrap: nowrap; }
+.boek-kop .terug, .boek-kop .kop .link-knop { color: var(--diep-tekst); flex-basis: auto; }
+.boek-kop .terug { margin-right: auto; }
+.boek-kop .deel-knop { margin-left: 0; }
+.boek-kop .cover-groot { width: 170px; height: 255px; margin: 4px auto 18px; box-shadow: 0 18px 40px rgb(0 0 0 / 0.45); }
+.boek-kop .cover-groot.geen-cover { background: rgb(255 255 255 / 0.12); color: var(--diep-tekst); }
+.boek-kop h2 { margin: 0 0 4px; font-family: var(--schreef); font-weight: 800; font-size: 1.6rem; line-height: 1.2; letter-spacing: -0.01em; }
+.boek-kop-auteur { margin: 0; opacity: 0.8; }
+
+/* Het ⋯-menu met de zelden gebruikte coverknoppen. */
+.boek-menu { position: relative; }
+.boek-menu summary {
+  list-style: none; cursor: pointer; width: 36px; height: 36px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 1.3rem; line-height: 1; background: rgb(255 255 255 / 0.14);
+}
+.boek-menu summary::-webkit-details-marker { display: none; }
+.boek-menu-lijst {
+  position: absolute; right: 0; top: 44px; z-index: 20; min-width: 180px; text-align: left;
+  display: flex; flex-direction: column; padding: 6px; border-radius: 14px;
+  background: var(--bg); box-shadow: 0 12px 32px rgb(0 0 0 / 0.25);
+}
+.boek-menu-lijst .link-knop { color: var(--tekst) !important; padding: 12px; text-align: left; font-size: 1rem; }
+
+/* Direct onder de kop: sterren en status. */
+.snel-oordeel { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 20px 0 6px; }
+.snel-oordeel .sterren { justify-content: center; }
+.snel-oordeel .keuzes { justify-content: center; }
+.bevestig > .details { text-align: center; }
+.snel-oordeel .keuzes {
+  flex-wrap: nowrap; gap: 0; padding: 4px; border-radius: 999px; background: var(--vlak); max-width: 100%; overflow-x: auto; scrollbar-width: none;
+}
+.snel-oordeel .keuze { border: 0; background: transparent; padding: 8px 9px; font-size: 0.8rem; white-space: nowrap; border-radius: 999px; }
+.snel-oordeel .keuze.actief { background: var(--diep); color: var(--diep-tekst); }
