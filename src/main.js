@@ -3350,15 +3350,20 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('pagehide', bewaarNu);
 
-// Tik op de plek waar je al bent (bijvoorbeeld Toevoegen vanaf een voorstel): opnieuw beginnen.
+// Een tik op de balk onderin begint altijd schoon: een leeg zoekveld bij Zoek, Toevoegen en
+// Boeken. (Terugswipen vanaf een boek houdt je zoekwoord wel vast.) Tik je op de plek waar je
+// al bent, dan begint die opnieuw.
 document.querySelector('.balk').addEventListener('click', (e) => {
   const a = e.target.closest('a');
-  if (a && a.getAttribute('href') === (location.hash || '#/')) {
+  if (!a) return;
+  if (a.dataset.plek === 'toevoegen') {
+    laatsteZoekterm = '';
+    laatsteResultaten = [];
+  } else {
+    zoekterm = '';
+  }
+  if (a.getAttribute('href') === (location.hash || '#/')) {
     e.preventDefault();
-    if (a.dataset.plek === 'toevoegen') {
-      laatsteZoekterm = '';
-      laatsteResultaten = [];
-    }
     route({ naarBoven: true });
   }
 });
