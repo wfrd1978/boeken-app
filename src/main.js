@@ -1,3 +1,4 @@
+import { maakDeelkaart } from './deelkaart.js';
 import { kleurVlakNaarCover } from './kleur.js';
 import './style.css';
 import {
@@ -692,6 +693,66 @@ function toonClaudeHulp({ kop, uitleg, opdracht, plakKnop, opPlak }) {
     if (tekst === opdracht.trim()) return melding('Op het klembord staat nog de opdracht. Kopieer eerst de tekst in Claude.');
     sluit();
     await opPlak(tekst);
+  });
+}
+
+// Delen: eerst een voorbeeld van de deelkaart, dan kiezen tussen de afbeelding of de tekst.
+function toonDeelkaart(boek, recensie) {
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `<div class="laag" id="deel-laag">
+       <div class="laag-blad">
+         <div class="laag-kop"><h2>Delen</h2><button class="link-knop" id="laag-sluit">Sluiten</button></div>
+         <div class="deelkaart-vak" id="deelkaart-vak"><p class="zacht">Kaart maken…</p></div>
+         <button class="hoofdknop" id="deel-beeld" disabled>Deel als afbeelding</button>
+         <button class="tweede-knop" id="deel-tekst">Deel als tekst</button>
+       </div>
+     </div>`
+  );
+  const laag = document.getElementById('deel-laag');
+  let adres = '';
+  const sluit = () => {
+    laag.remove();
+    if (adres) URL.revokeObjectURL(adres);
+  };
+  document.getElementById('laag-sluit').addEventListener('click', sluit);
+  laag.addEventListener('click', (e) => e.target === laag && sluit());
+
+  let bestand = null;
+  maakDeelkaart(boek, recensie, document.querySelector('#cover-vak img'))
+    .then((blob) => {
+      if (!laag.isConnected) return;
+      const naam = `${(boek.titel || 'boek').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '').toLowerCase() || 'boek'}.jpg`;
+      bestand = new File([blob], naam, { type: 'image/jpeg' });
+      adres = URL.createObjectURL(blob);
+      document.getElementById('deelkaart-vak').innerHTML = `<img class="deelkaart" src="${adres}" alt="Deelkaart van ${veilig(boek.titel)}" />`;
+      document.getElementById('deel-beeld').disabled = false;
+    })
+    .catch(() => {
+      document.getElementById('deelkaart-vak').innerHTML = '<p class="zacht">De kaart maken lukte niet. Delen als tekst kan wel.</p>';
+    });
+
+  document.getElementById('deel-beeld').addEventListener('click', async () => {
+    if (!bestand) return;
+    if (navigator.canShare?.({ files: [bestand] })) {
+      try {
+        await navigator.share({ files: [bestand] });
+        sluit();
+      } catch (e) {
+        if (e.name !== 'AbortError') melding('Delen lukt hier niet');
+      }
+    } else {
+      melding('Houd de afbeelding vast en kies Bewaar of Deel');
+    }
+  });
+  document.getElementById('deel-tekst').addEventListener('click', async () => {
+    try {
+      const uit = await deelBoek(deelTekst(boek, recensie));
+      if (uit === 'gekopieerd') melding('Tekst gekopieerd. Plak hem waar je wilt.');
+      if (uit !== 'geannuleerd') sluit();
+    } catch {
+      melding('Delen lukt hier niet');
+    }
   });
 }
 
@@ -3070,14 +3131,9 @@ async function toonBoek(id) {
     vak.hidden = false;
   })();
 
-  document.getElementById('deel').addEventListener('click', async () => {
+  document.getElementById('deel').addEventListener('click', () => {
     // De recensie zoals hij nu in het vak staat, ook als hij nog niet bewaard is.
-    const tekst = deelTekst(boek, document.getElementById('recensie').value);
-    try {
-      if ((await deelBoek(tekst)) === 'gekopieerd') melding('Tekst gekopieerd. Plak hem waar je wilt.');
-    } catch {
-      melding('Delen lukt hier niet');
-    }
+    toonDeelkaart(boek, document.getElementById('recensie').value);
   });
 
   const synopsisVak = document.getElementById('synopsis');
