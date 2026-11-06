@@ -24,7 +24,7 @@
     // De balk van de iPhone bovenin in dezelfde kleur als de achtergrond.
     var donker = thema === 'donker' || (!thema && window.matchMedia('(prefers-color-scheme: dark)').matches);
     var metas = document.querySelectorAll('meta[name="theme-color"]');
-    for (var i = 0; i < metas.length; i++) metas[i].setAttribute('content', donker ? '#121413' : '#fbf9f5');
+    for (var i = 0; i < metas.length; i++) metas[i].setAttribute('content', donker ? '#121413' : '#f6f6f4');
   }
 
   toepassen();

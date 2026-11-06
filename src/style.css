@@ -1,26 +1,26 @@
-/* Vormgeving naar het voorbeeld van nieuwsapps (Volkskrant, Trouw, NOS):
-   warm papierwit, zwart, dunne lijnen, groen als accent met een vleugje goud
-   (uit het logo), en titels in een schreefletter. */
+/* Vormgeving 'strak' (november 2026): rustig als een nieuwsapp, maar stoerder: koel lichtgrijs,
+   diep zwart, groen als accent met een warm goud, een strakke letter zonder schreef en kopjes
+   in vette hoofdletters. (De naam --schreef is gebleven voor de koppen; het is geen schreefletter meer.) */
 
 :root {
-  --bg: #fbf9f5;
-  --vlak: #f2eee6;
-  --tekst: #141414;
-  --zacht: #6b6862;
-  --lijn: #e5e0d6;
-  --accent: #1f4d3f;
+  --bg: #f6f6f4;
+  --vlak: #ececea;
+  --tekst: #0b0b0b;
+  --zacht: #5d5d5a;
+  --lijn: #dcdcd8;
+  --accent: #0f3d2e;
   --accent-tekst: #ffffff;
   --accent-zacht: #e8f0ec;
   --cover-leeg: #ebe6dc;
-  --goud: #c99a2e;
+  --goud: #d9a514;
   --tips-vlak: #edf3ef;
-  --diep: #1f4d3f;
+  --diep: #0f3d2e;
   --diep-tekst: #ffffff;
-  --geel: #fbf3dc;
+  --geel: #fff5d1;
   --rood: #c0392b;
   --rood-zacht: #fbe9e7;
-  --ster: #c99a2e;
-  --schreef: ui-serif, 'New York', Georgia, 'Times New Roman', serif;
+  --ster: #d9a514;
+  --schreef: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', Arial, sans-serif;
   --schreefloos: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   color-scheme: light dark;
 }
@@ -664,4 +664,11 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .analyse-maanden { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .analyse-maanden a { display: inline-block; padding: 7px 14px; border: 1px solid var(--lijn); border-radius: 999px; color: var(--accent); text-decoration: none; text-transform: capitalize; }
 #analyse-claude.tweede-knop { margin: 16px 0 4px; }
+
+/* Stijl 'strak': vette koppen, rubriekskopjes in hoofdletters, hoekigere covers. */
+.woordmerk h1 { font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; font-size: 1.7rem; }
+.kop h1 { font-weight: 900; letter-spacing: -0.02em; }
+.rij-kop h2, .lijst-kop, .stat-kop, .blok h2 { font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; font-size: 1.05rem; }
+.boek-tekst strong, .rij-titel { font-weight: 800; letter-spacing: -0.01em; }
+.rij-cover, .cover-klein, .held-cover, .cover-groot { border-radius: 4px; }
 
