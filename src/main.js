@@ -3354,27 +3354,27 @@ async function route({ naarBoven = false } = {}) {
   }
 }
 
-// Vloeiende overgang: tik je op een cover, dan schuift die cover naar zijn plek op de
-// boekpagina (en bij 'terug' weer terug). Alleen bij een tik in de app: bij terugswipen
-// doet Safari zelf al een beweging, dan niet nog eens. Kan de telefoon het niet, of staat
-// 'Minder beweging' aan, dan gewoon zoals vroeger.
-const COVER_KLASSEN = 'img.held-cover, img.rij-cover, img.cover-klein, .held-cover.geen-cover, .rij-cover.geen-cover, .cover-klein.geen-cover';
+// Vloeiende overgang: tik je op een cover, dan vliegt die cover naar zijn plek op de
+// boekpagina (en bij '‹ Boeken' weer terug). Een kopie van het plaatje ligt even boven alles
+// en schuift van de oude naar de nieuwe plek. Alleen bij een tik in de app: bij terugswipen
+// beweegt Safari zelf al. Met 'Minder beweging' aan: gewoon zoals vroeger.
+const COVER_KLASSEN = 'img.held-cover, img.rij-cover, img.cover-klein';
+let overgangBron = null;
 let overgangTik = false;
 let overgangSwipe = null;
 document.addEventListener('click', (e) => {
   const a = e.target.closest('a[href^="#/"]');
   if (!a) return;
   overgangTik = true;
-  document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => (el.style.viewTransitionName = ''));
   const cover = a.matches('a[href^="#/boek/"]') ? a.querySelector(COVER_KLASSEN) : null;
-  if (cover) cover.style.viewTransitionName = 'boek-cover';
+  overgangBron = cover?.naturalWidth ? cover : null;
 }, true);
 window.addEventListener('popstate', (e) => {
   overgangSwipe = e.hasUAVisualTransition;
 });
 
-const magOvergang = () =>
-  typeof document.startViewTransition === 'function' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const minderBeweging = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wacht = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function wachtOpNieuwScherm() {
   return new Promise((klaar) => {
@@ -3386,45 +3386,69 @@ function wachtOpNieuwScherm() {
   });
 }
 
+const inBeeld = (el) => {
+  const r = el?.getBoundingClientRect();
+  return r && r.width && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth ? r : null;
+};
+
+async function vliegCover(bron, zoekDoel, klaar, metKleur) {
+  const van = bron.getBoundingClientRect();
+  // Een getekende kopie: die is meteen klaar en blijft goed, ook als het oude plaatje
+  // bij het wisselen van scherm wordt opgeruimd.
+  const kopie = document.createElement('canvas');
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  kopie.width = Math.round(Math.max(van.width, 170) * dpr);
+  kopie.height = Math.round(Math.max(van.height, 255) * dpr);
+  kopie.getContext('2d').drawImage(bron, 0, 0, kopie.width, kopie.height);
+  kopie.className = 'vlieg-cover';
+  Object.assign(kopie.style, { left: `${van.left}px`, top: `${van.top}px`, width: `${van.width}px`, height: `${van.height}px` });
+  document.body.append(kopie);
+  try {
+    // Het nieuwe scherm tekenen; niet langer dan even wachten.
+    await Promise.race([klaar, wacht(600)]);
+    const doel = zoekDoel();
+    const naar = inBeeld(doel);
+    if (!doel || !naar) {
+      await kopie.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 180, fill: 'forwards' }).finished;
+      return;
+    }
+    if (doel.tagName === 'IMG') {
+      doel.loading = 'eager';
+      await Promise.race([doel.decode().catch(() => {}), wacht(350)]);
+      if (metKleur) kleurVlakNaarCover(document.querySelector('.boek-kop'), doel);
+    }
+    const doelRect = doel.getBoundingClientRect();
+    doel.style.visibility = 'hidden';
+    app.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease-out' });
+    await kopie.animate(
+      [
+        { left: `${van.left}px`, top: `${van.top}px`, width: `${van.width}px`, height: `${van.height}px` },
+        { left: `${doelRect.left}px`, top: `${doelRect.top}px`, width: `${doelRect.width}px`, height: `${doelRect.height}px` },
+      ],
+      { duration: 420, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'forwards' }
+    ).finished;
+    doel.style.visibility = '';
+  } finally {
+    kopie.remove();
+  }
+}
+
 window.addEventListener('hashchange', () => {
   const vanBoek = Number(vorigeHash.match(/^#\/boek\/(\d+)$/)?.[1]) || 0;
   const naarBoek = /^#\/boek\/\d+$/.test(location.hash);
   const viaTik = overgangTik || overgangSwipe === false;
+  const bron = naarBoek ? overgangBron : document.querySelector('#cover-vak img.cover-groot');
   overgangTik = false;
   overgangSwipe = null;
-  if (!magOvergang() || !viaTik || (!vanBoek && !naarBoek)) return route();
-  // Het oude scherm: van een boek af is de grote cover het bewegende plaatje.
-  if (vanBoek) {
-    document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => (el.style.viewTransitionName = ''));
-    const groot = document.querySelector('#cover-vak .cover-groot');
-    if (groot) groot.style.viewTransitionName = 'boek-cover';
-  }
-  const overgang = document.startViewTransition(async () => {
-    const nieuw = wachtOpNieuwScherm();
-    const klaar = route();
-    // Niet langer dan een halve tel wachten: liever geen beweging dan een hapering.
-    await Promise.race([Promise.all([klaar, nieuw]), new Promise((r) => setTimeout(r, 450))]);
-    document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => (el.style.viewTransitionName = ''));
-    const doel = naarBoek
-      ? document.querySelector('#cover-vak .cover-groot')
-      : [...document.querySelectorAll(`a[href="#/boek/${vanBoek}"]`)]
-          .map((a) => a.querySelector(COVER_KLASSEN))
-          .find((el) => {
-            const r = el?.getBoundingClientRect();
-            return r && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
-          });
-    if (doel) doel.style.viewTransitionName = 'boek-cover';
-    // Eerst het plaatje echt klaar hebben (en de kleur van de kop), anders schuift er een
-    // leeg vlak en knippert het. Ook hier niet langer dan een korte tel wachten.
-    if (doel?.tagName === 'IMG') {
-      doel.loading = 'eager';
-      await Promise.race([doel.decode().catch(() => {}), new Promise((r) => setTimeout(r, 350))]);
-      if (naarBoek) kleurVlakNaarCover(document.querySelector('.boek-kop'), doel);
-    }
-  });
-  overgang.finished.finally(() => {
-    document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => (el.style.viewTransitionName = ''));
-  });
+  overgangBron = null;
+  if (minderBeweging() || !viaTik || !(vanBoek || naarBoek) || !bron?.naturalWidth || !inBeeld(bron)) return route();
+  const nieuw = wachtOpNieuwScherm();
+  const klaar = route();
+  const zoekDoel = naarBoek
+    ? () => document.querySelector('#cover-vak .cover-groot')
+    : () => [...document.querySelectorAll(`a[href="#/boek/${vanBoek}"]`)].map((a) => a.querySelector(COVER_KLASSEN)).find(inBeeld);
+  // Naar een boek: zodra de pagina er staat. Terug: ook de scrollplek moet hersteld zijn.
+  vliegCover(bron, zoekDoel, naarBoek ? nieuw : Promise.all([nieuw, klaar]), naarBoek).catch(() => {});
 });
 
 // Gaat de app naar de achtergrond, dan een half getypte recensie of profieltekst meteen bewaren.
