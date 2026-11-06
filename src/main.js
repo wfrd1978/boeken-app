@@ -407,7 +407,8 @@ function filter(boeken) {
   );
   if (!woorden.length) return inTab;
   return inTab.filter((b) => {
-    const tekst = kaal(`${b.titel} ${(b.auteurs || []).join(' ')} ${b.isbn}`);
+    // Ook op genre (categorie) en reeks: 'thriller', 'sport' of 'afdeling q' vindt die boeken.
+    const tekst = kaal(`${b.titel} ${(b.auteurs || []).join(' ')} ${b.isbn} ${b.categorie ?? ''} ${b.reeks ?? ''}`);
     return woorden.every((w) => tekst.includes(w));
   });
 }
@@ -909,7 +910,7 @@ async function toonLijst() {
     ${
       boeken.length
         ? `<div class="lijst-bediening">
-             <input id="lijst-zoek" type="search" placeholder="Zoek op titel, auteur of ISBN" value="${veilig(zoekterm)}" autocomplete="off" enterkeyhint="search" />
+             <input id="lijst-zoek" type="search" placeholder="Zoek op titel, auteur, genre of reeks" value="${veilig(zoekterm)}" autocomplete="off" enterkeyhint="search" />
              <div class="lijst-regel">
                <label class="sorteer">Sorteer
                  <select id="sorteer">
