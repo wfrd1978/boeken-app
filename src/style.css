@@ -737,3 +737,11 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .deelkaart { width: 100%; max-width: 300px; aspect-ratio: 4 / 5; border-radius: 12px; box-shadow: 0 10px 30px rgb(0 0 0 / 0.25); display: block; }
 #deel-laag .hoofdknop, #deel-laag .tweede-knop { width: 100%; }
 #deel-laag .tweede-knop { margin-top: 8px; }
+
+/* --- Zacht leesdoel --- */
+.leesdoel { margin-top: 8px; }
+.leesdoel-stand { margin: 0 0 8px; font-size: 1.05rem; }
+.leesdoel-stand strong { font-size: 1.6rem; font-weight: 800; }
+.leesdoel-staaf { display: block; height: 10px; margin-bottom: 6px; background: var(--vlak); border-radius: 5px; overflow: hidden; }
+.leesdoel-invoer { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+.leesdoel-invoer input { flex: 1; min-width: 0; }

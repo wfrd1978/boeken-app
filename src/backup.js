@@ -180,11 +180,21 @@ export async function leesBackup(bestand) {
   return inhoud;
 }
 
+// Leesdoelen per jaar ('jjjj' → aantal boeken, 1 tot 999). Al het andere valt weg.
+export function schoneLeesdoelen(d) {
+  if (!d || typeof d !== 'object' || Array.isArray(d)) return {};
+  const schoon = {};
+  for (const [jaar, aantal] of Object.entries(d)) if (/^\d{4}$/.test(jaar) && Number.isInteger(aantal) && aantal >= 1 && aantal <= 999) schoon[jaar] = aantal;
+  return schoon;
+}
+
 function schoonProfiel(p) {
   if (!p || typeof p !== 'object') return null;
   const tekst = (v) => (typeof v === 'string' ? v : '');
   const profiel = { naam: tekst(p.naam), overMij: tekst(p.overMij), lezersprofiel: tekst(p.lezersprofiel) };
   if (/^\d{4}-\d{2}$/.test(p.statsVanaf)) profiel.statsVanaf = p.statsVanaf;
+  const doelen = schoneLeesdoelen(p.leesdoelen);
+  if (Object.keys(doelen).length) profiel.leesdoelen = doelen;
   return profiel;
 }
 

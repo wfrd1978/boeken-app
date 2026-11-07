@@ -84,3 +84,12 @@ describe('leesjaar', () => {
     expect(schoneRapporten({ 2026: { tekst: 'Mooi jaar', gemaakt: 'x' } })).toEqual({ 2026: { tekst: 'Mooi jaar', gemaakt: 'x' } });
   });
 });
+
+import { schoneLeesdoelen } from '../src/backup.js';
+
+describe('leesdoel in de backup', () => {
+  it('houdt alleen geldige jaren met een redelijk aantal', () => {
+    expect(schoneLeesdoelen({ 2026: 25, 2027: 0, x: 3, 2028: 2.5, 2025: 12 })).toEqual({ 2025: 12, 2026: 25 });
+    expect(schoneLeesdoelen(null)).toEqual({});
+  });
+});

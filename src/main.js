@@ -873,7 +873,7 @@ async function toonAnalyse(maand) {
 async function toonJaar(jaar) {
   const nr = schermNr;
   ruimCoversOp();
-  const [boeken, rapporten] = await Promise.all([alleBoeken(), haalLeesRapporten()]);
+  const [boeken, rapporten, profiel] = await Promise.all([alleBoeken(), haalLeesRapporten(), haalProfiel()]);
   if (nr !== schermNr) return;
   try {
     if (jaar === terugblikJaar()) localStorage.setItem('jaarGezien', jaar);
@@ -902,7 +902,9 @@ async function toonJaar(jaar) {
         <div class="tegel"><strong>${r.bladzijden ? r.bladzijden.toLocaleString('nl-NL') : '–'}</strong><span>bladzijden</span></div>
         <div class="tegel"><strong>${r.sterren ? `${komma(r.sterren)}<small>★</small>` : '–'}</strong><span>gemiddeld</span></div>
       </div>
-      <p class="zacht">${r.vorigJaar ? `In ${Number(jaar) - 1} las je er ${r.vorigJaar}. ` : ''}${r.drukste?.aantal ? `Je las het meest in ${veilig(maandNaam(r.drukste.maand, false))} (${r.drukste.aantal}).` : ''}</p>
+      <p class="zacht">${r.vorigJaar ? `In ${Number(jaar) - 1} las je er ${r.vorigJaar}. ` : ''}${r.drukste?.aantal ? `Je las het meest in ${veilig(maandNaam(r.drukste.maand, false))} (${r.drukste.aantal}).` : ''}${
+        ((doel) => (doel ? ` ${r.aantal >= doel ? `Je leesdoel van ${doel} boeken heb je gehaald.` : `Je leesdoel was ${doel} boeken.`}` : ''))(profiel.leesdoelen?.[jaar])
+      }</p>
 
       ${
         tekst
@@ -2256,6 +2258,33 @@ function maandTekst(maand, kort = false) {
   return new Date(j, m - 1, 15).toLocaleDateString('nl-NL', { month: kort ? 'short' : 'long', year: 'numeric' });
 }
 
+// Een zacht leesdoel: alleen een richting, zonder streaks, meldingen of 'achter op schema'.
+function leesdoelHtml(boeken, profiel, wijzigen = false) {
+  const jaar = String(new Date().getFullYear());
+  const doel = profiel.leesdoelen?.[jaar];
+  const gelezen = jaarRapport(boeken, jaar).aantal;
+  if (!doel || wijzigen) {
+    return `
+      <section class="leesdoel" id="leesdoel">
+        <h2 class="stat-kop">Leesdoel ${jaar}</h2>
+        <p class="zacht">Geen druk, alleen een richting. Hoeveel boeken zou je dit jaar fijn vinden?</p>
+        <div class="leesdoel-invoer">
+          <input type="number" id="leesdoel-aantal" inputmode="numeric" min="1" max="999" placeholder="Bijvoorbeeld 20" value="${doel ?? ''}" />
+          <button class="keuze actief" id="leesdoel-bewaar">Bewaar</button>
+        </div>
+        ${doel ? '<button class="link-knop zacht" id="leesdoel-weg">Geen leesdoel</button>' : ''}
+      </section>`;
+  }
+  const deel = Math.min(100, Math.round((gelezen / doel) * 100));
+  return `
+    <section class="leesdoel" id="leesdoel">
+      <h2 class="stat-kop">Leesdoel ${jaar}</h2>
+      <p class="leesdoel-stand"><strong>${gelezen}</strong> van ${doel} boeken${gelezen >= doel ? ' · gehaald' : ''}</p>
+      <span class="staaf leesdoel-staaf"><span style="width:${Math.max(2, deel)}%"></span></span>
+      <button class="link-knop zacht" id="leesdoel-wijzig">Wijzig</button>
+    </section>`;
+}
+
 function statistiekenHtml(st, vanaf) {
   const komma = (x) => x.toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const keuze = `
@@ -2349,6 +2378,7 @@ async function toonProfiel() {
       </div>
 
       ${statistiekenHtml(berekenStatistieken(boeken, profiel.statsVanaf), profiel.statsVanaf)}
+      ${leesdoelHtml(boeken, profiel)}
       ${(() => {
         const jaren = jarenMetLezen(boeken).slice(0, 6);
         return jaren.length
@@ -2442,6 +2472,29 @@ async function toonProfiel() {
     await bewaar();
     toonProfiel();
   });
+
+  // Leesdoel instellen, wijzigen of weghalen.
+  const tekenDoel = (wijzigen = false) => {
+    document.getElementById('leesdoel').outerHTML = leesdoelHtml(boeken, profiel, wijzigen);
+    koppelDoel();
+  };
+  const koppelDoel = () => {
+    const jaar = String(new Date().getFullYear());
+    document.getElementById('leesdoel-wijzig')?.addEventListener('click', () => tekenDoel(true));
+    document.getElementById('leesdoel-bewaar')?.addEventListener('click', async () => {
+      const aantal = Number(document.getElementById('leesdoel-aantal').value);
+      if (!Number.isInteger(aantal) || aantal < 1 || aantal > 999) return melding('Vul een aantal boeken in');
+      profiel.leesdoelen = { ...(profiel.leesdoelen ?? {}), [jaar]: aantal };
+      await bewaarProfiel(profiel);
+      tekenDoel();
+    });
+    document.getElementById('leesdoel-weg')?.addEventListener('click', async () => {
+      if (profiel.leesdoelen) delete profiel.leesdoelen[jaar];
+      await bewaarProfiel(profiel);
+      tekenDoel();
+    });
+  };
+  koppelDoel();
 
   // Andere startmaand: bewaren en de cijfers opnieuw tekenen.
   const koppelVanaf = () =>
