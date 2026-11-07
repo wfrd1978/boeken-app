@@ -2101,6 +2101,12 @@ async function toonBevestigen(boek) {
       <div class="keuzes" id="statussen">
         ${STATUSSEN.map((s) => `<button class="keuze${s === status ? ' actief' : ''}" data-s="${s}">${statusNaam(s)}</button>`).join('')}
       </div>
+      <div id="bezit-blok">
+        <p class="label">Kobo en boek</p>
+        <div class="keuzes" id="bezit">
+          ${Object.values(BEZIT).map((x) => `<button class="keuze" data-veld="${x.veld}">${x.naam}</button>`).join('')}
+        </div>
+      </div>
       <p class="label">Categorie${categorie ? ' <span class="zacht">(voorstel)</span>' : ''}</p>
       <div class="keuzes" id="categorieen">${categorieKnoppen(categorie)}</div>
       <button class="${dubbel ? 'tweede-knop' : 'hoofdknop'}" id="opslaan">${dubbel ? 'Toch toevoegen' : 'Toevoegen'}</button>
@@ -2123,10 +2129,24 @@ async function toonBevestigen(boek) {
       knop.className = 'tweede-knop';
     });
   }
+  // Kobo en boek: alleen bij Wil ik lezen en Aan het lezen, net als op de boekpagina
+  // (daar staan ze niet bij een gelezen boek). Meerdere tegelijk kan.
+  const bezit = {};
+  const bezitBlok = document.getElementById('bezit-blok');
+  const toonBezit = () => (bezitBlok.hidden = !['Wil ik lezen', 'Bezig'].includes(status));
+  toonBezit();
+  document.getElementById('bezit').addEventListener('click', (e) => {
+    const knop = e.target.closest('[data-veld]');
+    if (!knop) return;
+    bezit[knop.dataset.veld] = !bezit[knop.dataset.veld];
+    knop.classList.toggle('actief', bezit[knop.dataset.veld]);
+  });
+
   document.querySelectorAll('#statussen .keuze').forEach((knop) =>
     knop.addEventListener('click', () => {
       status = knop.dataset.s;
       document.querySelectorAll('#statussen .keuze').forEach((k) => k.classList.toggle('actief', k === knop));
+      toonBezit();
     })
   );
 
@@ -2164,7 +2184,8 @@ async function toonBevestigen(boek) {
     if (!gegevens.werk && gegevens.isbn) gegevens.werk = await zoekWerk(gegevens.isbn);
     // Zelf ingevuld zonder cover: later op de achtergrond nog eens zoeken.
     const verrijkt = !(boek.handmatig && !cover.cover && !cover.coverUrl);
-    const id = await boekToevoegen({ ...gegevens, ...cover, status, categorie, bron: boek.bron ?? 'getypt', verrijkt });
+    const labels = bezitBlok.hidden ? {} : Object.fromEntries(Object.entries(bezit).filter(([, aan]) => aan));
+    const id = await boekToevoegen({ ...gegevens, ...cover, ...labels, status, categorie, bron: boek.bron ?? 'getypt', verrijkt });
     vulReeksenAan().catch(() => {});
     if (!verrijkt) verrijkAlles();
     laatsteZoekterm = '';
