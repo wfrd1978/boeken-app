@@ -1250,10 +1250,10 @@ function herinneringHtml() {
 
 function backupTekst() {
   const laatste = laatsteBackup();
-  if (!laatste) return 'Nog geen backup gemaakt.';
+  if (!laatste) return 'Nog geen backup';
   const dagen = dagenSindsBackup();
   const wanneer = dagen === 0 ? 'vandaag' : dagen === 1 ? 'gisteren' : `${dagen} dagen geleden`;
-  return `Laatste backup: ${laatste.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })} (${wanneer}).`;
+  return `Laatste: ${wanneer}`;
 }
 
 // Licht of donker. Het wisselen zelf gebeurt in thema.js, dat al laadt vóór de app.
@@ -1332,19 +1332,24 @@ async function toonInstellingen() {
     </header>
 
     <section class="blok" id="backup-blok">
-      <h2>Backup</h2>
-      <p>Je boeken staan alleen op deze telefoon. Tik op Backup maken en kies in het deelmenu <b>Bewaar in Bestanden</b> en dan iCloud Drive. De telefoon onthoudt de map, dus de volgende keer gaat het in twee tikken.</p>
-      <p class="zacht" id="backup-status">${backupTekst()}</p>
-      <button class="hoofdknop" id="backup-maken"${aantal ? '' : ' disabled'}>Backup maken</button>
-      <label class="tweede-knop bestand-knop">Backup terugzetten
-        <input type="file" id="backup-bestand" accept="application/json,.json" hidden />
-      </label>
+      <div class="blok-kop"><h2>Backup</h2><span class="zacht" id="backup-status">${backupTekst()}</span></div>
+      <div class="knoppen-rij">
+        <button class="hoofdknop" id="backup-maken"${aantal ? '' : ' disabled'}>Backup maken</button>
+        <label class="tweede-knop bestand-knop">Terugzetten
+          <input type="file" id="backup-bestand" accept="application/json,.json" hidden />
+        </label>
+      </div>
       <div id="terugzet-vak"></div>
-      <div class="verhuis" id="verhuis"></div>
+      <details class="uitleg">
+        <summary>Hoe werkt het en wat zit erin?</summary>
+        <p>Je boeken staan alleen op deze telefoon. Tik op Backup maken en kies in het deelmenu <b>Bewaar in Bestanden</b> en dan iCloud Drive. De telefoon onthoudt de map, dus de volgende keer gaat het in twee tikken.</p>
+        <div class="verhuis" id="verhuis"></div>
+      </details>
     </section>
 
     <section class="blok">
-      <h2>Excel-lijst importeren</h2>
+      <details class="inklap">
+      <summary><h2>Excel-lijst importeren</h2></summary>
       <p>Kies een Excel-bestand (.xlsx) met de kolommen Auteur en Titel, en eventueel Gelezen (maand), Sterren en Opmerking. Je ziet eerst wat er wordt toegevoegd.</p>
       ${
         backupNodig(aantal)
@@ -1354,12 +1359,15 @@ async function toonInstellingen() {
              </label>`
       }
       <div id="import-vak"></div>
+      </details>
     </section>
 
     <section class="blok">
-      <h2>Excel-export</h2>
+      <details class="inklap">
+      <summary><h2>Excel-export</h2></summary>
       <p>Je hele lijst als Excel-bestand, met sterren, leesdata en recensies. Handig om te bewaren, te delen of op je laptop te bekijken.</p>
       <button class="tweede-knop" id="export"${aantal ? '' : ' disabled'}>Maak Excel-bestand</button>
+      </details>
     </section>
 
     <section class="blok">
@@ -1376,19 +1384,19 @@ async function toonInstellingen() {
     </section>
 
     <section class="blok">
-      <h2>Kobo-check</h2>
-      <p>Eens per maand loop je na welke boeken die wachten op Kobo Plus nu te downloaden zijn. Je krijgt daarvoor een seintje op het startscherm.</p>
-      <a class="tweede-knop" href="#/kobo">Open de Kobo-check</a>
+      <a class="blok-link" href="#/kobo"><h2>Kobo-check</h2><span class="zacht">Kobo Plus nalopen</span></a>
     </section>
 
     <section class="blok">
-      <h2>Weergave</h2>
+      <details class="inklap">
+      <summary><h2>Weergave</h2><span class="zacht" id="weergave-nu">${veilig(WEERGAVEN[weergave()] ?? '')}</span></summary>
       <div class="keuzes" id="weergave">
         ${Object.entries(WEERGAVEN)
           .map(([k, naam]) => `<button class="keuze${k === weergave() ? ' actief' : ''}" data-weergave="${k}">${naam}</button>`)
           .join('')}
       </div>
       <p class="zacht klein">Donker 's avonds: van 20:00 tot 7:00 donker, en altijd als je iPhone op donker staat.</p>
+      </details>
     </section>
 
     ${overDezeAppHtml()}
@@ -1477,6 +1485,7 @@ async function toonInstellingen() {
     }
     window.boekenThema?.toepassen();
     document.querySelectorAll('#weergave .keuze').forEach((k) => k.classList.toggle('actief', k === knop));
+    document.getElementById('weergave-nu').textContent = WEERGAVEN[knop.dataset.weergave] ?? '';
   });
 
   const telling = await coverTelling();
@@ -2267,7 +2276,7 @@ function leesdoelHtml(boeken, profiel, wijzigen = false) {
     return `
       <section class="leesdoel" id="leesdoel">
         <h2 class="stat-kop">Leesdoel ${jaar}</h2>
-        <p class="zacht">Geen druk, alleen een richting. Hoeveel boeken zou je dit jaar fijn vinden?</p>
+        <p class="zacht">Geen druk, alleen een richting.</p>
         <div class="leesdoel-invoer">
           <input type="number" id="leesdoel-aantal" inputmode="numeric" min="1" max="999" placeholder="Bijvoorbeeld 20" value="${doel ?? ''}" />
           <button class="keuze actief" id="leesdoel-bewaar">Bewaar</button>
@@ -2295,7 +2304,7 @@ function statistiekenHtml(st, vanaf) {
     return `
       <section class="statistieken" id="statistieken">
         <h2 class="stat-kop">Je leesjaar</h2>
-        <p class="zacht">Vanaf ${maandTekst(vanaf)} houdt de app bij wat je leest. Lees je een boek uit en vul je bij dat boek de datum in, dan verschijnt hier je overzicht.</p>
+        <p class="zacht">Vul bij een uitgelezen boek de datum in, dan verschijnt hier je overzicht.</p>
         ${keuze}
       </section>`;
   }
@@ -2380,26 +2389,33 @@ async function toonProfiel() {
       ${statistiekenHtml(berekenStatistieken(boeken, profiel.statsVanaf), profiel.statsVanaf)}
       ${leesdoelHtml(boeken, profiel)}
       ${(() => {
+        // Jaar- en maandoverzichten samen: de jaren en de laatste drie maanden, de rest ingeklapt.
         const jaren = jarenMetLezen(boeken).slice(0, 6);
-        return jaren.length
-          ? `<h2 class="stat-kop">Jaaroverzichten</h2>
-             <ul class="analyse-maanden">${jaren.map((j) => `<li><a href="#/jaar/${j}">${veilig(j)}</a></li>`).join('')}</ul>`
-          : '';
-      })()}
-      ${(() => {
         const maanden = maandenMetLezen(boeken).slice(0, 12);
-        return maanden.length
-          ? `<h2 class="stat-kop">Maandanalyses</h2>
-             <ul class="analyse-maanden">${maanden.map((m) => `<li><a href="#/analyse/${m}">${veilig(maandNaam(m))}</a></li>`).join('')}</ul>`
-          : '';
+        if (!jaren.length && !maanden.length) return '';
+        const knop = (href, tekst) => `<li><a href="${href}">${veilig(tekst)}</a></li>`;
+        return `<h2 class="stat-kop">Terugblikken</h2>
+          <ul class="analyse-maanden">${jaren.map((j) => knop(`#/jaar/${j}`, `Jaar ${j}`)).join('')}${maanden
+            .slice(0, 3)
+            .map((m) => knop(`#/analyse/${m}`, maandNaam(m)))
+            .join('')}</ul>
+          ${
+            maanden.length > 3
+              ? `<details class="uitleg"><summary>Eerdere maanden</summary>
+                   <ul class="analyse-maanden">${maanden.slice(3).map((m) => knop(`#/analyse/${m}`, maandNaam(m))).join('')}</ul>
+                 </details>`
+              : ''
+          }`;
       })()}
-      <h2 class="stat-kop">Over jou</h2>
+      <details class="inklap over-jou" id="over-jou"${profiel.naam || profiel.overMij || profiel.lezersprofiel ? '' : ' open'}>
+      <summary><h2 class="stat-kop">Over jou</h2><span class="zacht">Naam, over mij, lezersprofiel</span></summary>
 
       <label class="veld">Naam<input id="p-naam" value="${veilig(profiel.naam)}" placeholder="Je voornaam" autocomplete="given-name" /></label>
       <label class="veld">Over mij<textarea id="p-over" rows="3" placeholder="Bijvoorbeeld wat je doet, waar en wanneer je leest">${veilig(profiel.overMij)}</textarea></label>
       <label class="veld">Mijn lezersprofiel<textarea id="p-profiel" rows="12" placeholder="Wat lees je graag, en waarom? Welke schrijvers of thema's raken je?">${veilig(profiel.lezersprofiel)}</textarea></label>
       <button class="link-knop" id="p-leesprofiel">✎ Maak mijn leesprofiel met Claude</button>
       <p class="opgeslagen" id="p-opgeslagen">&nbsp;</p>
+      </details>
     </section>
     ${rijHtml('Mijn vijfsterrenboeken', top, 'Gelezen')}
   `;
@@ -2408,8 +2424,13 @@ async function toonProfiel() {
   // Vanzelf bewaren, kort nadat je stopt met typen.
   const velden = { naam: 'p-naam', overMij: 'p-over', lezersprofiel: 'p-profiel' };
   // De tekstvakken groeien mee, zodat vegen over je tekst gewoon de pagina laat scrollen.
-  laatMeegroeien(document.getElementById('p-over'));
-  laatMeegroeien(document.getElementById('p-profiel'));
+  const groeiOver = laatMeegroeien(document.getElementById('p-over'));
+  const groeiProfiel = laatMeegroeien(document.getElementById('p-profiel'));
+  // Ingeklapt meten de vakken nul; bij openklappen opnieuw de goede hoogte.
+  document.getElementById('over-jou').addEventListener('toggle', () => {
+    groeiOver();
+    groeiProfiel();
+  });
   const opgeslagen = document.getElementById('p-opgeslagen');
   let timer;
   const bewaar = async () => {

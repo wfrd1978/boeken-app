@@ -745,3 +745,26 @@ button.rij-boek { border: 0; background: none; padding: 0; text-align: left; fon
 .leesdoel-staaf { display: block; height: 10px; margin-bottom: 6px; background: var(--vlak); border-radius: 5px; overflow: hidden; }
 .leesdoel-invoer { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
 .leesdoel-invoer input { flex: 1; min-width: 0; }
+
+/* --- Compacte instellingen en profiel --- */
+.blok-kop { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.blok-kop h2 { margin: 0; }
+.knoppen-rij { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.knoppen-rij > * { margin: 0 !important; width: 100%; }
+.uitleg { margin-top: 12px; }
+.uitleg > summary { cursor: pointer; color: var(--zacht); font-size: 0.9rem; list-style: none; }
+.uitleg > summary::-webkit-details-marker { display: none; }
+.uitleg > summary::after { content: ' ›'; }
+.uitleg[open] > summary { margin-bottom: 8px; }
+.blok-link { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; text-decoration: none; color: inherit; }
+.blok-link h2 { margin: 0; }
+.blok-link::after { content: '›'; color: var(--zacht); font-size: 1.3rem; }
+.blok-link .zacht { margin-left: auto; font-size: 0.9rem; }
+.inklap > summary .zacht { margin-left: auto; font-size: 0.9rem; }
+.over-jou { margin-top: 24px; }
+.over-jou > summary h2 { margin: 0; }
+.inklap > summary h2, .blok-link h2, .blok-kop h2 { white-space: nowrap; margin: 0; }
+/* Ingeklapte onderdelen staan dichter op elkaar, als een lijst. */
+.blok + .blok:has(> details.inklap:not([open])), .blok + .blok:has(> .blok-link) { margin-top: 0; padding: 16px 0; }
+.blok:has(> details.inklap:not([open])) + .blok, .blok:has(> .blok-link) + .blok { margin-top: 0; }
+#backup-blok { padding-bottom: 14px; }
