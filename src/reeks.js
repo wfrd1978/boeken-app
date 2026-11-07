@@ -59,6 +59,8 @@ function register(reeksen) {
   let r = registers.get(reeksen);
   if (r) return r;
   r = new Map();
+  // Per schrijver ook een lijst van alle titels, voor titels die net iets anders gespeld zijn.
+  r.perSchrijver = new Map();
   for (const reeks of reeksen) {
     const totaal = Math.max(...reeks.delen.map((x) => x.deel));
     const namen = reeks.schrijvers.map((s) => achternaam({ auteurs: [s] }));
@@ -70,6 +72,8 @@ function register(reeksen) {
             const k = `${t}|${naam}`;
             // Het eerste deel met deze titel wint (zoals bij de volgorde in de lijst).
             if (!r.has(k)) r.set(k, uitkomst);
+            if (!r.perSchrijver.has(naam)) r.perSchrijver.set(naam, []);
+            r.perSchrijver.get(naam).push([t, uitkomst]);
           }
         }
       }
@@ -84,11 +88,39 @@ export function herkenReeks(boek, reeksen) {
   const naam = achternaam(boek);
   // Zonder schrijver geen herkenning: alleen een titel ('Inferno', 'Wraak') is te weinig.
   if (!naam) return null;
-  for (const t of titelSleutels(boek.titel)) {
+  const sleutels = titelSleutels(boek.titel);
+  for (const t of sleutels) {
     const gevonden = r.get(`${t}|${naam}`);
     if (gevonden) return gevonden;
   }
-  return null;
+  // Net iets anders gespeld ('Staatsgeheimen' tegenover 'Staatsgeheim'): bij dezelfde schrijver
+  // mag een langere titel een of twee letters verschillen, als er maar één deel zo dichtbij komt.
+  const kandidaten = new Set();
+  for (const t of sleutels) {
+    if (t.length < 8) continue;
+    for (const [titel, uitkomst] of r.perSchrijver.get(naam) ?? []) {
+      if (titel.length >= 8 && afstand(t, titel, t.length >= 12 ? 2 : 1) !== null) kandidaten.add(uitkomst);
+    }
+  }
+  return kandidaten.size === 1 ? [...kandidaten][0] : null;
+}
+
+// Hoeveel letters verschillen twee teksten (toevoegen, weghalen of vervangen)? Geeft null als
+// het meer dan `max` is; dan stoppen we vroeg.
+export function afstand(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return null;
+  let vorige = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const rij = [i];
+    let kleinste = i;
+    for (let j = 1; j <= b.length; j++) {
+      rij[j] = Math.min(vorige[j] + 1, rij[j - 1] + 1, vorige[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      kleinste = Math.min(kleinste, rij[j]);
+    }
+    if (kleinste > max) return null;
+    vorige = rij;
+  }
+  return vorige[b.length] <= max ? vorige[b.length] : null;
 }
 
 // De reeks uit de lijst met dezelfde naam (voor het aantal delen en het volgende deel).

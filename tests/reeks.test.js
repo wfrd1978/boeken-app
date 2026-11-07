@@ -52,3 +52,22 @@ describe('Reekslijst zonder schrijver', () => {
     expect(herkenReeks({ titel: 'Inferno', auteurs: ['Dan Brown'] }, lijst)).toMatchObject({ reeksDeel: 4 });
   });
 });
+
+import { afstand } from '../src/reeks.js';
+
+describe('net iets anders gespelde titel', () => {
+  const lijst = [
+    normaliseerReeks({ naam: 'Travis Devine', schrijvers: ['David Baldacci'], delen: [{ deel: 1, titels: ['Vergeving'] }, { deel: 2, titels: ['Staatsgeheim', 'The Edge'] }], volgende: '' }),
+  ];
+  it('herkent een titel met een of twee letters verschil bij dezelfde schrijver', () => {
+    expect(herkenReeks({ titel: 'Staatsgeheimen', auteurs: ['David Baldacci'] }, lijst)).toMatchObject({ reeks: 'Travis Devine', reeksDeel: 2 });
+  });
+  it('maar niet bij een andere schrijver of een korte titel', () => {
+    expect(herkenReeks({ titel: 'Staatsgeheimen', auteurs: ['Iemand Anders'] }, lijst)).toBe(null);
+    expect(herkenReeks({ titel: 'Vergeven', auteurs: ['David Baldacci'] }, lijst)).toBe(null);
+  });
+  it('rekent het verschil in letters uit', () => {
+    expect(afstand('staatsgeheimen', 'staatsgeheim', 2)).toBe(2);
+    expect(afstand('staatsgeheimen', 'staatsgeheim', 1)).toBe(null);
+  });
+});
