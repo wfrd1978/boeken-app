@@ -3,6 +3,7 @@
 // Alles wordt op de telefoon getekend; er gaat niets naar een dienst.
 
 import { sfeerKleur } from './kleur.js';
+import { titelDelen } from './dubbel.js';
 import { eersteZin, maandNaam } from './analyse.js';
 
 export const BREED = 1080;
@@ -136,7 +137,7 @@ function teken(boek, recensie, cover, letter) {
   // Titel en schrijver.
   ctx.fillStyle = '#ffffff';
   ctx.font = `800 60px ${letters}`;
-  for (const r of regels(ctx, boek.titel, BREED - 160, 2)) {
+  for (const r of regels(ctx, titelDelen(boek.titel).hoofd, BREED - 160, 2)) {
     ctx.fillText(r, BREED / 2, y);
     y += 70;
   }

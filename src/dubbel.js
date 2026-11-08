@@ -32,6 +32,16 @@ export function titelKern(tekst) {
 }
 
 // Titel zonder ondertitel: "Derksen: het verhaal" -> "derksen".
+// Titel en ondertitel apart, voor in beeld ('Leef geen leugens: herken en weersta…').
+// Gesplitst bij de eerste dubbele punt met een spatie erna, of een gedachtestreepje met
+// spaties eromheen; 'De 6:20 man' blijft dus heel. De opslag houdt altijd de hele titel.
+export function titelDelen(titel) {
+  const t = String(titel ?? '').trim();
+  const m = t.match(/^(.+?)(?::\s+|\s+[-–—]\s+)(.+)$/);
+  if (!m || m[1].trim().length < 2) return { hoofd: t, onder: '' };
+  return { hoofd: m[1].trim(), onder: m[2].trim() };
+}
+
 function hoofdtitel(titel) {
   return kern(zonderLidwoord((titel || '').split(/[:(]/)[0]));
 }

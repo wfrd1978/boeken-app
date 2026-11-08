@@ -68,3 +68,16 @@ describe('boeken uit een backup controleren', () => {
     expect(normaliseerBoek({ titel: 'X' }).synopsis).toBeUndefined();
   });
 });
+
+import { titelDelen } from '../src/dubbel.js';
+
+describe('titel en ondertitel', () => {
+  it('splitst bij een dubbele punt met spatie of een gedachtestreepje', () => {
+    expect(titelDelen('Leef geen leugens: herken en weersta de drie vijanden')).toEqual({ hoofd: 'Leef geen leugens', onder: 'herken en weersta de drie vijanden' });
+    expect(titelDelen('Mussert – een biografie')).toEqual({ hoofd: 'Mussert', onder: 'een biografie' });
+  });
+  it('laat titels zonder ondertitel heel', () => {
+    expect(titelDelen('De 6:20 man')).toEqual({ hoofd: 'De 6:20 man', onder: '' });
+    expect(titelDelen('Spider-Man')).toEqual({ hoofd: 'Spider-Man', onder: '' });
+  });
+});

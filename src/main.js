@@ -45,7 +45,7 @@ import {
   coverUitKlembord,
 } from './zoeken.js';
 import { startScanner, geldigIsbn13 } from './scanner.js';
-import { kaal, achternaam, eersteAuteur, vindDubbel } from './dubbel.js';
+import { kaal, achternaam, eersteAuteur, vindDubbel, titelDelen } from './dubbel.js';
 import { koboZoekUrl } from './kobo.js';
 import { raadCategorie } from './categorie.js';
 import { leesRegels, ordenOpPassend } from './meerdere.js';
@@ -428,7 +428,7 @@ function boekRegel(b) {
           ${categorieStip(b.categorie)}
           ${b.sterren ? `<span class="sterren-klein" aria-label="${b.sterren} sterren">${sterrenTekst(b.sterren)}</span>` : ''}
         </span>
-        <strong>${veilig(b.titel)}</strong>
+        <strong>${veilig(titelDelen(b.titel).hoofd)}</strong>
         <span>${veilig(auteurTekst(b))}</span>
       </div>
     </a></li>`;
@@ -556,7 +556,7 @@ function heldHtml(b) {
       ${coverHtml(b, 'held-cover')}
       <div class="held-tekst">
         <span class="status status-1">${veilig(statusNaam(b.status))}</span>
-        <strong>${veilig(b.titel)}</strong>
+        <strong>${veilig(titelDelen(b.titel).hoofd)}</strong>
         <span>${veilig(auteurTekst(b))}</span>
         ${b.opmerking ? `<span class="zacht">${veilig(b.opmerking)}</span>` : ''}
       </div>
@@ -577,7 +577,7 @@ function rijHtml(titel, boeken, naarTab) {
             (b) => `
           <a class="rij-boek" href="#/boek/${b.id}">
             ${coverHtml(b, 'rij-cover')}
-            <span class="rij-titel">${veilig(b.titel)}</span>
+            <span class="rij-titel">${veilig(titelDelen(b.titel).hoofd)}</span>
             ${b.sterren ? `<span class="sterren-klein">${'★'.repeat(b.sterren)}</span>` : ''}
           </a>`
           )
@@ -3183,7 +3183,8 @@ async function toonBoek(id) {
         </details>
       </header>
       <div id="cover-vak">${coverHtml(boek, 'cover-groot')}</div>
-      <h2>${veilig(boek.titel)}</h2>
+      <h2>${veilig(titelDelen(boek.titel).hoofd)}</h2>
+      ${titelDelen(boek.titel).onder ? `<p class="boek-kop-onder">${veilig(titelDelen(boek.titel).onder)}</p>` : ''}
       <p class="boek-kop-auteur">${veilig(auteurTekst(boek))}</p>
     </div>
     <section class="bevestig">
