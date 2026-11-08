@@ -891,7 +891,7 @@ async function toonJaar(jaar) {
       <a class="terug" href="#/profiel">‹ Profiel</a>
       <h1>Je leesjaar</h1>
     </header>
-    <p class="analyse-maand">${veilig(jaar)}${lopend ? ' tot nu toe' : ''}</p>
+    <p class="analyse-maand">${veilig(jaar)}${lopend ? ' <span class="tot-nu">tot nu toe</span>' : ''}</p>
     ${
       !r.aantal
         ? '<p class="leeg">In dit jaar heb je geen boek uitgelezen (of er staat geen leesdatum bij).</p>'

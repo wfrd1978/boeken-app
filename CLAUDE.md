@@ -80,7 +80,7 @@ Volgorde en keuzes bepaalt de gebruiker; bij elk idee eerst kort de opties en ko
 - ~~**Toevoegen-pagina aankleden** met de tips~~ — gebouwd (oktober 2026).
 - ~~**Profielfoto** uploaden bij het profiel~~ — gebouwd (oktober 2026).
 - **Gelezen boeken delen** met zijn netwerk: knop 'Deel' is gebouwd (deelmenu met titel, sterren, zin uit de recensie). Deelkaart als afbeelding getest en klaar (6 nov). Nog open: 'Mijn leesmaand/-jaar'.
-- **De app delen met anderen** — in aanbouw (30 okt) als aparte app 'Boeken' in repository `boeken`, op wfrd1978.github.io/boeken, voor vrienden en familie. Plan en afspraken staan in de CLAUDE.md van die repository. Hij leest het nieuws en de reekslijst van deze app mee (`/boeken-app/nieuws.json` en `reeksen.json`): die bestanden blijven daarom algemeen. Deze app ruimt alleen zijn eigen opslag op (`boeken-v…`, `covers-v…`), zodat beide apps op hetzelfde adres elkaar niet raken.
+- **De app delen met anderen** — in aanbouw (30 okt) als aparte app 'Boeken' in repository `boeken`, op wfrd1978.github.io/boeken, voor vrienden en familie. Plan en afspraken staan in de CLAUDE.md van die repository. Sinds 8 nov heeft hij op verzoek van de eigenaar ook statistieken, maandanalyse, jaarterugblik, leesdoel, Excel-import en lezersprofiel (geen recensiehulp). Hij leest het nieuws en de reekslijst van deze app mee (`/boeken-app/nieuws.json` en `reeksen.json`): die bestanden blijven daarom algemeen. Deze app ruimt alleen zijn eigen opslag op (`boeken-v…`, `covers-v…`), zodat beide apps op hetzelfde adres elkaar niet raken.
 - **Lezen interactief maken met andere gebruikers** (samen lezen, elkaars tips, boekenclub). Vraagt om een gedeelde plek voor gegevens; eerst samen nadenken over privacy en kosten.
 - ~~**Nieuws over boeken en schrijvers**~~ — gebouwd: rij Boekennieuws, nieuwspagina met archief, in de app te lezen; elke ochtend via een dagelijkse taak (`nieuws.json`).
 - ~~**Hulp bij het schrijven van een recensie**~~ — gebouwd via de Claude-app (gratis; opdracht ingevuld, tekst terugplakken).
@@ -96,6 +96,6 @@ Volgorde en keuzes bepaalt de gebruiker; bij elk idee eerst kort de opties en ko
 - ~~**Nieuw logo**~~ — getest en klaar (7 nov): open boek met gouden legger, in beide apps.
 - ~~**Instellingen en profiel compacter**~~ — getest en klaar (7 nov).
 - ~~**Ondertitel apart in beeld**~~ — getest en klaar (8 nov), in beide apps.
-- ~~**Kobo- en boekkeuzes bij het toevoegen**~~ — getest en klaar (8 nov): Wacht op Kobo Plus, Gedownload in Kobo en Papieren boek gekocht al bij Wil ik lezen en Aan het lezen. Nog niet bij Meerdere boeken en niet in de deelbare app.
+- ~~**Kobo- en boekkeuzes bij het toevoegen**~~ — getest en klaar (8 nov): Wacht op Kobo Plus, Gedownload in Kobo en Papieren boek gekocht al bij Wil ik lezen en Aan het lezen. Ook in de deelbare app (8 nov). Nog niet bij Meerdere boeken.
 - **Kleinere ideeën**: 'Leen bij de bibliotheek'.
 - **Lp-app** (los project, later): aparte repository `lp-app` met een eigen sessie, gestart als kopie van de basis van deze app; bron MusicBrainz + Cover Art Archive (gratis, zonder sleutel). Herinnering staat op 5 december 2026.
