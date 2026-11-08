@@ -96,5 +96,6 @@ Volgorde en keuzes bepaalt de gebruiker; bij elk idee eerst kort de opties en ko
 - ~~**Nieuw logo**~~ — getest en klaar (7 nov): open boek met gouden legger, in beide apps.
 - ~~**Instellingen en profiel compacter**~~ — getest en klaar (7 nov).
 - ~~**Ondertitel apart in beeld**~~ — getest en klaar (8 nov), in beide apps.
+- ~~**Kobo- en boekkeuzes bij het toevoegen**~~ — getest en klaar (8 nov): Wacht op Kobo Plus, Gedownload in Kobo en Papieren boek gekocht al bij Wil ik lezen en Aan het lezen. Nog niet bij Meerdere boeken en niet in de deelbare app.
 - **Kleinere ideeën**: 'Leen bij de bibliotheek'.
 - **Lp-app** (los project, later): aparte repository `lp-app` met een eigen sessie, gestart als kopie van de basis van deze app; bron MusicBrainz + Cover Art Archive (gratis, zonder sleutel). Herinnering staat op 5 december 2026.
