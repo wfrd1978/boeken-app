@@ -95,5 +95,6 @@ Volgorde en keuzes bepaalt de gebruiker; bij elk idee eerst kort de opties en ko
 - **Moderner ontwerp** (6 nov 2026, voorstel na vergelijking met moderne leesapps): 1) ~~kleur uit de cover en nieuwe bovenkant boekpagina~~ — getest en klaar (6 nov); 2) ~~vloeiende overgangen~~ — geprobeerd en teruggedraaid (6 nov): op de iPhone een knipper of onrustig, de gebruiker wil het niet; 3) ~~rustigere rubriekskopjes~~ — getest en klaar (6 nov); 4) afwerking (zacht oplichtend vlak tijdens laden, analysekaartje in passende kleuren, kop die kleiner wordt bij scrollen) — ligt stil tot de gebruiker erom vraagt.
 - ~~**Nieuw logo**~~ — getest en klaar (7 nov): open boek met gouden legger, in beide apps.
 - ~~**Instellingen en profiel compacter**~~ — getest en klaar (7 nov).
+- ~~**Ondertitel apart in beeld**~~ — getest en klaar (8 nov), in beide apps.
 - **Kleinere ideeën**: 'Leen bij de bibliotheek'.
 - **Lp-app** (los project, later): aparte repository `lp-app` met een eigen sessie, gestart als kopie van de basis van deze app; bron MusicBrainz + Cover Art Archive (gratis, zonder sleutel). Herinnering staat op 5 december 2026.
