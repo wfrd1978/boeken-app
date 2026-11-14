@@ -1,244 +1,248 @@
 {
-  "gemaakt": "2026-11-07",
-  "ronde": "2026-week-46",
+  "gemaakt": "2026-11-14",
+  "ronde": "2026-week-47",
   "tips": [
     {
-      "id": "2026w46-nacht-over-paramaribo",
+      "id": "2026w47-wolfsjong",
       "soort": "nieuw",
-      "titel": "Nacht over Paramaribo",
+      "titel": "Wolfsjong",
       "auteurs": [
-        "Tomas Ross"
+        "Hans Rosenfeldt"
       ],
-      "isbn": "9789403136691",
-      "jaar": 2025,
-      "uitgever": "Cargo",
-      "coverUrl": "https://static.unbidan.nl/covers/2ae4b816-1164-4a0e-bf9a-6ba9a860f5b0-320.jpg",
-      "reden": "Een Nederlandse politieke thriller die feit en fictie mengt rond een van de grootste raadsels uit de recente geschiedenis, voor wie houdt van spanning met een echte historische kern.",
-      "synopsis": "Een maand na de dood van Desi Bouterse wordt in zijn villa bij Paramaribo ingebroken; de dader zoekt alleen een oud koperen kistje dat een groot geheim zou bevatten. Oud-ambtenaar Lex Hansen, wiens vader als militair in Suriname voor Rusland spioneerde en zichzelf van het leven beroofde, krijgt een cryptisch bericht met de naam van zijn vader. Het brengt hem op het spoor van een geheime operatie uit de jaren tachtig, en van de vraag waarom Nederland Bouterse nooit liet oppakken.",
-      "categorie": "Thriller & spanning"
-    },
-    {
-      "id": "2026w46-schokgolf",
-      "soort": "nieuw",
-      "titel": "Schokgolf",
-      "auteurs": [
-        "Arne Dahl"
-      ],
-      "isbn": "9789044550351",
-      "jaar": 2026,
-      "uitgever": "De Geus",
-      "coverUrl": "https://static.unbidan.nl/covers/8f36eba7-46dc-4270-a0d1-3bd16bf4837a-320.jpg",
-      "reden": "Het begin van een nieuwe Zweedse reeks over aanslagen met een mogelijk klimaatmotief, voor wie houdt van thrillers die over actuele maatschappelijke spanningen gaan.",
-      "synopsis": "Een manager van een groot Zweeds staalconcern komt om bij wat een verkeersongeluk lijkt. Een week later ontploft er een bom bij een reclamebureau dat net voor de olie-industrie heeft gewerkt. Dan krijgt hoofdinspecteur Eva Nyman een cryptische brief die suggereert dat het om gerichte aanslagen gaat en een volgende aankondigt. Met haar nieuwe eenheid moet ze de daders vinden voordat het opnieuw raak is.",
-      "categorie": "Thriller & spanning"
-    },
-    {
-      "id": "2026w46-koninkrijk-van-as",
-      "soort": "nieuw",
-      "titel": "Koninkrijk van as",
-      "auteurs": [
-        "S.A. Cosby"
-      ],
-      "isbn": "9789044370171",
-      "jaar": 2026,
-      "uitgever": "The House of Books",
-      "coverUrl": "https://static.unbidan.nl/covers/6571cfee-9643-48a1-a70d-ebded79a381d-320.jpg",
-      "reden": "Een rauwe Amerikaanse misdaadthriller over familie, schuld en geweld in een vergeten stadje, voor wie houdt van spanning met diepgang en scherpe personages.",
-      "synopsis": "Na een auto-ongeluk van zijn vader keert Roman Carruthers terug naar zijn geboorteplaats. Zijn broer blijkt diep in de schulden te zitten bij gevaarlijke criminelen, en zijn zus houdt met moeite het familiecrematorium draaiende. Roman denkt het probleem met geld te kunnen oplossen, maar de criminelen spelen volgens hun eigen regels. Ondertussen komt de waarheid over het ongeluk en de verdwijning van hun moeder boven.",
-      "categorie": "Thriller & spanning"
-    },
-    {
-      "id": "2026w46-pogi",
-      "soort": "nieuw",
-      "titel": "Pogi",
-      "auteurs": [
-        "Andy McGrath"
-      ],
-      "isbn": "9789059960862",
-      "jaar": 2026,
-      "uitgever": "Lannoo",
-      "coverUrl": "https://static.unbidan.nl/covers/cb975944-c58d-463e-a703-cb178e8acdc6-320.jpg",
-      "reden": "Een diepgravende biografie van de sterkste wielrenner van dit moment, voor wie het peloton volgt en wil weten wat een uitzonderlijke kampioen drijft.",
-      "synopsis": "Tadej Pogačar wint wedstrijden met een overmacht die aan Eddy Merckx doet denken: Tourzeges, klassiekers en wereldtitels. Wielerjournalist Andy McGrath beschrijft hoe de jongen uit Slovenië uitgroeide tot de beste renner van zijn generatie. Hij laat ook zien waarom Pogačar met zijn open en vrolijke karakter een van de populairste renners in het peloton is.",
-      "categorie": "Sport"
-    },
-    {
-      "id": "2026w46-psychologie-van-de-strafschop",
-      "soort": "nieuw",
-      "titel": "De psychologie van de strafschop",
-      "auteurs": [
-        "Geir Jordet"
-      ],
-      "isbn": "9789021066912",
-      "jaar": 2026,
-      "uitgever": "Luitingh-Sijthoff",
-      "coverUrl": "https://static.unbidan.nl/covers/4ef11d9a-1efe-4173-9039-16c43fdcd068-320.jpg",
-      "reden": "Een boek over mentale kracht en presteren onder druk aan de hand van het meest beladen moment in het voetbal, voor wie houdt van sport en psychologie.",
-      "synopsis": "De Noorse sportpsycholoog Geir Jordet onderzoekt al jaren wat er in spelers omgaat tijdens een strafschoppenserie. Hij laat zien waarom sommigen bezwijken onder de druk en anderen niet. Met voorbeelden uit het topvoetbal beschrijft hij technieken die hij met spelers ontwikkelde, en die ook buiten het veld helpen in momenten van grote spanning.",
-      "categorie": "Sport"
-    },
-    {
-      "id": "2026w46-huilende-hooligan",
-      "soort": "nieuw",
-      "titel": "De huilende hooligan",
-      "auteurs": [
-        "Ike Simoncini"
-      ],
-      "jaar": 2026,
-      "uitgever": "Uitgeverij De Kring",
-      "coverUrl": "https://static.unbidan.nl/covers/78b78f10-eda0-470d-ba65-565ebe1f574b-320.jpg",
-      "reden": "Een ongefilterd levensverhaal over geweld, spijt en een moeizame ommekeer, voor wie houdt van openhartige memoires zonder opsmuk.",
-      "synopsis": "Ike Simoncini zat jarenlang in de harde kern van FC Den Haag en was later voorzitter van de supportersvereniging. Hij kijkt zonder zichzelf te sparen terug op een leven vol vechtpartijen, faillissementen en familiedrama's. Achter de agressie zat een jongen die thuis geen liefde vond. Pas toen hij zelf vrouw en kind kreeg, besefte hij dat het anders moest.",
-      "categorie": "Biografie & levensverhaal"
-    },
-    {
-      "id": "2026w46-in-de-greep-van-de-goeroe",
-      "soort": "nieuw",
-      "titel": "In de greep van de goeroe",
-      "auteurs": [
-        "Ivo van Woerden"
-      ],
-      "isbn": "9789029098175",
-      "jaar": 2026,
-      "uitgever": "Meulenhoff",
-      "coverUrl": "https://static.unbidan.nl/covers/da26bfcd-b51a-4277-b7a6-74e08553f0e8-320.jpg",
-      "reden": "Een journalistieke zoektocht naar hoe een online spirituele leider uitgroeit tot sekteleider, voor wie wil begrijpen hoe mensen in de ban raken van een beweging.",
-      "synopsis": "De Amsterdammer Bentinho Massaro verzamelde met spirituele video's meer dan een miljoen volgers en verhuisde naar de Verenigde Staten. Na een undercoveronderzoek en de zelfdoding van een volgeling in 2017 kantelde het beeld. Drie oud-volgers verbraken hun zwijgcontract en vertelden journalist Ivo van Woerden over misbruik in de groep. Hij reisde de wereld over om te begrijpen wanneer een groep een sekte wordt.",
-      "categorie": "Journalistiek & samenleving"
-    },
-    {
-      "id": "2026w46-denken-als-de-dader",
-      "soort": "nieuw",
-      "titel": "Denken als de dader",
-      "auteurs": [
-        "Carlo Schippers"
-      ],
-      "isbn": "9789402720037",
-      "jaar": 2026,
-      "uitgever": "HarperCollins",
-      "coverUrl": "https://static.unbidan.nl/covers/097bfd64-1612-4217-aa06-20d6c905a93c-320.jpg",
-      "reden": "Een openhartig kijkje in het werk van een daderprofiler bij echte moordzaken, voor wie houdt van true crime en de rauwe kant van het recherchewerk.",
-      "synopsis": "Carlo Schippers is de enige Nederlander die bij de FBI tot profiler werd opgeleid. Op basis van honderden moord- en zedenzaken laat hij zien hoe een profiel van een dader wordt gemaakt en hoe dat een onderzoek verder kan helpen. Hij vertelt eerlijk over de mooie en de zware kanten van zijn vak.",
-      "categorie": "Journalistiek & samenleving"
-    },
-    {
-      "id": "2026w46-spionnenfamilie",
-      "soort": "nieuw",
-      "titel": "Spionnenfamilie",
-      "auteurs": [
-        "Christine Kuehn"
-      ],
-      "isbn": "9789046834626",
-      "jaar": 2026,
-      "uitgever": "Nieuw Amsterdam",
-      "coverUrl": "https://static.unbidan.nl/covers/f82d74fd-fac1-4f83-990b-ca99e70a292a-320.jpg",
-      "reden": "Een waargebeurd spionageverhaal uit de Tweede Wereldoorlog dat leest als een thriller, voor wie houdt van verborgen familiegeschiedenis en mensen onder extreme druk.",
-      "synopsis": "Christine Kuehn ontdekt dat haar grootouders in de jaren dertig vooraanstaande nazi's waren. Haar tante Ruth had een affaire met Joseph Goebbels, maar was half-Joods. In plaats van haar te deporteren stuurde Goebbels het hele gezin naar Hawaï, waar het een rol speelde in de voorbereiding van de aanval op Pearl Harbor. Met brieven en FBI-documenten reconstrueert de schrijfster wat er gebeurde.",
-      "categorie": "Oorlog & geschiedenis"
-    },
-    {
-      "id": "2026w46-voor-al-uw-schaduwklussen",
-      "soort": "nieuw",
-      "titel": "Voor al uw schaduwklussen",
-      "auteurs": [
-        "Richard Osman"
-      ],
-      "isbn": "9789403129341",
+      "isbn": "9789403139548",
       "jaar": 2026,
       "uitgever": "Cargo",
-      "coverUrl": "https://static.unbidan.nl/covers/ee9ea616-be45-4f94-838f-7070a13d1e5e-320.jpg",
-      "reden": "Een luchtige, geestige misdaadkomedie met een speurtrio dat net een eigen bureau is begonnen, voor wie houdt van humor en een moordzaak met een knipoog.",
-      "synopsis": "In Toscane wordt bij zonsopkomst een lichaam gevonden op de trappen van een luxe villa, met een dreigbrief erop. Voor Amy, Rose en Steve is het de eerste grote klus van hun nieuwe detectivebureau. De verdachten stapelen zich op, van een gezochte Zweedse crimineel tot een sluwe ex-vrouw, terwijl de moordenaar hen steeds een stap voor blijft. Het tweede deel van een reeks.",
-      "categorie": "Roman & humor"
+      "coverUrl": "https://static.unbidan.nl/covers/0fc97198-5a4a-4d7a-b50f-fb65f286b53d-320.jpg",
+      "reden": "Een Zweedse misdaadroman waarin een politiezaak uitkomt bij mensenhandel, Russische georganiseerde misdaad en de top van de politiek, voor wie houdt van spanning met een maatschappelijke kern.",
+      "synopsis": "Na een jaar van rouw keert politieagente Hannah Wester terug op haar werk en moet ze meteen uitzoeken van wie een dood kindje is dat op een oude begraafplaats is gevonden. Tegelijk vertelt een jonge politicus op tv dat hij en zijn vrouw na jaren eindelijk een kind verwachten; diezelfde avond dreigt een onbekende vrouw de identiteit van de draagmoeder te onthullen. Beide zaken blijken verbonden met Russische misdadigers en machtige mensen in Stockholm. Het is het tweede deel met Hannah Wester, maar het verhaal is op zichzelf te volgen.",
+      "categorie": "Thriller & spanning"
     },
     {
-      "id": "2026w46-dag-van-de-jakhals",
-      "soort": "parel",
-      "titel": "De dag van de Jakhals",
+      "id": "2026w47-skorpio",
+      "soort": "nieuw",
+      "titel": "Skorpio",
       "auteurs": [
-        "Frederick Forsyth"
+        "Deon Meyer"
       ],
-      "isbn": "9789021829852",
+      "isbn": "9789044938395",
       "jaar": 2026,
       "uitgever": "A.W. Bruna Uitgevers",
-      "coverUrl": "https://static.unbidan.nl/covers/ac79a4dd-3d4d-438d-938d-8faa3ad5b356-320.jpg",
-      "reden": "Een klassieke politieke thriller die echte geschiedenis en fictie ijzersterk vermengt, voor wie houdt van nauwkeurige, realistische spanning.",
-      "synopsis": "Begin jaren zestig huurt een Franse verzetsorganisatie een kille Engelse huurmoordenaar in om president De Gaulle te vermoorden. De man, bekend als de Jakhals, bereidt de aanslag tot in het kleinste detail voor. Terwijl hij door Europa reist, begint een rechercheur aan een wanhopige jacht op een man van wie niemand de naam kent. Dit boek wordt vaak een van de beste thrillers ooit genoemd.",
+      "coverUrl": "https://static.unbidan.nl/covers/7133a109-983b-406d-b7c3-8c75d57dd9fe-320.jpg",
+      "reden": "Een realistische politiethriller uit Zuid-Afrika waarin een moordzaak uitgroeit tot internationale politiek, voor wie houdt van spanning met inhoud en een geloofwaardig decor.",
+      "synopsis": "Rechercheurs Bennie Griessel en Vaughn Cupido zijn net weer bevorderd tot kapitein als een goede vriend van Cupido vermoord wordt gevonden onder een auto in zijn garage. Kort daarna ontploft op een boerderij bij Stellenbosch een woonwagen; de identiteit van het slachtoffer veroorzaakt een mediastorm, een week voordat de staatslieden van de BRICS-top naar de stad komen. Als er raketonderdelen met de naam Skorpio opduiken, lopen de sporen naar Moskou en dwars door Afrika.",
       "categorie": "Thriller & spanning"
     },
     {
-      "id": "2026w46-zin-van-het-bestaan",
-      "soort": "parel",
-      "titel": "De zin van het bestaan",
+      "id": "2026w47-overlevingskunst",
+      "soort": "nieuw",
+      "titel": "Overlevingskunst",
       "auteurs": [
-        "Viktor Frankl"
+        "Diederik Oostdijk"
       ],
-      "isbn": "9789061001737",
-      "jaar": 2020,
-      "uitgever": "Ad. Donker",
-      "coverUrl": "https://static.unbidan.nl/covers/0543af4e-c0e2-4335-acf5-9d1909d622b0-320.jpg",
-      "reden": "Een klein maar indrukwekkend getuigenis uit de concentratiekampen over de kracht om door te gaan, voor wie houdt van waargebeurde verhalen over mensen onder extreme druk.",
-      "synopsis": "De Weense psychiater Viktor Frankl overleefde Auschwitz en andere kampen. Hij beschrijft wat hij daar zag: hoe mensen bezweken of overeind bleven, en hoe het vinden van zin het verschil kon maken. Daarna legt hij de therapie uit die hij op die ervaring bouwde. Deze uitgebreide editie bevat ook essays, toespraken en foto's.",
+      "isbn": "9789000397556",
+      "jaar": 2026,
+      "uitgever": "Spectrum",
+      "coverUrl": "https://static.unbidan.nl/covers/cb8b4403-669e-4008-8629-0dc45e7705bc-320.jpg",
+      "reden": "Een waargebeurd verhaal over Joodse families die tijdens de bezetting met hun kunstbezit hun leven probeerden te redden, voor wie houdt van persoonlijke oorlogsverhalen met een verrassende wending.",
+      "synopsis": "Drie verwante Joodse gezinnen ontkwamen tijdens de Tweede Wereldoorlog aan de Holocaust dankzij hun schilderijen. Een Amsterdamse bankier verkocht een doek aan de kunstopkoper van Hitler zodat zijn dochter kon onderduiken, zijn compagnon vluchtte naar Cuba, en een derde gezin overleefde Theresienstadt. Diederik Oostdijk reconstrueert ruim tachtig jaar later hun lot en de vreemde reis van de vijf kunstwerken, waarvan er een opdook in de woning van Hitler in Berlijn.",
       "categorie": "Oorlog & geschiedenis"
     },
     {
-      "id": "2026w46-zeg-niets",
-      "soort": "parel",
-      "titel": "Zeg niets",
+      "id": "2026w47-classicus-nazispion",
+      "soort": "nieuw",
+      "titel": "Hoe een classicus nazispion werd",
       "auteurs": [
-        "Patrick Radden Keefe"
+        "Arnold Carmiggelt",
+        "Marieke Keur"
       ],
-      "isbn": "9789046825273",
-      "jaar": 2019,
-      "uitgever": "Nieuw Amsterdam",
-      "coverUrl": "https://static.unbidan.nl/covers/653fd487-219d-4685-9b01-5f12782f4d42-320.jpg",
-      "reden": "Een meeslepend journalistiek standaardwerk over geweld, geheimen en verraad tijdens het conflict in Noord-Irland, voor wie houdt van onderzoeksjournalistiek die leest als een thriller.",
-      "synopsis": "In 1972 wordt in Belfast een weduwe en moeder van tien kinderen ontvoerd; jarenlang durft niemand erover te praten. Als in 2003 op een strand haar botten worden gevonden, gebruikt Patrick Radden Keefe die zaak om het verhaal van The Troubles te vertellen. Hij volgt IRA-strijders, de rol van het Britse leger en de leiders die later over vrede onderhandelden.",
-      "categorie": "Journalistiek & samenleving"
+      "isbn": "9789464566437",
+      "jaar": 2026,
+      "uitgever": "Walburg Pers",
+      "coverUrl": "https://static.unbidan.nl/covers/24200a4f-2c84-461a-b3b8-6d74618a758e-320.jpg",
+      "reden": "Het opmerkelijke levensverhaal van een Nederlandse spion aan de verkeerde kant, voor wie houdt van spionage en verborgen hoofdstukken uit de oorlogsgeschiedenis.",
+      "synopsis": "Lambertus Elferink (1910-1992) studeert in het Amsterdam en het Berlijn van de jaren dertig en raakt in de ban van het nazisme. In de oorlog werkt hij als Duits spion in Zuid-Afrika en Lissabon, tot de Britse geheime dienst hem in 1943 in de val lokt. Na de oorlog zit hij vast in Scheveningen en wordt daarna onopvallend leraar klassieke talen in Den Haag. Het boek combineert historisch onderzoek met enkele verzonnen scènes.",
+      "categorie": "Oorlog & geschiedenis"
     },
     {
-      "id": "2026w46-leerschool",
-      "soort": "parel",
-      "titel": "Leerschool",
+      "id": "2026w47-michael-schumacher",
+      "soort": "nieuw",
+      "titel": "Michael Schumacher",
       "auteurs": [
-        "Tara Westover"
+        "Olav Mol",
+        "Erik Houben"
       ],
-      "isbn": "9789403105703",
-      "jaar": 2018,
-      "uitgever": "De Bezige Bij",
-      "coverUrl": "https://static.unbidan.nl/covers/567cf5c3-3448-4dae-9463-2fd66bc83a7b-320.jpg",
-      "reden": "Een rauw en hoopvol levensverhaal over opgroeien in een streng religieus en afgesloten gezin en daaruit losbreken, voor wie houdt van openhartige memoires over doorzettingsvermogen.",
-      "synopsis": "Tara Westover groeit op in de bergen van Idaho in een streng mormoons gezin dat zich afsluit van de buitenwereld. Ze gaat niet naar school, werkt op de schroothoop van haar vader en krijgt geen dokter te zien na ernstige ongelukken. Op eigen kracht leert ze genoeg om naar de universiteit te gaan. Daar ontdekt ze hoeveel ze heeft gemist, en dat een breuk met haar familie onvermijdelijk is.",
+      "isbn": "9789000393428",
+      "jaar": 2025,
+      "uitgever": "Spectrum",
+      "coverUrl": "https://static.unbidan.nl/covers/9f3bf6a3-1642-49e5-9014-1fb516bf29ff-320.jpg",
+      "reden": "Een biografie van een van de grootste coureurs uit de Formule 1, geschreven door kenners van de sport, voor wie houdt van verhalen over discipline, rivaliteit en tegenslag.",
+      "synopsis": "Michael Schumacher werd als eerste zevenvoudig wereldkampioen in de Formule 1. Dit boek volgt hem van zijn eerste meters in een kart via zijn beginjaren tot zijn negentien seizoenen in de Formule 1, met de duels tegen onder anderen Senna, Hill, Häkkinen en Alonso. Het laat zien hoe hij met training en toewijding een nieuwe standaard zette, en staat stil bij het zware skiongeluk dat zijn leven na de racecarrière veranderde.",
+      "categorie": "Sport"
+    },
+    {
+      "id": "2026w47-gelukszoekers-voetbalschoenen",
+      "soort": "nieuw",
+      "titel": "Gelukszoekers op voetbalschoenen",
+      "auteurs": [
+        "Hugo Verkley"
+      ],
+      "isbn": "9789048877508",
+      "jaar": 2026,
+      "uitgever": "Inside",
+      "coverUrl": "https://static.unbidan.nl/covers/64864e53-33a9-4508-82ee-acd5e772c33a-320.jpg",
+      "reden": "Journalistieke verhalen over de harde kant van de voetbaldroom, voor wie houdt van sportboeken die verder kijken dan het veld.",
+      "synopsis": "De Gambiaanse Musa wil maar één ding: profvoetballer worden in Nederland. Teruggaan is geen optie, want dan is hij de schande van zijn familie. Hugo Verkley vertelt het verhaal van hem en andere jongens uit Afrika ten zuiden van de Sahara die alles op het spel zetten voor een Europese voetbaldroom. Twee levens vormen de rode draad: voor de een lijkt de droom haalbaar, voor de ander niet.",
+      "categorie": "Sport"
+    },
+    {
+      "id": "2026w47-een-nieuw-leven",
+      "soort": "nieuw",
+      "titel": "Een nieuw leven",
+      "auteurs": [
+        "Michael Somers"
+      ],
+      "isbn": "9789464106725",
+      "jaar": 2026,
+      "uitgever": "Horizon",
+      "coverUrl": "https://static.unbidan.nl/covers/6eb60557-86a3-49a8-a2ad-36dd6c194a7f-320.jpg",
+      "reden": "Een kort en openhartig levensverhaal van een topsporter die in één jaar zijn grootste droom haalde en alles weer kwijtraakte, voor wie houdt van verhalen over veerkracht en mentale kracht.",
+      "synopsis": "De Belgische marathonloper Michael Somers liep in 2024 zijn eerste Olympische marathon en droeg die op aan zijn doodzieke vader, die drie dagen later overleed. Een half jaar later moest hij door een hartkwaal per direct en voorgoed stoppen met topsport. In dit persoonlijke boek, geschreven voor zijn dochtertje, beschrijft hij hoe hij zijn passie verloor en een nieuw doel vond.",
       "categorie": "Biografie & levensverhaal"
     },
     {
-      "id": "2026w46-een-man-die-ove-heet",
-      "soort": "parel",
-      "titel": "Een man die Ove heet",
+      "id": "2026w47-dansen-op-een-vulkaan",
+      "soort": "nieuw",
+      "titel": "Dansen op een vulkaan",
       "auteurs": [
-        "Fredrik Backman"
+        "John van den Heuvel"
       ],
-      "isbn": "9789021401942",
-      "jaar": 2013,
-      "uitgever": "Volt",
-      "coverUrl": "https://static.unbidan.nl/covers/e1200565-d3ba-4c8e-abb0-40eda5b26a15-320.jpg",
-      "reden": "Een komisch en ontroerend verhaal over een onverbeterlijke mopperkont, voor wie houdt van droge humor met een warm hart.",
-      "synopsis": "Ove is 59, streng, mopperig en heeft een kort lontje. Elke ochtend controleert hij zijn buurt, ook al is hij al jaren geen voorzitter van de vereniging meer. Als nieuwe buren per ongeluk zijn brievenbus omverrijden, begint een onverwachte vriendschap. Langzaam wordt duidelijk welk verdriet achter zijn strenge buitenkant zit.",
+      "isbn": "9789083560090",
+      "jaar": 2026,
+      "uitgever": "Ezo Wolf",
+      "coverUrl": "https://static.unbidan.nl/covers/dfb12471-a0ec-4982-82bf-642e24714ded-320.jpg",
+      "reden": "Terugblik van een ervaren misdaadjournalist op decennia onderwereld, politie en justitie, voor wie houdt van boeken die de georganiseerde misdaad van dichtbij laten zien.",
+      "synopsis": "John van den Heuvel was undercoveragent bij de Amsterdamse politie en werd daarna misdaadverslaggever. Hij blikt terug op ruim 35 jaar werken tussen criminele organisaties, advocaten, slachtoffers en de rechterlijke macht. Hij behandelt onder meer de jacht op Bolle Jos en de nasleep van het Marengo-proces, en kijkt kritisch naar politiek en justitie in de strijd tegen drugsmisdaad.",
+      "categorie": "Journalistiek & samenleving"
+    },
+    {
+      "id": "2026w47-zweden-dromen",
+      "soort": "nieuw",
+      "titel": "Hoe de Zweden het dromen uitvonden",
+      "auteurs": [
+        "Jonas Jonasson"
+      ],
+      "isbn": "9789044938685",
+      "jaar": 2025,
+      "uitgever": "A.W. Bruna Uitgevers",
+      "coverUrl": "https://static.unbidan.nl/covers/10a76621-99f4-44ed-8940-e93debaffbce-320.jpg",
+      "reden": "Een kort, luchtig verhaal vol absurde Zweedse humor, voor wie houdt van droogkomische schelmenverhalen.",
+      "synopsis": "De Duitse beddenfabrikant Traumbett verkoopt overal ter wereld, behalve in Zweden. De nieuwe eigenaar Konrad Kaltenbacher junior wil dat snel veranderen. Julia, de burgemeester van het provinciestadje Halstaholm, wil de fabriek met haar 800 banen per se binnenhalen en begint met alle inwoners een charmeoffensief zonder weerga. Haar vastberadenheid maakt ook op Konrad indruk.",
       "categorie": "Roman & humor"
     },
     {
-      "id": "2026w46-bidden-keller",
-      "soort": "parel",
-      "titel": "Bidden",
+      "id": "2026w47-doorleefd-discipelschap",
+      "soort": "nieuw",
+      "titel": "Doorleefd discipelschap",
       "auteurs": [
-        "Tim Keller"
+        "Mart-Jan van der Maas"
       ],
-      "jaar": 2015,
-      "uitgever": "Buijten & Schipperheijn",
-      "coverUrl": "https://static.unbidan.nl/covers/7003f419-27ca-4062-b148-634fc6aa721a-320.jpg",
-      "reden": "Voor wie dieper wil leren bidden en zoekt naar een helder, praktisch boek dat Bijbelse wijsheid en dagelijks geloof verbindt.",
-      "synopsis": "De Amerikaanse predikant Tim Keller schrijft over het gebed als kern van het christelijk geloof. Hij laat zien waarom veel mensen niet goed weten hoe ze moeten bidden, en geeft Bijbelse inzichten en praktische adviezen. Gebed is voor hem de weg naar echte zelfkennis en diepe verandering.",
+      "isbn": "9789059993129",
+      "jaar": 2026,
+      "uitgever": "Gideon",
+      "coverUrl": "https://static.unbidan.nl/covers/f6eb4a48-3b2f-467b-a36c-c350e73e03d2-320.jpg",
+      "reden": "Een praktisch boek over Jezus volgen in het dagelijks leven, met eerlijke verhalen van gelovigen, voor wie zoekt naar geloof dat je doet en niet alleen gelooft.",
+      "synopsis": "Mart-Jan van der Maas stelt dat geloof niet ophoudt bij redding, maar daar juist begint: Jezus vraagt om Hem te volgen en op Hem te gaan lijken. Hij deelt dertien levenslessen voor discipelen, aan de hand van de eerlijke en kwetsbare verhalen van christenen als Willem de Vink, Janneke Plantinga en Ruben Flach. Met foto's en vragen om het boek alleen of samen met anderen door te werken.",
       "categorie": "Geloof & zingeving"
+    },
+    {
+      "id": "2026w47-conclaaf",
+      "soort": "parel",
+      "titel": "Conclaaf",
+      "auteurs": [
+        "Robert Harris"
+      ],
+      "isbn": "9789403137612",
+      "jaar": 2020,
+      "uitgever": "Cargo",
+      "coverUrl": "https://static.unbidan.nl/covers/515b281d-6602-4035-8907-07368d6173bf-320.jpg",
+      "reden": "Een spannende thriller over macht en geheimen achter de deuren van het Vaticaan, voor wie houdt van intrige rond religie en politiek.",
+      "synopsis": "Na de dood van de paus komen honderdzeventien kardinalen in het Vaticaan bijeen om in het geheim een opvolger te kiezen. Het zijn vrome mannen, maar ook ambitieuze rivalen. In tweeënzeventig uur wordt duidelijk dat een van de favorieten een geheim verbergt dat het Vaticaan kan doen wankelen.",
+      "categorie": "Thriller & spanning"
+    },
+    {
+      "id": "2026w47-de-schuilplaats",
+      "soort": "parel",
+      "titel": "De Schuilplaats",
+      "auteurs": [
+        "Corrie ten Boom"
+      ],
+      "isbn": "9789060673140",
+      "jaar": 2008,
+      "uitgever": "Gideon",
+      "coverUrl": "https://static.unbidan.nl/covers/d2f126ae-6199-470c-85b8-b34a2f0e7c8a-320.jpg",
+      "reden": "Een klassiek waargebeurd verhaal over verzet, kampen en vergeving in de oorlog, voor wie zoekt naar geloof dat standhoudt onder extreme druk.",
+      "synopsis": "De Haarlemse familie Ten Boom verborg in de oorlog Joden en verzetsmensen in hun huis. Door verraad werden ze gearresteerd en naar concentratiekampen gestuurd; alleen Corrie kwam levend terug. Ze vertelt hoe haar geloof haar door die tijd droeg en waarom ze niet verbitterd raakte. Na de oorlog reisde ze ruim dertig jaar de wereld rond met een boodschap van vergeving en hoop.",
+      "categorie": "Geloof & zingeving"
+    },
+    {
+      "id": "2026w47-is-dit-een-mens",
+      "soort": "parel",
+      "titel": "Is dit een mens",
+      "auteurs": [
+        "Primo Levi"
+      ],
+      "isbn": "9789029094719",
+      "jaar": 2022,
+      "uitgever": "Meulenhoff",
+      "coverUrl": "https://static.unbidan.nl/covers/a01fd81a-fe37-44b0-898a-7aa72a456221-320.jpg",
+      "reden": "Een van de belangrijkste persoonlijke getuigenissen over de kampen, sober en onvergetelijk, voor wie waargebeurde oorlogsverhalen wil lezen die tot de kern gaan.",
+      "synopsis": "In 1943 sluit de jonge Italiaanse scheikundige Primo Levi zich aan bij het verzet, maar al na enkele maanden wordt hij gepakt. Hij wordt naar Auschwitz gedeporteerd en behoort tot de weinigen die terugkeren. Direct na de bevrijding schrijft hij op hoe het leven in het kamp was en wat het met mensen deed. Het boek geldt als een van de klassieke getuigenissen over de jodenvervolging.",
+      "categorie": "Oorlog & geschiedenis"
+    },
+    {
+      "id": "2026w47-dit-kan-niet-waar-zijn",
+      "soort": "parel",
+      "titel": "Dit kan niet waar zijn",
+      "auteurs": [
+        "Joris Luyendijk"
+      ],
+      "isbn": "9789493304765",
+      "jaar": 2024,
+      "uitgever": "Uitgeverij Pluim",
+      "coverUrl": "https://static.unbidan.nl/covers/f8f2d728-62c0-4cb3-a4bf-93f8772f147d-320.jpg",
+      "reden": "Een toegankelijke journalistieke ontdekkingsreis door de wereld van de grote banken, voor wie wil begrijpen hoe geld en macht werken.",
+      "synopsis": "Na de val van Lehman Brothers in 2008 stond het financiële systeem op instorten. Journalist Joris Luyendijk dook twee jaar onder in de City van Londen en sprak met talloze bankiers, die hem met risico voor hun baan lieten zien hoe hun wereld werkt. Hij zoekt antwoord op de vraag of bankiers monsters zijn, of hebzucht het probleem is, en of zo'n crisis opnieuw kan gebeuren.",
+      "categorie": "Journalistiek & samenleving"
+    },
+    {
+      "id": "2026w47-rosie-project",
+      "soort": "parel",
+      "titel": "Het Rosie project",
+      "auteurs": [
+        "Graeme Simsion"
+      ],
+      "isbn": "9789021069982",
+      "jaar": 2026,
+      "uitgever": "Luitingh-Sijthoff",
+      "coverUrl": "https://static.unbidan.nl/covers/fb270cd9-680f-4b7e-b4ac-e5ee469aa164-320.jpg",
+      "reden": "Een geestig en hartelijk verhaal over een sociaal onhandige wetenschapper op zoek naar liefde, voor wie houdt van droge humor en absurde situaties.",
+      "synopsis": "Don Tillman doceert genetica aan de universiteit en is superintelligent, maar door zijn sociale onhandigheid komt hij nooit verder dan een eerste date. Met een vragenlijst van zestien pagina's wil hij wetenschappelijk de perfecte partner vinden. Dan komt Rosie in zijn leven: allesbehalve perfect, maar slim en mooi, en op zoek naar haar biologische vader. Don besluit haar daarbij te helpen.",
+      "categorie": "Roman & humor"
+    },
+    {
+      "id": "2026w47-shoe-dog",
+      "soort": "parel",
+      "titel": "Shoe Dog",
+      "auteurs": [
+        "Phil Knight"
+      ],
+      "isbn": "9789000357598",
+      "jaar": 2017,
+      "uitgever": "Spectrum",
+      "coverUrl": "https://static.unbidan.nl/covers/58946bb5-c4c9-4d0f-bf9e-ff33325cec4d-320.jpg",
+      "reden": "Het levensverhaal van een ondernemer die met bijna niets begon en een wereldmerk in de sport bouwde, voor wie houdt van verhalen over durf en doorzettingsvermogen.",
+      "synopsis": "In 1964 richtte Phil Knight samen met hardloopcoach Bill Bowerman met een startkapitaal van slechts 1200 dollar Blue Ribbon Sports op, dat schoenen van het Japanse merk Onitsuka Tiger verkocht. In deze autobiografie vertelt hij hoe dat kleine bedrijf uitgroeide tot Nike, de grootste sportschoenenmaker ter wereld. Hij vertelt ook hoe de naam Nike werd bedacht en hoe het beroemde logo voor 35 dollar werd ontworpen.",
+      "categorie": "Biografie & levensverhaal"
     }
   ],
   "bijwerkingen": []
